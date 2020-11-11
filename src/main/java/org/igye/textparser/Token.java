@@ -1,6 +1,6 @@
 package org.igye.textparser;
 
-public interface Token<T> {
-    T value();
-    Position position();
+public interface Token<V, P> {
+    V value();
+    P position();
 }

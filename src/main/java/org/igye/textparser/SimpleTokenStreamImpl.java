@@ -2,24 +2,24 @@ package org.igye.textparser;
 
 import java.util.function.Supplier;
 
-public class SimpleTokenStreamImpl<T> implements TokenStream<T> {
-    private final Supplier<Token<T>[]> generator;
-    private final Token<T>[] elems;
+public class SimpleTokenStreamImpl<V,P> implements TokenStream<V,P> {
+    private final Supplier<Token<V,P>[]> generator;
+    private final Token<V,P>[] elems;
     private final int idx;
-    private TokenStream<T> tail;
+    private TokenStream<V,P> tail;
 
-    public SimpleTokenStreamImpl(Supplier<Token<T>[]> generator) {
+    public SimpleTokenStreamImpl(Supplier<Token<V,P>[]> generator) {
         this(generator, generator.get(), 0);
     }
 
-    private SimpleTokenStreamImpl(Supplier<Token<T>[]> generator, Token<T>[] elems, int idx) {
+    private SimpleTokenStreamImpl(Supplier<Token<V,P>[]> generator, Token<V,P>[] elems, int idx) {
         this.generator = generator;
         this.elems = elems;
         this.idx = idx;
     }
 
     @Override
-    public Token<T> head() {
+    public Token<V,P> head() {
         if (idx < elems.length) {
             return elems[idx];
         } else {
@@ -28,24 +28,28 @@ public class SimpleTokenStreamImpl<T> implements TokenStream<T> {
     }
 
     @Override
-    public TokenStream<T> tail() {
-        if (tail != null) {
-            return tail;
+    public TokenStream<V,P> tail() {
+        if (isEmpty()) {
+            return this;
         } else {
-
-        }
-        if (idx < elems.length-1) {
-            return new SimpleTokenStreamImpl()
+            if (tail == null) {
+                if (idx < elems.length-1) {
+                    tail = new SimpleTokenStreamImpl(generator, elems, idx + 1);
+                } else {
+                    tail = new SimpleTokenStreamImpl(generator, generator.get(), 0);
+                }
+            }
+            return tail;
         }
     }
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return elems == null || elems.length == 0;
     }
 
     @Override
     public boolean isNotEmpty() {
-        return false;
+        return !isEmpty();
     }
 }

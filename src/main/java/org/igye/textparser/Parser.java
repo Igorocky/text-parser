@@ -1,7 +1,5 @@
 package org.igye.textparser;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-public interface Parser<T,O> {
-    Pair<O, TokenStream<T>> parse(TokenStream<T> input);
+public interface Parser<S extends TokenStream,O,P> {
+    ParseResult<S,O,P> parse(S input);
 }
