@@ -30,4 +30,26 @@ public class Parsers {
             }
         };
     }
+
+    public static Parser<TokenStream<Character, PositionInText>,String,PositionInText> literal(String value) {
+        return tokens -> {
+            TokenStream<Character, PositionInText> remaining = tokens;
+            int idx = -1;
+            Token<Character, PositionInText> lastToken = null;
+            while (remaining.isNotEmpty() && idx+1 < value.length() && remaining.head().value().equals(value.charAt(idx+1))) {
+                lastToken = remaining.head();
+                idx++;
+                remaining = remaining.tail();
+            }
+            if (idx != value.length()-1) {
+                return ParseResult.failure("'" + value + "' literal expected", tokens);
+            } else {
+                return ParseResult.success(
+                        value,
+                        new PositionRange<>(tokens.head().position(), lastToken.position()),
+                        remaining
+                );
+            }
+        };
+    }
 }
