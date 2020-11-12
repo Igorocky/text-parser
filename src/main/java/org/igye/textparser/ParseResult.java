@@ -41,6 +41,10 @@ public class ParseResult<S extends TokenStream, R, P> {
         return result;
     }
 
+    public R get() {
+        return result.get();
+    }
+
     public PositionRange<P> getPositionRange() {
         return positionRange;
     }

@@ -5,10 +5,16 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
+import java.util.Optional;
 
+import static org.igye.textparser.Parsers.literal;
 import static org.igye.textparser.Parsers.and;
 import static org.igye.textparser.Parsers.opt;
 import static org.igye.textparser.Parsers.rep;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ParsersTest {
 
@@ -32,7 +38,7 @@ public class ParsersTest {
     @Test
     public void literal_parsesLiterals() {
         //when
-        val parseResult = Parsers.literal("define").parse(
+        val parseResult = literal("define").parse(
                 tokenStreamFromString("define a: A")
         );
 
@@ -47,10 +53,25 @@ public class ParsersTest {
     }
 
     @Test
+    public void opt_parserCombinatorShouldWorkCorrectly() {
+        //given
+        val optComma = opt(literal(","));
+        //when
+        val parseResult = optComma.parse(tokenStreamFromString(",."));
+        //then
+        Assert.assertEquals(",", parseResult.get().get());
+        //when
+        val parseResult2 = optComma.parse(tokenStreamFromString(".,."));
+        //then
+        assertTrue(parseResult2.isSuccess());
+        assertFalse(parseResult2.get().isPresent());
+    }
+
+    @Test
     public void parserCombinatorsShouldWorkCorrectly() {
         //given
         val integer = Parsers.integer();
-        val comma = Parsers.literal(",");
+        val comma = literal(",");
         val arrElem = and(opt(comma), integer);
         val inpArgs = rep("Non empty list of input arguments", arrElem);
 
@@ -60,7 +81,18 @@ public class ParsersTest {
         );
 
         //then
-        Assert.assertTrue(parseResult.isSuccess());
+        final List inputArgsParsed = parseResult.get();
+        assertFalse(((Optional<String>)((List) inputArgsParsed.get(0)).get(0)).isPresent());
+        assertEquals(93, ((Integer)((List) inputArgsParsed.get(0)).get(1)).intValue());
+        assertEquals(",", ((Optional<String>)((List) inputArgsParsed.get(1)).get(0)).get());
+        assertEquals(57, ((Integer)((List) inputArgsParsed.get(1)).get(1)).intValue());
+        assertEquals(",", ((Optional<String>)((List) inputArgsParsed.get(2)).get(0)).get());
+        assertEquals(17, ((Integer)((List) inputArgsParsed.get(2)).get(1)).intValue());
+
+        assertEquals(0, parseResult.getPositionRange().getStart().getLine());
+        assertEquals(0, parseResult.getPositionRange().getStart().getCol());
+        assertEquals(0, parseResult.getPositionRange().getEnd().getLine());
+        assertEquals(7, parseResult.getPositionRange().getEnd().getCol());
     }
 
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {

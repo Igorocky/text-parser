@@ -29,19 +29,20 @@ public class Parsers {
     public static <P,S extends TokenStream> Parser<S, List, P> and(Parser<S,?,P>... parsers) {
         return tokens -> {
             List<ParseResult> results = new ArrayList<>();
-            P endPosition = null;
+            ParseResult lastParseResult = null;
             for (Parser<S,?,P> parser : parsers) {
-                ParseResult parseResult = parser.parse((S) tokens);
-                if (parseResult.isFailure()) {
-                    return parseResult;
+                lastParseResult = parser.parse(
+                        (S) (lastParseResult == null ? tokens : lastParseResult.getRemainingTokens())
+                );
+                if (lastParseResult.isFailure()) {
+                    return lastParseResult;
                 }
-                results.add(parseResult);
-                endPosition = (P) parseResult.getPositionRange().getEnd();
+                results.add(lastParseResult);
             }
             return (ParseResult<S, List, P>) ParseResult.success(
                     results.stream().map(ParseResult::getResult).map(Optional::get).collect(Collectors.toList()),
-                    new PositionRange(tokens.head().position(), endPosition),
-                    results.get(results.size()-1).getRemainingTokens()
+                    ((PositionRange) getPositionRange(results)),
+                    lastParseResult.getRemainingTokens()
             );
         };
     }
@@ -60,11 +61,9 @@ public class Parsers {
             int min, int max, String errorMsg, Parser<S,?,P> parser) {
         return tokens -> {
             List<ParseResult> results = new ArrayList<>();
-            P endPosition = null;
             ParseResult parseResult = parser.parse((S) tokens);
             while (parseResult.isSuccess()) {
                 results.add(parseResult);
-                endPosition = (P) parseResult.getPositionRange().getEnd();
                 parseResult = parser.parse((S) parseResult.getRemainingTokens());
             }
             if (results.size() < min) {
@@ -80,7 +79,7 @@ public class Parsers {
             } else {
                 return (ParseResult<S, List, P>) ParseResult.success(
                         results.stream().map(ParseResult::getResult).map(Optional::get).collect(Collectors.toList()),
-                        new PositionRange(tokens.head().position(), endPosition),
+                        ((PositionRange) getPositionRange(results)),
                         results.get(results.size() - 1).getRemainingTokens()
                 );
             }
@@ -144,5 +143,21 @@ public class Parsers {
                 );
             }
         };
+    }
+
+    private static <P> PositionRange<P> getPositionRange(List<ParseResult> parseResults) {
+        final int halfSize = parseResults.size() / 2;
+        final int lastIdx = parseResults.size() - 1;
+        P startPosition = null;
+        P endPosition = null;
+        for (int i = 0; i <= halfSize && (startPosition == null || endPosition == null); i++) {
+            if (startPosition == null) {
+                startPosition = (P) parseResults.get(i).getPositionRange().getStart();
+            }
+            if (endPosition == null) {
+                endPosition = (P) parseResults.get(lastIdx - i).getPositionRange().getEnd();
+            }
+        }
+        return new PositionRange(startPosition, endPosition);
     }
 }
