@@ -6,6 +6,10 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 
+import static org.igye.textparser.Parsers.and;
+import static org.igye.textparser.Parsers.opt;
+import static org.igye.textparser.Parsers.rep;
+
 public class ParsersTest {
 
     @Test
@@ -40,6 +44,23 @@ public class ParsersTest {
         Assert.assertEquals(0, positionRange.getStart().getCol());
         Assert.assertEquals(0, positionRange.getEnd().getLine());
         Assert.assertEquals(5, positionRange.getEnd().getCol());
+    }
+
+    @Test
+    public void parserCombinatorsShouldWorkCorrectly() {
+        //given
+        val integer = Parsers.integer();
+        val comma = Parsers.literal(",");
+        val arrElem = and(opt(comma), integer);
+        val inpArgs = rep("Non empty list of input arguments", arrElem);
+
+        //when
+        val parseResult = inpArgs.parse(
+                tokenStreamFromString("93,57,17")
+        );
+
+        //then
+        Assert.assertTrue(parseResult.isSuccess());
     }
 
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {
