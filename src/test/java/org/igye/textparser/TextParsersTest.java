@@ -101,7 +101,7 @@ public class TextParsersTest {
     }
 
     @Test
-    public void list_shouldParseListsCorrectly() {
+    public void list_shouldParseListsCorrectly_whenSeparatorIsSpecified() {
         //given
         val listParser = list(
                 or(
@@ -129,6 +129,36 @@ public class TextParsersTest {
         assertEquals(Arrays.asList(93,"b",17), listParser.parse(tokenStreamFromString("93,b,17")).get());
         assertEquals(Arrays.asList(93,"b",17), listParser.parse(tokenStreamFromString("93, b, 17")).get());
         assertEquals(Arrays.asList(93,"b",17), listParser.parse(tokenStreamFromString("  93, b, 17 ")).get());
+    }
+
+    @Test
+    public void list_shouldParseListsCorrectly_whenSeparatorIsNotSpecified() {
+        //given
+        val listParser = list(
+                or(
+                        integer(),
+                        or(literal("a"), literal("b"), literal("c"))
+                )
+        );
+
+        //then
+        assertEquals(Collections.emptyList(), listParser.parse(tokenStreamFromString("")).get());
+        assertEquals(Collections.emptyList(), listParser.parse(tokenStreamFromString("   ")).get());
+
+        assertEquals(Arrays.asList(1004), listParser.parse(tokenStreamFromString("1004")).get());
+        assertEquals(Arrays.asList(1004), listParser.parse(tokenStreamFromString("1004    ")).get());
+        assertEquals(Arrays.asList(1004), listParser.parse(tokenStreamFromString("   1004")).get());
+        assertEquals(Arrays.asList(1004), listParser.parse(tokenStreamFromString("   1004   ")).get());
+
+        assertEquals(Arrays.asList("c"), listParser.parse(tokenStreamFromString("c")).get());
+        assertEquals(Arrays.asList("a"), listParser.parse(tokenStreamFromString("a    ")).get());
+        assertEquals(Arrays.asList("b"), listParser.parse(tokenStreamFromString("   b")).get());
+        assertEquals(Arrays.asList("a"), listParser.parse(tokenStreamFromString("   a   ")).get());
+
+        assertEquals(Arrays.asList(93,57,17), listParser.parse(tokenStreamFromString("93 57 17")).get());
+        assertEquals(Arrays.asList(93,"b",17), listParser.parse(tokenStreamFromString("93 b 17")).get());
+        assertEquals(Arrays.asList(93,"b",17), listParser.parse(tokenStreamFromString("93  b  17")).get());
+        assertEquals(Arrays.asList(93,"b",17), listParser.parse(tokenStreamFromString("  93  b  17 ")).get());
     }
 
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {

@@ -10,12 +10,17 @@ import java.util.Optional;
 import static org.igye.textparser.Parsers.and;
 import static org.igye.textparser.Parsers.opt;
 import static org.igye.textparser.Parsers.rep;
+import static org.igye.textparser.Parsers.success;
 
 public class TextParsers {
 
 
+    public static <S extends TokenStream,P> Parser<S, List, P> list(Parser elemParser) {
+        return list(elemParser, null);
+    }
+
     public static <S extends TokenStream,P> Parser<S, List, P> list(Parser elemParser, Parser sepParser) {
-        Parser sep = spacePadded(sepParser);
+        Parser sep = spacePadded(sepParser == null ? success() : sepParser);
         Parser elem = spacePadded(elemParser);
         Parser<TokenStream, List, Object> listParser = and(opt(elem), rep(and(sep, elem)));
         return tokens -> {

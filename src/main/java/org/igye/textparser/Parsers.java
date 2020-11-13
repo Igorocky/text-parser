@@ -85,7 +85,7 @@ public class Parsers {
         };
     }
 
-    public static <V,P,S extends TokenStream, R> Parser<S, Optional<R>, P> opt(Parser<S, R, P> parser) {
+    public static <P,S extends TokenStream, R> Parser<S, Optional<R>, P> opt(Parser<S, R, P> parser) {
         return tokens -> {
             final ParseResult<S, R, P> parseResult = parser.parse((S) tokens);
             if (parseResult.isFailure()) {
@@ -96,6 +96,20 @@ public class Parsers {
                 );
             } else {
                 return parseResult.map(res -> Optional.of(res));
+            }
+        };
+    }
+
+    public static <P,S extends TokenStream> Parser<S, ?, P> success() {
+        return tokens -> {
+            if (tokens.isNotEmpty()) {
+                return ParseResult.success(
+                        Optional.empty(),
+                        ((PositionRange) new PositionRange<>(tokens.head().position(), tokens.head().position())),
+                        tokens
+                );
+            } else {
+                return ParseResult.failure("End of token stream reached", tokens);
             }
         };
     }
