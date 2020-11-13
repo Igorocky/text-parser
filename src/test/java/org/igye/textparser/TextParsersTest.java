@@ -5,10 +5,15 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.igye.textparser.Parsers.literal;
+import static org.igye.textparser.Parsers.or;
+import static org.igye.textparser.TextParsers.integer;
+import static org.igye.textparser.TextParsers.list;
+import static org.igye.textparser.TextParsers.literal;
 import static org.igye.textparser.Parsers.and;
 import static org.igye.textparser.Parsers.opt;
 import static org.igye.textparser.Parsers.rep;
@@ -16,12 +21,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class ParsersTest {
+public class TextParsersTest {
 
     @Test
     public void integer_parsesIntegers() {
         //when
-        val parseResult = Parsers.integer().parse(
+        val parseResult = TextParsers.integer().parse(
                 tokenStreamFromString("639:12")
         );
 
@@ -70,10 +75,10 @@ public class ParsersTest {
     @Test
     public void parserCombinatorsShouldWorkCorrectly() {
         //given
-        val integer = Parsers.integer();
+        val integer = TextParsers.integer();
         val comma = literal(",");
         val arrElem = and(opt(comma), integer);
-        val inpArgs = rep("Non empty list of input arguments", arrElem);
+        val inpArgs = rep(arrElem);
 
         //when
         val parseResult = inpArgs.parse(
@@ -93,6 +98,37 @@ public class ParsersTest {
         assertEquals(0, parseResult.getPositionRange().getStart().getCol());
         assertEquals(0, parseResult.getPositionRange().getEnd().getLine());
         assertEquals(7, parseResult.getPositionRange().getEnd().getCol());
+    }
+
+    @Test
+    public void list_shouldParseListsCorrectly() {
+        //given
+        val listParser = list(
+                or(
+                        integer(),
+                        or(literal("a"), literal("b"), literal("c"))
+                ),
+                literal(",")
+        );
+
+        //then
+        assertEquals(Collections.emptyList(), listParser.parse(tokenStreamFromString("")).get());
+        assertEquals(Collections.emptyList(), listParser.parse(tokenStreamFromString("   ")).get());
+
+        assertEquals(Arrays.asList(1004), listParser.parse(tokenStreamFromString("1004")).get());
+        assertEquals(Arrays.asList(1004), listParser.parse(tokenStreamFromString("1004    ")).get());
+        assertEquals(Arrays.asList(1004), listParser.parse(tokenStreamFromString("   1004")).get());
+        assertEquals(Arrays.asList(1004), listParser.parse(tokenStreamFromString("   1004   ")).get());
+
+        assertEquals(Arrays.asList("c"), listParser.parse(tokenStreamFromString("c")).get());
+        assertEquals(Arrays.asList("a"), listParser.parse(tokenStreamFromString("a    ")).get());
+        assertEquals(Arrays.asList("b"), listParser.parse(tokenStreamFromString("   b")).get());
+        assertEquals(Arrays.asList("a"), listParser.parse(tokenStreamFromString("   a   ")).get());
+
+        assertEquals(Arrays.asList(93,57,17), listParser.parse(tokenStreamFromString("93,57,17")).get());
+        assertEquals(Arrays.asList(93,"b",17), listParser.parse(tokenStreamFromString("93,b,17")).get());
+        assertEquals(Arrays.asList(93,"b",17), listParser.parse(tokenStreamFromString("93, b, 17")).get());
+        assertEquals(Arrays.asList(93,"b",17), listParser.parse(tokenStreamFromString("  93, b, 17 ")).get());
     }
 
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {

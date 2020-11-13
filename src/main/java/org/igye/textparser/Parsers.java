@@ -26,7 +26,7 @@ public class Parsers {
         };
     }
 
-    public static <P,S extends TokenStream> Parser<S, List, P> and(Parser<S,?,P>... parsers) {
+    public static <S extends TokenStream,P> Parser<S, List, P> and(Parser<S, ?, P>... parsers) {
         return tokens -> {
             List<ParseResult> results = new ArrayList<>();
             ParseResult lastParseResult = null;
@@ -52,9 +52,8 @@ public class Parsers {
         return rep(min, 0, errorMsg, parser);
     }
 
-    public static <P,S extends TokenStream> Parser<S, List, P> rep(
-            String errorMsg, Parser<S,?,P> parser) {
-        return rep(0, 0, errorMsg, parser);
+    public static <P,S extends TokenStream> Parser<S, List, P> rep(Parser<S,?,P> parser) {
+        return rep(0, 0, null, parser);
     }
 
     public static <P,S extends TokenStream> Parser<S, List, P> rep(
@@ -80,7 +79,7 @@ public class Parsers {
                 return (ParseResult<S, List, P>) ParseResult.success(
                         results.stream().map(ParseResult::getResult).map(Optional::get).collect(Collectors.toList()),
                         ((PositionRange) getPositionRange(results)),
-                        results.get(results.size() - 1).getRemainingTokens()
+                        results.isEmpty() ? tokens : results.get(results.size() - 1).getRemainingTokens()
                 );
             }
         };
@@ -101,51 +100,10 @@ public class Parsers {
         };
     }
 
-    public static Parser<TokenStream<Character, PositionInText>,Integer,PositionInText> integer() {
-        return tokens -> {
-            TokenStream<Character, PositionInText> remaining = tokens;
-            StringBuffer chars = new StringBuffer();
-            Token<Character, PositionInText> lastToken = null;
-            while (remaining.isNotEmpty() && Character.isDigit(remaining.head().value())) {
-                lastToken = remaining.head();
-                chars.append(lastToken.value());
-                remaining = remaining.tail();
-            }
-            if (remaining == tokens) {
-                return ParseResult.failure("A digit was expected", tokens);
-            } else {
-                return ParseResult.success(
-                        Integer.parseInt(chars.toString()),
-                        new PositionRange<>(tokens.head().position(), lastToken.position()),
-                        remaining
-                );
-            }
-        };
-    }
-
-    public static Parser<TokenStream<Character, PositionInText>,String,PositionInText> literal(String value) {
-        return tokens -> {
-            TokenStream<Character, PositionInText> remaining = tokens;
-            int idx = -1;
-            Token<Character, PositionInText> lastToken = null;
-            while (remaining.isNotEmpty() && idx+1 < value.length() && remaining.head().value().equals(value.charAt(idx+1))) {
-                lastToken = remaining.head();
-                idx++;
-                remaining = remaining.tail();
-            }
-            if (idx != value.length()-1) {
-                return ParseResult.failure("'" + value + "' literal expected", tokens);
-            } else {
-                return ParseResult.success(
-                        value,
-                        new PositionRange<>(tokens.head().position(), lastToken.position()),
-                        remaining
-                );
-            }
-        };
-    }
-
     private static <P> PositionRange<P> getPositionRange(List<ParseResult> parseResults) {
+        if (parseResults.isEmpty()) {
+            return new PositionRange(null, null);
+        }
         final int halfSize = parseResults.size() / 2;
         final int lastIdx = parseResults.size() - 1;
         P startPosition = null;
