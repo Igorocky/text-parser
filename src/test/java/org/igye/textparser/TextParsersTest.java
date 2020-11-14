@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.igye.textparser.Parsers.or;
+import static org.igye.textparser.TextParsers.inputStreamToTokenStream;
 import static org.igye.textparser.TextParsers.integer;
 import static org.igye.textparser.TextParsers.list;
 import static org.igye.textparser.TextParsers.literal;
@@ -179,6 +180,6 @@ public class TextParsersTest {
     }
 
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {
-        return Parsers.inputStreamToTokenStream(new ByteArrayInputStream(str.getBytes()));
+        return inputStreamToTokenStream(new ByteArrayInputStream(str.getBytes()));
     }
 }

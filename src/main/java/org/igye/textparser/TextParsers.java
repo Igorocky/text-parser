@@ -1,12 +1,15 @@
 package org.igye.textparser;
 
+import lombok.SneakyThrows;
 import lombok.val;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -17,7 +20,20 @@ import static org.igye.textparser.Parsers.success;
 import static org.igye.textparser.Parsers.tokenSeq;
 
 public class TextParsers {
+    @SneakyThrows
+    public static TokenStream<Character, PositionInText> fileToTokenStream(String filePath) {
+        return new SimpleTokenStreamImpl<>(new InputStreamTokenGenerator(new FileInputStream(new File(filePath))));
+    }
 
+    @SneakyThrows
+    public static TokenStream<Character, PositionInText> fileToTokenStream(File file) {
+        return new SimpleTokenStreamImpl<>(new InputStreamTokenGenerator(new FileInputStream(file)));
+    }
+
+    @SneakyThrows
+    public static TokenStream<Character, PositionInText> inputStreamToTokenStream(InputStream inputStream) {
+        return new SimpleTokenStreamImpl<>(new InputStreamTokenGenerator(inputStream));
+    }
 
     public static <S extends TokenStream,P> Parser<S, List, P> list(Parser elemParser) {
         return list(elemParser, null);
@@ -60,7 +76,7 @@ public class TextParsers {
     public static Parser<TokenStream<Character, PositionInText>, Integer, PositionInText> integer() {
         return charSeq(
                 "Integer",
-                (sb,ch) -> Character.isDigit(ch),
+                Character::isDigit,
                 sb -> Integer.parseInt(sb.toString()),
                 "A digit was expected"
         );
@@ -69,7 +85,7 @@ public class TextParsers {
     public static Parser<TokenStream<Character, PositionInText>,String,PositionInText> space() {
         return charSeq(
                 "Whitespace",
-                (sb,ch) -> Character.isWhitespace(ch),
+                Character::isWhitespace,
                 sb -> sb.toString(),
                 "A whitespace was expected"
         );
@@ -113,38 +129,34 @@ public class TextParsers {
 
     public static <R> Parser<TokenStream<Character, PositionInText>, R, PositionInText> charSeq(
             String parserName,
-            BiFunction<StringBuffer,Character,Boolean> decide,
-            Function<StringBuffer,R> getResult,
+            Function<Character,Boolean> decide,
+            Function<StringBuilder,R> getResult,
             String errorMsg
     ) {
-        return charSeq(() -> new TokenAccumulator<Character, R>() {
-            private StringBuffer sb = new StringBuffer();
-            private boolean finished = false;
+        return charSeq(
+                parserName,
+                () -> new StringBuilder(),
+                (sb,ch,isLast) -> {
+                    boolean finished = false;
+                    if (decide.apply(ch)) {
+                        sb.append(ch);
+                    } else {
+                        finished = true;
+                    }
+                    return (isLast || finished) ? sb.length() : -1;
+                },
+                sb -> getResult.apply(sb),
+                errorMsg
+        );
+    }
 
-            @Override
-            public String getParserName() {
-                return parserName;
-            }
-
-            @Override
-            public int accept(Character ch, boolean isLast) {
-                if (decide.apply(sb,ch)) {
-                    sb.append(ch);
-                } else {
-                    finished = true;
-                }
-                return (isLast || finished) ? sb.length() : -1;
-            }
-
-            @Override
-            public R getResult() {
-                return getResult.apply(sb);
-            }
-
-            @Override
-            public String getErrorMessage() {
-                return errorMsg;
-            }
-        });
+    public static <R,C> Parser<TokenStream<Character, PositionInText>, R, PositionInText> charSeq(
+            String parserName,
+            Supplier<C> contextConstructor,
+            CharProcessor<C> processor,
+            Function<C,R> getResult,
+            String errorMsg
+    ) {
+        return tokenSeq(parserName, contextConstructor, processor, getResult, errorMsg);
     }
 }

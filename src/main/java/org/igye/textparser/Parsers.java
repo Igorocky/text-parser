@@ -1,18 +1,13 @@
 package org.igye.textparser;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Parsers {
-
-    @lombok.SneakyThrows
-    public static TokenStream<Character, PositionInText> inputStreamToTokenStream(InputStream inputStream) {
-        return new SimpleTokenStreamImpl<>(new InputStreamTokenGenerator(inputStream));
-    }
 
     public static <P,S extends TokenStream> Parser<S, ?, P> or(Parser<S,?,P>... parsers) {
         return tokens -> {
@@ -147,6 +142,38 @@ public class Parsers {
                 );
             }
         };
+    }
+
+    public static <C,T,R> Parser<TokenStream<Character, PositionInText>, R, PositionInText> tokenSeq(
+            String parserName,
+            Supplier<C> contextConstructor,
+            TokenProcessor<C,T> processor,
+            Function<C,R> getResult,
+            String errorMsg
+    ) {
+        return tokenSeq(() -> new TokenAccumulator<T, R>() {
+            private C ctx = contextConstructor.get();
+
+            @Override
+            public String getParserName() {
+                return parserName;
+            }
+
+            @Override
+            public int accept(T tokenValue, boolean isLast) {
+                return processor.process(ctx, tokenValue, isLast);
+            }
+
+            @Override
+            public R getResult() {
+                return getResult.apply(ctx);
+            }
+
+            @Override
+            public String getErrorMessage() {
+                return errorMsg;
+            }
+        });
     }
 
     private static <P> PositionRange<P> getPositionRange(List<ParseResult> parseResults) {

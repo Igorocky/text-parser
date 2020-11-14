@@ -1,6 +1,7 @@
 package org.igye.textparser;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class ParseResult<S extends TokenStream, R, P> {
@@ -27,6 +28,12 @@ public class ParseResult<S extends TokenStream, R, P> {
 
     public <R2> ParseResult<S, R2, P> map(Function<R,R2> mapper) {
         return new ParseResult<>(result.map(mapper), positionRange, failureReason, remainingTokens);
+    }
+
+    public <R2> ParseResult<S, R2, P> map(BiFunction<R, PositionRange<P>, R2> mapper) {
+        return new ParseResult<>(
+                result.map(o -> mapper.apply(o, positionRange)), positionRange, failureReason, remainingTokens
+        );
     }
 
     public boolean isSuccess() {
