@@ -2,24 +2,24 @@ package org.igye.textparser;
 
 import java.util.function.Supplier;
 
-public class SimpleTokenStreamImpl<V,P> implements TokenStream<V,P> {
-    private final Supplier<Token<V,P>[]> generator;
-    private final Token<V,P>[] elems;
+public class SimpleTokenStreamImpl<T,P> implements TokenStream<T,P> {
+    private final Supplier<Token<T,P>[]> generator;
+    private final Token<T,P>[] elems;
     private final int idx;
-    private TokenStream<V,P> tail;
+    private TokenStream<T,P> tail;
 
-    public SimpleTokenStreamImpl(Supplier<Token<V,P>[]> generator) {
+    public SimpleTokenStreamImpl(Supplier<Token<T,P>[]> generator) {
         this(generator, generator.get(), 0);
     }
 
-    private SimpleTokenStreamImpl(Supplier<Token<V,P>[]> generator, Token<V,P>[] elems, int idx) {
+    private SimpleTokenStreamImpl(Supplier<Token<T,P>[]> generator, Token<T,P>[] elems, int idx) {
         this.generator = generator;
         this.elems = elems;
         this.idx = idx;
     }
 
     @Override
-    public Token<V,P> head() {
+    public Token<T,P> head() {
         if (idx < elems.length) {
             return elems[idx];
         } else {
@@ -28,7 +28,7 @@ public class SimpleTokenStreamImpl<V,P> implements TokenStream<V,P> {
     }
 
     @Override
-    public TokenStream<V,P> tail() {
+    public TokenStream<T,P> tail() {
         if (isEmpty()) {
             return this;
         } else {

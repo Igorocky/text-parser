@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Parsers {
@@ -110,6 +111,40 @@ public class Parsers {
                 );
             } else {
                 return ParseResult.failure("End of token stream reached", tokens);
+            }
+        };
+    }
+
+    public static <T,P,S extends TokenStream, R> Parser<S, R, P> tokenSeq(
+            Supplier<TokenAccumulator<T, R>> tokenAccumulatorConstructor) {
+        return tokens -> {
+            if (tokens.isEmpty()) {
+                return ParseResult.failure("End of input.", tokens);
+            }
+            TokenAccumulator<T, R> tokenAccumulator = tokenAccumulatorConstructor.get();
+            List<TokenStream<T, P>> processed = new ArrayList<>();
+            TokenStream<T, P> remaining = tokens;
+            int resultLength;
+            do {
+                processed.add(remaining);
+                remaining = remaining.tail();
+                resultLength = tokenAccumulator.accept(processed.get(processed.size()-1).head().value(), remaining.isEmpty());
+            } while (remaining.isNotEmpty() && resultLength < 0);
+            if (resultLength < 0) {
+                return ParseResult.failure(tokenAccumulator.getParserName() + " failed to parse", tokens);
+            } else if (resultLength == 0) {
+                return ParseResult.failure(tokenAccumulator.getErrorMessage(), tokens);
+            } else {
+                final TokenStream<T, P> start = processed.get(0);
+                final TokenStream<T, P> end = processed.get(resultLength - 1);
+                return ParseResult.success(
+                        tokenAccumulator.getResult(),
+                        (PositionRange) new PositionRange<>(
+                                start.head().position(),
+                                end.head().position()
+                        ),
+                        end.tail()
+                );
             }
         };
     }

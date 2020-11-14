@@ -6,11 +6,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.igye.textparser.Parsers.and;
 import static org.igye.textparser.Parsers.opt;
 import static org.igye.textparser.Parsers.rep;
 import static org.igye.textparser.Parsers.success;
+import static org.igye.textparser.Parsers.tokenSeq;
 
 public class TextParsers {
 
@@ -53,48 +57,22 @@ public class TextParsers {
         };
     }
 
-    public static Parser<TokenStream<Character, PositionInText>,Integer,PositionInText> integer() {
-        return tokens -> {
-            TokenStream<Character, PositionInText> remaining = tokens;
-            StringBuffer chars = new StringBuffer();
-            Token<Character, PositionInText> lastToken = null;
-            while (remaining.isNotEmpty() && Character.isDigit(remaining.head().value())) {
-                lastToken = remaining.head();
-                chars.append(lastToken.value());
-                remaining = remaining.tail();
-            }
-            if (remaining == tokens) {
-                return ParseResult.failure("A digit was expected", tokens);
-            } else {
-                return ParseResult.success(
-                        Integer.parseInt(chars.toString()),
-                        new PositionRange<>(tokens.head().position(), lastToken.position()),
-                        remaining
-                );
-            }
-        };
+    public static Parser<TokenStream<Character, PositionInText>, Integer, PositionInText> integer() {
+        return charSeq(
+                "Integer",
+                (sb,ch) -> Character.isDigit(ch),
+                sb -> Integer.parseInt(sb.toString()),
+                "A digit was expected"
+        );
     }
 
     public static Parser<TokenStream<Character, PositionInText>,String,PositionInText> space() {
-        return tokens -> {
-            TokenStream<Character, PositionInText> remaining = tokens;
-            StringBuffer chars = new StringBuffer();
-            Token<Character, PositionInText> lastToken = null;
-            while (remaining.isNotEmpty() && Character.isWhitespace(remaining.head().value())) {
-                lastToken = remaining.head();
-                chars.append(lastToken.value());
-                remaining = remaining.tail();
-            }
-            if (remaining == tokens) {
-                return ParseResult.failure("A whitespace was expected", tokens);
-            } else {
-                return ParseResult.success(
-                        chars.toString(),
-                        new PositionRange<>(tokens.head().position(), lastToken.position()),
-                        remaining
-                );
-            }
-        };
+        return charSeq(
+                "Whitespace",
+                (sb,ch) -> Character.isWhitespace(ch),
+                sb -> sb.toString(),
+                "A whitespace was expected"
+        );
     }
 
     public static Parser<TokenStream<Character, PositionInText>,String,PositionInText> literal(String value) {
@@ -117,5 +95,47 @@ public class TextParsers {
                 );
             }
         };
+    }
+
+    public static <S extends TokenStream, R> Parser<S, R, PositionInText> charSeq(
+            Supplier<TokenAccumulator<Character, R>> tokenAccumulatorConstructor) {
+        return tokenSeq(tokenAccumulatorConstructor);
+    }
+
+    public static <R> Parser<TokenStream<Character, PositionInText>, R, PositionInText> charSeq(
+            String parserName,
+            BiFunction<StringBuffer,Character,Boolean> decide,
+            Function<StringBuffer,R> getResult,
+            String errorMsg
+    ) {
+        return charSeq(() -> new TokenAccumulator<Character, R>() {
+            private StringBuffer sb = new StringBuffer();
+            private boolean finished = false;
+
+            @Override
+            public String getParserName() {
+                return parserName;
+            }
+
+            @Override
+            public int accept(Character ch, boolean isLast) {
+                if (decide.apply(sb,ch)) {
+                    sb.append(ch);
+                } else {
+                    finished = true;
+                }
+                return (isLast || finished) ? sb.length() : -1;
+            }
+
+            @Override
+            public R getResult() {
+                return getResult.apply(sb);
+            }
+
+            @Override
+            public String getErrorMessage() {
+                return errorMsg;
+            }
+        });
     }
 }

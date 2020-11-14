@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 public class TextParsersTest {
 
     @Test
-    public void integer_parsesIntegers() {
+    public void integer_parsesIntegersInsideOfText() {
         //when
         val parseResult = TextParsers.integer().parse(
                 tokenStreamFromString("639:12")
@@ -33,6 +33,23 @@ public class TextParsersTest {
         //then
         Assert.assertEquals(639, parseResult.getResult().get().intValue());
         Assert.assertEquals(':', parseResult.getRemainingTokens().head().value().charValue());
+        final PositionRange<PositionInText> positionRange = parseResult.getPositionRange();
+        Assert.assertEquals(0, positionRange.getStart().getLine());
+        Assert.assertEquals(0, positionRange.getStart().getCol());
+        Assert.assertEquals(0, positionRange.getEnd().getLine());
+        Assert.assertEquals(2, positionRange.getEnd().getCol());
+    }
+
+    @Test
+    public void integer_parsesIntegersAtTheEndOfText() {
+        //when
+        val parseResult = TextParsers.integer().parse(
+                tokenStreamFromString("639")
+        );
+
+        //then
+        Assert.assertEquals(639, parseResult.getResult().get().intValue());
+        Assert.assertTrue(parseResult.getRemainingTokens().isEmpty());
         final PositionRange<PositionInText> positionRange = parseResult.getPositionRange();
         Assert.assertEquals(0, positionRange.getStart().getLine());
         Assert.assertEquals(0, positionRange.getStart().getCol());
