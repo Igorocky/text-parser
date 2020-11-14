@@ -1,25 +1,18 @@
 package org.igye.metamath;
 
-import org.igye.textparser.ParseResult;
-import org.igye.textparser.PositionInText;
-import org.igye.textparser.TextParsers;
-import org.igye.textparser.TokenStream;
+import org.igye.common.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class MetamathParsersTest {
     @Test
-    public void preprocessed_shouldParseMetamathFile() {
-        //given
-        String pathToFile = "D:\\Install\\metamath\\metamath\\set.mm";
-
+    public void preprocess_shouldPreprocessMetamathFile() {
         //when
-        final ParseResult<TokenStream<Character, PositionInText>, Preprocessed, PositionInText> parseResult =
-                MetamathParsers.preprocessed().parse(TextParsers.fileToTokenStream(pathToFile));
+        final Preprocessed preprocessed = MetamathParsers.preprocess(Utils.inputStreamFromClasspath("/peano.mm"));
 
         //then
-        Assert.assertTrue(parseResult.get().getCode().size() > 0);
-        Assert.assertTrue(parseResult.get().getComments().size() > 0);
+        Assert.assertTrue(preprocessed.getCode().size() > 0);
+        Assert.assertTrue(preprocessed.getComments().size() > 0);
     }
 
 }

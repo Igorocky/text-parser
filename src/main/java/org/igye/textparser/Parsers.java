@@ -1,11 +1,16 @@
 package org.igye.textparser;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class Parsers {
 
@@ -174,6 +179,46 @@ public class Parsers {
                 return errorMsg;
             }
         });
+    }
+
+    public static <P, S extends TokenStream, R> Stream<ParseResult<S, R, P>> stream(
+            Parser<S, R, P> parser, Supplier<S> stream) {
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(iterator(parser, stream), Spliterator.ORDERED),
+                false
+        );
+    }
+
+    public static <P,S extends TokenStream,R> Iterator<ParseResult<S, R, P>> iterator(
+            Parser<S,R,P> parser, Supplier<S> streamSupplier) {
+        return new Iterator<ParseResult<S, R, P>>() {
+            private S remainingTokens;
+            private ParseResult<S, R, P> lastResult;
+
+            @Override
+            public boolean hasNext() {
+                if (remainingTokens == null) {
+                    remainingTokens = streamSupplier.get();
+                }
+                if (remainingTokens.isEmpty()) {
+                    return false;
+                }
+                if (lastResult == null) {
+                    return true;
+                }
+                return lastResult.isSuccess();
+            }
+
+            @Override
+            public ParseResult<S, R, P> next() {
+                if (remainingTokens == null) {
+                    remainingTokens = streamSupplier.get();
+                }
+                lastResult = parser.parse(remainingTokens);
+                remainingTokens = lastResult.getRemainingTokens();
+                return lastResult;
+            }
+        };
     }
 
     private static <P> PositionRange<P> getPositionRange(List<ParseResult> parseResults) {
