@@ -76,25 +76,34 @@ public class TextParsers {
     }
 
     public static Parser<TokenStream<Character, PositionInText>,String,PositionInText> literal(String value) {
-        return tokens -> {
-            TokenStream<Character, PositionInText> remaining = tokens;
-            int idx = -1;
-            Token<Character, PositionInText> lastToken = null;
-            while (remaining.isNotEmpty() && idx+1 < value.length() && remaining.head().value().equals(value.charAt(idx+1))) {
-                lastToken = remaining.head();
-                idx++;
-                remaining = remaining.tail();
+        return charSeq(() -> new TokenAccumulator<Character, String>() {
+            private int charsRead = 0;
+
+            @Override
+            public String getParserName() {
+                return "Literal '" + value + "'";
             }
-            if (idx != value.length()-1) {
-                return ParseResult.failure("'" + value + "' literal expected", tokens);
-            } else {
-                return ParseResult.success(
-                        value,
-                        new PositionRange<>(tokens.head().position(), lastToken.position()),
-                        remaining
-                );
+
+            @Override
+            public int accept(Character ch, boolean isLast) {
+                if (ch.equals(value.charAt(charsRead))) {
+                    charsRead++;
+                } else {
+                    return 0;
+                }
+                return charsRead == value.length() ? charsRead : -1;
             }
-        };
+
+            @Override
+            public String getResult() {
+                return value;
+            }
+
+            @Override
+            public String getErrorMessage() {
+                return "'" + value + "' literal expected";
+            }
+        });
     }
 
     public static <S extends TokenStream, R> Parser<S, R, PositionInText> charSeq(
