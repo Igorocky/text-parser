@@ -10,13 +10,25 @@ import org.igye.textparser.TokenStream;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
+import static org.igye.textparser.Parsers.and;
 import static org.igye.textparser.Parsers.or;
 import static org.igye.textparser.Parsers.stream;
 import static org.igye.textparser.TextParsers.charSeq;
+import static org.igye.textparser.TextParsers.list;
+import static org.igye.textparser.TextParsers.literal;
+import static org.igye.textparser.TextParsers.nonSpace;
+import static org.igye.textparser.TextParsers.space;
 import static org.igye.textparser.TextParsers.spacePadded;
 
 public class MetamathParsers {
+
+    public static final HashSet<String> KEYWORDS = new HashSet<>(Arrays.asList("${", "$}", "$c", "$v", "$f", "$e", "$d",
+            "$a", "$p", "$.", "$=", "$(", "$)", "$[", "$]"));
+
     @SneakyThrows
     public static Preprocessed preprocess(String filePath) {
         return preprocess(new FileInputStream(filePath));
@@ -50,7 +62,44 @@ public class MetamathParsers {
         }
     }
 
-    public static Parser<TokenStream<Character, PositionInText>,Comment,PositionInText> comment() {
+    protected static Parser<TokenStream<Character, PositionInText>, ListStatement, PositionInText> nonLabeledListStatement() {
+        return (Parser) spacePadded(
+                and(
+                        and(literal("$"), or(literal("c"), literal("v"), literal("d"))),
+                        list(nonSpace("$.")),
+                        literal("$.")
+                )
+        )
+                .map((list, pos) -> ListStatement.builder()
+                        .begin(pos.getStart())
+                        .end(pos.getEnd())
+                        .type(ListStatementType.fromString(((List<String>) ((List<Object>) list).get(0)).get(1)))
+                        .symbols(((List<String>) ((List<Object>) list).get(1)))
+                        .build()
+                );
+    }
+
+    protected static Parser<TokenStream<Character, PositionInText>, ListStatement, PositionInText> labeledListStatement() {
+        return (Parser) spacePadded(
+                and(
+                        nonSpace(KEYWORDS),
+                        space(),
+                        and(literal("$"), or(literal("f"), literal("e"), literal("a"))),
+                        list(nonSpace("$.")),
+                        literal("$.")
+                )
+        )
+                .map((list, pos) -> ListStatement.builder()
+                        .begin(pos.getStart())
+                        .end(pos.getEnd())
+                        .label((String) ((List<Object>) list).get(0))
+                        .type(ListStatementType.fromString(((List<String>) ((List<Object>) list).get(2)).get(1)))
+                        .symbols(((List<String>) ((List<Object>) list).get(3)))
+                        .build()
+                );
+    }
+
+    private static Parser<TokenStream<Character, PositionInText>,Comment,PositionInText> comment() {
         return charSeq(
                 "Metamath comment",
                 () -> new StringBuilder(),
@@ -88,7 +137,7 @@ public class MetamathParsers {
         );
     }
 
-    public static Parser<TokenStream<Character, PositionInText>,NonComment,PositionInText> nonComment() {
+    private static Parser<TokenStream<Character, PositionInText>,NonComment,PositionInText> nonComment() {
         return charSeq(
                 "Metamath non-comment",
                 () -> new StringBuilder(),

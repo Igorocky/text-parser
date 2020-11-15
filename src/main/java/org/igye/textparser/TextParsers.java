@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -88,6 +89,38 @@ public class TextParsers {
                 Character::isWhitespace,
                 sb -> sb.toString(),
                 "A whitespace was expected"
+        );
+    }
+
+    public static Parser<TokenStream<Character, PositionInText>,String,PositionInText> nonSpace() {
+        return nonSpace(Collections.emptySet());
+    }
+
+    public static Parser<TokenStream<Character, PositionInText>,String,PositionInText> nonSpace(String exclusion) {
+        return nonSpace(Collections.singleton(exclusion));
+    }
+
+    public static Parser<TokenStream<Character, PositionInText>,String,PositionInText> nonSpace(Set<String> exclusions) {
+        return charSeq(
+                "Non-whitespace",
+                () -> new StringBuilder(),
+                (sb,ch,last) -> {
+                    if (!Character.isWhitespace(ch)) {
+                        sb.append(ch);
+                        return -1;
+                    } else if (sb.length() == 0) {
+                        return 0;
+                    } else {
+                        String str = sb.toString();
+                        if (exclusions.contains(str)) {
+                            return 0;
+                        } else {
+                            return str.length();
+                        }
+                    }
+                },
+                sb -> sb.toString(),
+                "A non-whitespace was expected"
         );
     }
 
