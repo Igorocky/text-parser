@@ -18,4 +18,5 @@ public class ListStatement {
     private ListStatementType type;
     private String label;
     private List<String> symbols;
+    private List<String> proof;
 }

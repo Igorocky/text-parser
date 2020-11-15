@@ -49,6 +49,21 @@ public class MetamathParsersTest {
         assertEquals(Arrays.asList("|-","ph"), statement.getSymbols());
     }
 
+    @Test
+    public void theoremStatement_shouldParseTheoremStatement() {
+        //when
+        ListStatement statement = MetamathParsers.theoremStatement().parse(
+                tokenStreamFromString("hlhilphllem $p |- ( ph -> U e. PreHil ) $=\n" +
+                        "        ( va vb vc vd $.")
+        ).get();
+
+        //then
+        assertEquals("hlhilphllem", statement.getLabel());
+        assertEquals(ListStatementType.THEOREM, statement.getType());
+        assertEquals(Arrays.asList("|-","(","ph","->","U","e.","PreHil",")"), statement.getSymbols());
+        assertEquals(Arrays.asList("(", "va", "vb", "vc", "vd"), statement.getProof());
+    }
+
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {
         return inputStreamToTokenStream(new ByteArrayInputStream(str.getBytes()));
     }

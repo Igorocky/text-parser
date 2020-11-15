@@ -99,6 +99,29 @@ public class MetamathParsers {
                 );
     }
 
+    protected static Parser<TokenStream<Character, PositionInText>, ListStatement, PositionInText> theoremStatement() {
+        return (Parser) spacePadded(
+                and(
+                        nonSpace(KEYWORDS),
+                        space(),
+                        literal("$p"),
+                        list(nonSpace("$=")),
+                        literal("$="),
+                        list(nonSpace("$.")),
+                        literal("$.")
+                )
+        )
+                .map((list, pos) -> ListStatement.builder()
+                        .begin(pos.getStart())
+                        .end(pos.getEnd())
+                        .label((String) ((List<Object>) list).get(0))
+                        .type(ListStatementType.THEOREM)
+                        .symbols(((List<String>) ((List<Object>) list).get(3)))
+                        .proof(((List<String>) ((List<Object>) list).get(5)))
+                        .build()
+                );
+    }
+
     private static Parser<TokenStream<Character, PositionInText>,Comment,PositionInText> comment() {
         return charSeq(
                 "Metamath comment",
