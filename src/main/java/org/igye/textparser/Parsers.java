@@ -86,6 +86,16 @@ public class Parsers {
         };
     }
 
+    public static <P, S extends TokenStream, R> Parser<S, R, P> rec(Supplier<Parser<S, R, P>> parserSupplier) {
+        final Parser<S, R, P>[] parser = new Parser[1];
+        return tokenks -> {
+            if (parser[0] == null) {
+                parser[0] = parserSupplier.get();
+            }
+            return parser[0].parse(tokenks);
+        };
+    }
+
     public static <P,S extends TokenStream, R> Parser<S, Optional<R>, P> opt(Parser<S, R, P> parser) {
         return tokens -> {
             final ParseResult<S, R, P> parseResult = parser.parse((S) tokens);

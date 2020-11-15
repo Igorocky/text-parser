@@ -16,6 +16,7 @@ import java.util.List;
 
 import static org.igye.textparser.Parsers.and;
 import static org.igye.textparser.Parsers.or;
+import static org.igye.textparser.Parsers.rec;
 import static org.igye.textparser.Parsers.stream;
 import static org.igye.textparser.TextParsers.charSeq;
 import static org.igye.textparser.TextParsers.list;
@@ -62,14 +63,26 @@ public class MetamathParsers {
         }
     }
 
+    protected static Parser<TokenStream<Character, PositionInText>, BlockStatement, PositionInText> blockStatement() {
+        return (Parser) spacePadded(and(
+                literal("${"),
+                list(or(nonLabeledListStatement(),labeledListStatement(),theoremStatement(),rec(() -> blockStatement()))),
+                literal("$}")
+        ))
+                .map((list, pos) -> BlockStatement.builder()
+                        .begin(pos.getStart())
+                        .end(pos.getEnd())
+                        .content(((List<List<Statement>>) list).get(1))
+                        .build()
+                );
+    }
+
     protected static Parser<TokenStream<Character, PositionInText>, ListStatement, PositionInText> nonLabeledListStatement() {
-        return (Parser) spacePadded(
-                and(
-                        and(literal("$"), or(literal("c"), literal("v"), literal("d"))),
-                        list(nonSpace("$.")),
-                        literal("$.")
-                )
-        )
+        return (Parser) spacePadded(and(
+                and(literal("$"), or(literal("c"), literal("v"), literal("d"))),
+                list(nonSpace("$.")),
+                literal("$.")
+        ))
                 .map((list, pos) -> ListStatement.builder()
                         .begin(pos.getStart())
                         .end(pos.getEnd())
@@ -80,15 +93,13 @@ public class MetamathParsers {
     }
 
     protected static Parser<TokenStream<Character, PositionInText>, ListStatement, PositionInText> labeledListStatement() {
-        return (Parser) spacePadded(
-                and(
-                        nonSpace(KEYWORDS),
-                        space(),
-                        and(literal("$"), or(literal("f"), literal("e"), literal("a"))),
-                        list(nonSpace("$.")),
-                        literal("$.")
-                )
-        )
+        return (Parser) spacePadded(and(
+                nonSpace(KEYWORDS),
+                space(),
+                and(literal("$"), or(literal("f"), literal("e"), literal("a"))),
+                list(nonSpace("$.")),
+                literal("$.")
+        ))
                 .map((list, pos) -> ListStatement.builder()
                         .begin(pos.getStart())
                         .end(pos.getEnd())
@@ -100,17 +111,15 @@ public class MetamathParsers {
     }
 
     protected static Parser<TokenStream<Character, PositionInText>, ListStatement, PositionInText> theoremStatement() {
-        return (Parser) spacePadded(
-                and(
-                        nonSpace(KEYWORDS),
-                        space(),
-                        literal("$p"),
-                        list(nonSpace("$=")),
-                        literal("$="),
-                        list(nonSpace("$.")),
-                        literal("$.")
-                )
-        )
+        return (Parser) spacePadded(and(
+                nonSpace(KEYWORDS),
+                space(),
+                literal("$p"),
+                list(nonSpace("$=")),
+                literal("$="),
+                list(nonSpace("$.")),
+                literal("$.")
+        ))
                 .map((list, pos) -> ListStatement.builder()
                         .begin(pos.getStart())
                         .end(pos.getEnd())

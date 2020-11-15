@@ -64,6 +64,25 @@ public class MetamathParsersTest {
         assertEquals(Arrays.asList("(", "va", "vb", "vc", "vd"), statement.getProof());
     }
 
+    @Test
+    public void blockStatement_shouldParseBlockStatement() {
+        //when
+        BlockStatement statement = MetamathParsers.blockStatement().parse(tokenStreamFromString(
+                "${\n" +
+                        "    dummylink.1 $e |- ph $.\n" +
+                        "    $v |- ps $.\n" +
+                        "    \n" +
+                        "    dummylink $p |- ph $=\n" +
+                        "      (  ) C $.\n" +
+                        "  $}"
+        )).get();
+
+        //then
+        assertEquals(ListStatementType.ESSENTIAL, ((ListStatement) statement.getContent().get(0)).getType());
+        assertEquals(ListStatementType.VARIABLE, ((ListStatement) statement.getContent().get(1)).getType());
+        assertEquals(ListStatementType.THEOREM, ((ListStatement) statement.getContent().get(2)).getType());
+    }
+
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {
         return inputStreamToTokenStream(new ByteArrayInputStream(str.getBytes()));
     }

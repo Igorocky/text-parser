@@ -12,11 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ListStatement implements Statement {
+public class BlockStatement implements Statement {
     private PositionInText begin;
     private PositionInText end;
-    private ListStatementType type;
-    private String label;
-    private List<String> symbols;
-    private List<String> proof;
+    private List<Statement> content;
 }
