@@ -19,7 +19,6 @@ public class MetamathParsersTest {
         //when
         List<Statement> statements = MetamathParsers.parse(Utils.inputStreamFromClasspath("/peano.mm"));
 //        List<Statement> statements = MetamathParsers.parse("D:\\Install\\metamath\\metamath\\set.mm");
-//        final Preprocessed preprocessed = MetamathParsers.preprocess("D:\\Install\\metamath\\metamath\\set.mm");
 
         //then
         assertTrue(statements.size() > 0);
@@ -104,6 +103,17 @@ public class MetamathParsersTest {
         assertEquals(ListStatementType.ESSENTIAL, ((ListStatement) statement.getContent().get(0)).getType());
         assertEquals(ListStatementType.VARIABLE, ((ListStatement) statement.getContent().get(1)).getType());
         assertEquals(ListStatementType.THEOREM, ((ListStatement) statement.getContent().get(2)).getType());
+    }
+
+    @Test
+    public void blockStatement_shouldParseEmptyBlockStatement() {
+        //when
+        BlockStatement statement = MetamathParsers.blockStatement().parse(tokenStreamFromString(
+                "${\n  $}"
+        )).get();
+
+        //then
+        assertTrue(statement.getContent().isEmpty());
     }
 
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {

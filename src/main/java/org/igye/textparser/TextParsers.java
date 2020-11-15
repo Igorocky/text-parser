@@ -44,16 +44,16 @@ public class TextParsers {
     public static <S extends TokenStream,P> Parser<S, List, P> list(Parser elemParser, Parser sepParser) {
         Parser sep = spacePadded(sepParser == null ? success() : sepParser);
         Parser elem = spacePadded(elemParser);
-        Parser<TokenStream, List, Object> listParser = and(opt(elem), rep(and(sep, elem)));
+        Parser<TokenStream, List, Object> listParser = and(opt(space()),opt(elem), rep(and(sep, elem)));
         return tokens -> {
             final ParseResult<TokenStream, List, Object> parseResult = listParser.parse(tokens);
-            if (!((Optional<Object>) parseResult.get().get(0)).isPresent()) {
+            final List andList = parseResult.get();
+            if (!((Optional<Object>) andList.get(1)).isPresent()) {
                 return (ParseResult) parseResult.map(o -> Collections.emptyList());
             } else {
                 List<Object> result = new ArrayList<>();
-                final List andList = parseResult.get();
-                result.add(((Optional<Object>) andList.get(0)).get());
-                final List<List<Object>> repList = (List<List<Object>>) parseResult.get().get(1);
+                result.add(((Optional<Object>) andList.get(1)).get());
+                final List<List<Object>> repList = (List<List<Object>>) andList.get(2);
                 for (List<Object> repAndList : repList) {
                     result.add(repAndList.get(1));
                 }

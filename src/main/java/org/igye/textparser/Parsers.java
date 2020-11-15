@@ -100,9 +100,12 @@ public class Parsers {
     public static <P, S extends TokenStream, R> Parser<S, R, P> debug(String parserName, Parser<S, R, P> parser) {
         return tokens -> {
             final ParseResult<S, R, P> parseResult = parser.parse(tokens);
-            final String context = " - " + parserName + ":" + prefix(30, tokens);
+            final String context = " - " + parserName
+                    + ":" + prefix(30, tokens)
+                    + " ### Remaining:" + prefix(10, parseResult.getRemainingTokens());
             if (parseResult.isSuccess()) {
-                System.out.println("success" + context);
+                final PositionRange<P> pos = parseResult.getPositionRange();
+                System.out.println("success " + "[" + pos.getStart() + "|" + pos.getEnd() + "]" + context);
             } else {
                 System.out.println("fail   " + context);
             }
@@ -266,12 +269,17 @@ public class Parsers {
     }
 
     private static String prefix(int length, TokenStream stream) {
-        final StringBuilder sb = new StringBuilder();
-        while (stream.isNotEmpty() && length > 0) {
-            sb.append(stream.head().value().toString());
-            stream = stream.tail();
-            length--;
+        if (stream.isEmpty()) {
+            return "[empty]";
+        } else {
+            final StringBuilder sb = new StringBuilder();
+            sb.append("[" + stream.head().position().toString() + "]");
+            while (stream.isNotEmpty() && length > 0) {
+                sb.append(stream.head().value().toString());
+                stream = stream.tail();
+                length--;
+            }
+            return sb.toString();
         }
-        return sb.toString();
     }
 }

@@ -179,6 +179,22 @@ public class TextParsersTest {
         assertEquals(Arrays.asList(93,"b",17), listParser.parse(tokenStreamFromString("  93  b  17 ")).get());
     }
 
+    @Test
+    public void list_shouldParseEmptyListsCorrectly_whenSeparatorIsNotSpecified() {
+        //given
+        val listParser = and(
+                literal("("),
+                list(integer()),
+                literal(")")
+        );
+
+        //then
+        assertEquals(Collections.emptyList(), listParser.parse(tokenStreamFromString("()")).get().get(1));
+        assertEquals(Collections.emptyList(), listParser.parse(tokenStreamFromString("(   )")).get().get(1));
+        assertEquals(Collections.emptyList(), listParser.parse(tokenStreamFromString("(\n)")).get().get(1));
+        assertEquals(Collections.emptyList(), listParser.parse(tokenStreamFromString("(  \n  )")).get().get(1));
+    }
+
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {
         return inputStreamToTokenStream(new ByteArrayInputStream(str.getBytes()));
     }
