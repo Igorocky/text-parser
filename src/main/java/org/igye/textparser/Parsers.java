@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -96,6 +97,19 @@ public class Parsers {
         };
     }
 
+    public static <P, S extends TokenStream, R> Parser<S, R, P> debug(String parserName, Parser<S, R, P> parser) {
+        return tokens -> {
+            final ParseResult<S, R, P> parseResult = parser.parse(tokens);
+            final String context = " - " + parserName + ":" + prefix(30, tokens);
+            if (parseResult.isSuccess()) {
+                System.out.println("success" + context);
+            } else {
+                System.out.println("fail   " + context);
+            }
+            return parseResult;
+        };
+    }
+
     public static <P,S extends TokenStream, R> Parser<S, Optional<R>, P> opt(Parser<S, R, P> parser) {
         return tokens -> {
             final ParseResult<S, R, P> parseResult = parser.parse((S) tokens);
@@ -163,11 +177,12 @@ public class Parsers {
             String parserName,
             Supplier<C> contextConstructor,
             TokenProcessor<C,T> processor,
-            Function<C,R> getResult,
+            BiFunction<C,Integer,R> getResult,
             String errorMsg
     ) {
         return tokenSeq(() -> new TokenAccumulator<T, R>() {
             private C ctx = contextConstructor.get();
+            private int resultLength;
 
             @Override
             public String getParserName() {
@@ -176,12 +191,12 @@ public class Parsers {
 
             @Override
             public int accept(T tokenValue, boolean isLast) {
-                return processor.process(ctx, tokenValue, isLast);
+                return (resultLength = processor.process(ctx, tokenValue, isLast));
             }
 
             @Override
             public R getResult() {
-                return getResult.apply(ctx);
+                return getResult.apply(ctx,resultLength);
             }
 
             @Override
@@ -248,5 +263,15 @@ public class Parsers {
             }
         }
         return new PositionRange(startPosition, endPosition);
+    }
+
+    private static String prefix(int length, TokenStream stream) {
+        final StringBuilder sb = new StringBuilder();
+        while (stream.isNotEmpty() && length > 0) {
+            sb.append(stream.head().value().toString());
+            stream = stream.tail();
+            length--;
+        }
+        return sb.toString();
     }
 }

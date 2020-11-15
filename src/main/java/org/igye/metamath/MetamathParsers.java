@@ -1,20 +1,26 @@
 package org.igye.metamath;
 
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.tuple.Pair;
 import org.igye.textparser.ParseResult;
 import org.igye.textparser.Parser;
 import org.igye.textparser.ParserException;
 import org.igye.textparser.PositionInText;
+import org.igye.textparser.SimpleTokenStreamImpl;
+import org.igye.textparser.StringsTokenGenerator;
 import org.igye.textparser.TextParsers;
 import org.igye.textparser.TokenStream;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.igye.textparser.Parsers.and;
+import static org.igye.textparser.Parsers.debug;
 import static org.igye.textparser.Parsers.or;
 import static org.igye.textparser.Parsers.rec;
 import static org.igye.textparser.Parsers.stream;
@@ -31,24 +37,49 @@ public class MetamathParsers {
             "$a", "$p", "$.", "$=", "$(", "$)", "$[", "$]"));
 
     @SneakyThrows
-    public static Preprocessed preprocess(String filePath) {
+    public static List<Statement> parse(String filePath) {
+        return parse(new FileInputStream(filePath));
+    }
+
+    public static List<Statement> parse(InputStream inputStream) {
+        final Preprocessed preprocessed = preprocess(inputStream);
+        final ArrayList<Statement> statements = new ArrayList<>();
+        final ParseResult[] lastResult = new ParseResult[1];
+        stream(
+                statement(),
+                () -> new SimpleTokenStreamImpl(new StringsTokenGenerator(
+                        preprocessed.getCode().stream()
+                        .map(code -> Pair.of(code.getBegin(), code.getText()))
+                        .collect(Collectors.toList())
+                ))
+        ).forEach(partParseResult -> {
+            lastResult[0] = (ParseResult) partParseResult;
+            if (lastResult[0].isSuccess()) {
+                statements.add((Statement) lastResult[0].get());
+            }
+        });
+        if (lastResult[0].isFailure()) {
+            final PositionInText position = (PositionInText) lastResult[0].getRemainingTokens().head().position();
+            throw new ParserException("Parse error: " + lastResult[0].getFailureReason()
+                    + " at line=" + position.getLine() + ", col=" + position.getCol());
+        } else {
+            return statements;
+        }
+    }
+
+    @SneakyThrows
+    protected static Preprocessed preprocess(String filePath) {
         return preprocess(new FileInputStream(filePath));
     }
 
-    public static Preprocessed preprocess(InputStream inputStream) {
+    protected static Preprocessed preprocess(InputStream inputStream) {
         final Preprocessed preprocessed = new Preprocessed();
         final ParseResult[] lastResult = new ParseResult[1];
-        final PositionInText[] startPos = new PositionInText[1];
-        final PositionInText[] endPos = new PositionInText[1];
         stream(
                 spacePadded(or(comment(), nonComment())),
                 () -> TextParsers.inputStreamToTokenStream(inputStream)
         ).forEach(partParseResult -> {
             lastResult[0] = partParseResult;
-            if (startPos[0] == null) {
-                startPos[0] = partParseResult.getPositionRange().getStart();
-            }
-            endPos[0] = partParseResult.getPositionRange().getEnd();
             Object part = partParseResult.get();
             if (part instanceof NonComment) {
                 preprocessed.getCode().add((NonComment) part);
@@ -57,10 +88,14 @@ public class MetamathParsers {
             }
         });
         if (lastResult[0].isFailure()) {
-            throw new ParserException("Parse error: " + lastResult[0].getFailureReason());
+            throw new ParserException("Preprocess error: " + lastResult[0].getFailureReason());
         } else {
             return preprocessed;
         }
+    }
+
+    protected static Parser<TokenStream<Character, PositionInText>, Statement, PositionInText> statement() {
+        return (Parser) or(blockStatement(), nonLabeledListStatement(), labeledListStatement(), theoremStatement());
     }
 
     protected static Parser<TokenStream<Character, PositionInText>, BlockStatement, PositionInText> blockStatement() {
@@ -158,7 +193,7 @@ public class MetamathParsers {
                         return -1;
                     }
                 },
-                sb -> sb.toString(),
+                (sb,len) -> sb.delete(len-1,sb.length()).toString(),
                 "A Metamath comment was expected"
         ).map((str,pos) ->
                 Comment.builder()
@@ -181,7 +216,7 @@ public class MetamathParsers {
                         return -1;
                     }
                 },
-                sb -> sb.toString(),
+                (sb,len) -> sb.delete(len-1,sb.length()).toString(),
                 "A Metamath comment was expected"
         ).map((str,pos) ->
                 NonComment.builder()

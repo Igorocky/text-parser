@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -119,7 +120,7 @@ public class TextParsers {
                         }
                     }
                 },
-                sb -> sb.toString(),
+                (sb,len) -> sb.toString(),
                 "A non-whitespace was expected"
         );
     }
@@ -178,7 +179,7 @@ public class TextParsers {
                     }
                     return (isLast || finished) ? sb.length() : -1;
                 },
-                sb -> getResult.apply(sb),
+                (sb,len) -> getResult.apply(sb),
                 errorMsg
         );
     }
@@ -187,7 +188,7 @@ public class TextParsers {
             String parserName,
             Supplier<C> contextConstructor,
             CharProcessor<C> processor,
-            Function<C,R> getResult,
+            BiFunction<C,Integer,R> getResult,
             String errorMsg
     ) {
         return tokenSeq(parserName, contextConstructor, processor, getResult, errorMsg);

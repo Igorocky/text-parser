@@ -7,12 +7,24 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.igye.textparser.TextParsers.inputStreamToTokenStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class MetamathParsersTest {
+    @Test
+    public void parse_shouldParseMetamathFile() {
+        //when
+        List<Statement> statements = MetamathParsers.parse(Utils.inputStreamFromClasspath("/peano.mm"));
+//        List<Statement> statements = MetamathParsers.parse("D:\\Install\\metamath\\metamath\\set.mm");
+//        final Preprocessed preprocessed = MetamathParsers.preprocess("D:\\Install\\metamath\\metamath\\set.mm");
+
+        //then
+        assertTrue(statements.size() > 0);
+    }
+
     @Test
     public void preprocess_shouldPreprocessMetamathFile() {
         //when
@@ -34,6 +46,17 @@ public class MetamathParsersTest {
         //then
         assertEquals(ListStatementType.VARIABLE, statement.getType());
         assertEquals(Arrays.asList("A","B","C"), statement.getSymbols());
+    }
+
+    @Test
+    public void statement_shouldParseStatement() {
+        //when
+        Statement statement = MetamathParsers.statement().parse(
+                tokenStreamFromString("$v s t u s0 s1 t0 t1 $.\n\nts $f term s $.\ntt $f term t $.\n")
+        ).get();
+
+        //then
+        assertEquals(ListStatementType.VARIABLE, ((ListStatement) statement).getType());
     }
 
     @Test
