@@ -19,4 +19,5 @@ public class ListStatement implements Statement {
     private String label;
     private List<String> symbols;
     private List<String> proof;
+    private Frame frame;
 }

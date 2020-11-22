@@ -15,12 +15,16 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.igye.textparser.Parsers.and;
-import static org.igye.textparser.Parsers.debug;
 import static org.igye.textparser.Parsers.or;
 import static org.igye.textparser.Parsers.rec;
 import static org.igye.textparser.Parsers.stream;
@@ -33,15 +37,22 @@ import static org.igye.textparser.TextParsers.spacePadded;
 
 public class MetamathParsers {
 
-    public static final HashSet<String> KEYWORDS = new HashSet<>(Arrays.asList("${", "$}", "$c", "$v", "$f", "$e", "$d",
+    private static final HashSet<String> KEYWORDS = new HashSet<>(Arrays.asList("${", "$}", "$c", "$v", "$f", "$e", "$d",
             "$a", "$p", "$.", "$=", "$(", "$)", "$[", "$]"));
 
+    protected static Map<String,ListStatement> defineFramesAndBuildMap(List<Statement> statements) {
+        defineFrames(statements);
+        final HashMap<String, ListStatement> statementsMap = new HashMap<>();
+        addToMap(statementsMap, statements);
+        return statementsMap;
+    }
+
     @SneakyThrows
-    public static List<Statement> parse(String filePath) {
+    protected static List<Statement> parse(String filePath) {
         return parse(new FileInputStream(filePath));
     }
 
-    public static List<Statement> parse(InputStream inputStream) {
+    protected static List<Statement> parse(InputStream inputStream) {
         final Preprocessed preprocessed = preprocess(inputStream);
         final ArrayList<Statement> statements = new ArrayList<>();
         stream(
@@ -219,5 +230,86 @@ public class MetamathParsers {
                         .text(str)
                         .build()
         );
+    }
+
+    private static void defineFrames(List<Statement> statements) {
+        defineFrames(new MetamathContext(), statements);
+    }
+
+    private static void defineFrames(MetamathContext context, List<Statement> statements) {
+        for (Statement statement : statements) {
+            if (statement instanceof BlockStatement) {
+                defineFrames(context, ((BlockStatement) statement).getContent());
+            } else {
+                final ListStatement listStatement = (ListStatement) statement;
+                if (listStatement.getType() == ListStatementType.AXIOM
+                        || listStatement.getType() == ListStatementType.THEOREM) {
+                    listStatement.setFrame(createFrame(context, listStatement));
+                } else {
+                    context = context.createChildContext(listStatement);
+                }
+            }
+        }
+    }
+
+    private static Frame createFrame(MetamathContext context, ListStatement assertion) {
+        if (assertion.getType() != ListStatementType.AXIOM && assertion.getType() != ListStatementType.THEOREM) {
+            throw new ParserException(
+                    "assertion.getType() != ListStatementType.AXIOM " +
+                            "&& assertion.getType() != ListStatementType.THEOREM: at " + assertion.getBegin()
+            );
+        }
+        final Frame frame = new Frame();
+        frame.setAssertion(assertion);
+        frame.setHypothesis(context.getAllHypotheses());
+        frame.setTypes(new ArrayList<>());
+        final List<String> allSymbols = Stream.concat(
+                frame.getHypothesis().stream().flatMap(hyp -> hyp.getSymbols().stream()),
+                frame.getAssertion().getSymbols().stream()
+        ).collect(Collectors.toList());
+        Set<String> processedSymbols = new HashSet<>();
+        for (int i = allSymbols.size()-1; i >= 0; i--) {
+            final String sym = allSymbols.get(i);
+            if (processedSymbols.contains(sym)) {
+                continue;
+            }
+            if (context.getConstant(sym) != null) {
+                continue;
+            }
+            if (context.getVariable(sym) != null) {
+                final ListStatement type = context.getType(sym);
+                if (type == null) {
+                    throw new ParserException("Cannot determine type of variable: '"
+                            + sym + "' at " + assertion.getBegin());
+                } else {
+                    frame.getTypes().add(type);
+                    processedSymbols.add(sym);
+                    continue;
+                }
+            }
+            throw new ParserException("Only constant or variable was expected but got: '"
+                    + sym + "' at " + assertion.getBegin());
+        }
+        Collections.reverse(frame.getTypes());
+        return frame;
+    }
+
+    private static void addToMap(Map<String,ListStatement> statementsMap, List<Statement> statements) {
+        for (Statement statement : statements) {
+            if (statement instanceof BlockStatement) {
+                addToMap(statementsMap, ((BlockStatement) statement).getContent());
+            } else {
+                final ListStatement listStatement = (ListStatement) statement;
+                if (listStatement.getType() == ListStatementType.AXIOM
+                        || listStatement.getType() == ListStatementType.THEOREM) {
+                    final String label = listStatement.getLabel();
+                    if (statementsMap.containsKey(label)) {
+                        throw new ParserException("statementsMap.containsKey('" + label + "') at "
+                                + listStatement.getBegin());
+                    }
+                    statementsMap.put(label, listStatement);
+                }
+            }
+        }
     }
 }
