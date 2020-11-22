@@ -32,6 +32,7 @@ public class MetamathContext {
                         && listStatement.getType() != ListStatementType.VARIABLE
                         && listStatement.getType() != ListStatementType.FLOATING
                         && listStatement.getType() != ListStatementType.ESSENTIAL
+                        && listStatement.getType() != ListStatementType.DISJOINT
         ) {
             throw new ParserException("Unexpected statement type: " + listStatement.getType()
                     + " at " + listStatement.getBegin());

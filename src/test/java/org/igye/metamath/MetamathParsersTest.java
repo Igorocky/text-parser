@@ -22,6 +22,7 @@ public class MetamathParsersTest {
     public void defineFramesAndBuildMap_shouldDefineFramesForAllAxiomsAndTheorems() {
         //given
         List<Statement> statements = MetamathParsers.parse(Utils.inputStreamFromClasspath("/demo0.mm"));
+//        List<Statement> statements = MetamathParsers.parse("D:\\Install\\metamath\\metamath\\set.mm");
 
         //when
         final Map<String, ListStatement> map = MetamathParsers.defineFramesAndBuildMap(statements);
@@ -60,8 +61,8 @@ public class MetamathParsersTest {
     @Test
     public void parse_shouldParseMetamathFile() {
         //when
-//        List<Statement> statements = MetamathParsers.parse(Utils.inputStreamFromClasspath("/peano.mm"));
-        List<Statement> statements = MetamathParsers.parse("D:\\Install\\metamath\\metamath\\set.mm");
+        List<Statement> statements = MetamathParsers.parse(Utils.inputStreamFromClasspath("/peano.mm"));
+//        List<Statement> statements = MetamathParsers.parse("D:\\Install\\metamath\\metamath\\set.mm");
 
         //then
         assertTrue(statements.size() > 0);
