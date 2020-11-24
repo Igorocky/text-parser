@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +33,14 @@ public class Metamath {
 
     public static void verifyProof(ListStatement theorem, MetamathDatabase database) {
         List<List<String>> stack = new ArrayList<>();
-        eval(
-                stack,
-                theorem.getProof().stream().map(database::getStatement).collect(Collectors.toList())
-        );
+        if (theorem.getProof() != null) {
+            eval(
+                    stack,
+                    theorem.getProof().stream().map(database::getStatement).collect(Collectors.toList())
+            );
+        } else {
+            evalCompressed(stack, theorem, database);
+        }
         if (stack.size() != 1) {
             throw new MetamathException("stack.size() != 1");
         }
@@ -44,9 +49,32 @@ public class Metamath {
         }
     }
 
+    private static void evalCompressed(List<List<String>> stack, ListStatement theorem, MetamathDatabase database) {
+        final List<String> steps = MetamathParsers.splitEncodedProof(theorem.getCompressedProof().getEncodedProof());
+        List<Object> args = new ArrayList<>();
+        args.addAll(theorem.getFrame().getTypes());
+        args.addAll(theorem.getFrame().getHypotheses());
+        theorem.getCompressedProof().getLabels().stream()
+                .map(database::getStatement)
+                .forEach(args::add);
+        for (String step : steps) {
+            if ("Z".equals(step)) {
+                args.add(stack.get(stack.size()-1));
+            } else {
+                Object arg = args.get(MetamathParsers.strToInt(step)-1);
+                if (arg instanceof List) {
+                    stack.add((List<String>) arg);
+                } else {
+                    eval(stack, Collections.singletonList(((ListStatement) arg)));
+                }
+            }
+        }
+    }
+
     private static void eval(List<List<String>> stack, List<ListStatement> statements) {
         for (ListStatement statement : statements) {
-            if (statement.getType() == ListStatementType.FLOATING) {
+            if (statement.getType() == ListStatementType.FLOATING
+                    || statement.getType() == ListStatementType.ESSENTIAL) {
                 stack.add(statement.getSymbols());
             } else {
                 apply(stack, statement.getFrame());
