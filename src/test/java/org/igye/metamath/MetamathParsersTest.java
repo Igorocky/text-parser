@@ -96,14 +96,41 @@ public class MetamathParsersTest {
         //when
         ListStatement statement = MetamathParsers.theoremStatement().parse(
                 tokenStreamFromString("hlhilphllem $p |- ( ph -> U e. PreHil ) $=\n" +
-                        "        ( va vb vc vd $.")
+                        "        va vb vc vd $.")
         ).get();
 
         //then
         assertEquals("hlhilphllem", statement.getLabel());
         assertEquals(ListStatementType.THEOREM, statement.getType());
         assertEquals(Arrays.asList("|-","(","ph","->","U","e.","PreHil",")"), statement.getSymbols());
-        assertEquals(Arrays.asList("(", "va", "vb", "vc", "vd"), statement.getProof());
+        assertEquals(Arrays.asList("va", "vb", "vc", "vd"), statement.getProof());
+    }
+
+    @Test
+    public void theoremStatement_shouldParseTheoremStatementWithCompressedProof() {
+        //when
+        ListStatement statement = MetamathParsers.theoremStatement().parse(
+                tokenStreamFromString("mp2 $p |- ch $=\n      ( wi ax-mp ) BCEABCGDFHH $.")
+        ).get();
+
+        //then
+        assertEquals("mp2", statement.getLabel());
+        assertEquals(ListStatementType.THEOREM, statement.getType());
+        assertEquals(Arrays.asList("|-","ch"), statement.getSymbols());
+        assertEquals(Arrays.asList("wi", "ax-mp"), statement.getCompressedProof().getLabels());
+        assertEquals("BCEABCGDFHH", statement.getCompressedProof().getEncodedProof());
+    }
+
+    @Test
+    public void compressedProof_shouldParseCompressedProof() {
+        //when
+        CompressedProof proof = MetamathParsers.compressedProof().parse(
+                tokenStreamFromString("( wi ax-mp ) BCEABCGDFHH ")
+        ).get();
+
+        //then
+        assertEquals(Arrays.asList("wi", "ax-mp"), proof.getLabels());
+        assertEquals("BCEABCGDFHH", proof.getEncodedProof());
     }
 
     @Test

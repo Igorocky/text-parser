@@ -161,16 +161,39 @@ public class MetamathParsers {
                 literal("$p"),
                 list(nonSpace("$=")),
                 literal("$="),
-                list(nonSpace("$.")),
+                space(),
+                or(compressedProof(), list(nonSpace("$."))),
                 literal("$.")
         ))
-                .map((list, pos) -> ListStatement.builder()
+                .map((list, pos) -> {
+                    final ListStatement.ListStatementBuilder theorem = ListStatement.builder()
+                            .begin(pos.getStart())
+                            .end(pos.getEnd())
+                            .label((String) ((List<Object>) list).get(0))
+                            .type(ListStatementType.THEOREM)
+                            .symbols(((List<String>) ((List<Object>) list).get(3)));
+                    final Object proofElem = ((List<Object>) list).get(6);
+                    if (proofElem instanceof CompressedProof) {
+                        theorem.compressedProof((CompressedProof) proofElem);
+                    } else {
+                        theorem.proof(((List<String>) proofElem));
+                    }
+                    return theorem.build();
+                });
+    }
+
+    protected static Parser<TokenStream<Character, PositionInText>, CompressedProof, PositionInText> compressedProof() {
+        return (Parser) and(
+                literal("("),
+                list(nonSpace(")")),
+                literal(")"),
+                spacePadded(nonSpace())
+        )
+                .map((list, pos) -> CompressedProof.builder()
                         .begin(pos.getStart())
                         .end(pos.getEnd())
-                        .label((String) ((List<Object>) list).get(0))
-                        .type(ListStatementType.THEOREM)
-                        .symbols(((List<String>) ((List<Object>) list).get(3)))
-                        .proof(((List<String>) ((List<Object>) list).get(5)))
+                        .labels(((List<String>) ((List<Object>) list).get(1)))
+                        .encodedProof((String) ((List<Object>) list).get(3))
                         .build()
                 );
     }

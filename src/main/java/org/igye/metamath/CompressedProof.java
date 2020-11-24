@@ -12,13 +12,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ListStatement implements Statement {
+public class CompressedProof {
     private PositionInText begin;
     private PositionInText end;
-    private ListStatementType type;
-    private String label;
-    private List<String> symbols;
-    private List<String> proof;
-    private CompressedProof compressedProof;
-    private Frame frame;
+    private List<String> labels;
+    private String encodedProof;
 }
