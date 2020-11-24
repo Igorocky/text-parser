@@ -15,6 +15,8 @@ import java.util.List;
 public class ListStatement implements Statement {
     private PositionInText begin;
     private PositionInText end;
+    private Statement prevStatement;
+    private BlockStatement currBlock;
     private ListStatementType type;
     private String label;
     private List<String> symbols;

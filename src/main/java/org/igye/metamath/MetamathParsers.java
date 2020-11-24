@@ -18,10 +18,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,8 +47,8 @@ public class MetamathParsers {
 
     public static MetamathDatabase load(InputStream inputStream) {
         final List<Statement> statements = parse(inputStream);
-        final Map<String, ListStatement> statementMap = defineFramesAndBuildMap(statements);
-        return new MetamathDatabase(statements, statementMap);
+        defineFrames(statements);
+        return new MetamathDatabase(statements);
     }
 
     @SneakyThrows
@@ -302,21 +300,18 @@ public class MetamathParsers {
         );
     }
 
-    private static Map<String,ListStatement> defineFramesAndBuildMap(List<Statement> statements) {
-        defineFrames(statements);
-        final HashMap<String, ListStatement> statementsMap = new HashMap<>();
-        addToMap(statementsMap, statements);
-        return statementsMap;
-    }
-
     private static void defineFrames(List<Statement> statements) {
-        defineFrames(new MetamathContext(), statements);
+        defineFrames(null, new MetamathContext(), statements);
     }
 
-    private static void defineFrames(MetamathContext context, List<Statement> statements) {
+    private static void defineFrames(BlockStatement currBlock, MetamathContext context, List<Statement> statements) {
+        Statement prevStatement = null;
         for (Statement statement : statements) {
             if (statement instanceof BlockStatement) {
-                defineFrames(context, ((BlockStatement) statement).getContent());
+                final BlockStatement blockStatement = (BlockStatement) statement;
+                defineFrames(blockStatement, context, (blockStatement).getContent());
+                blockStatement.setCurrBlock(currBlock);
+                blockStatement.setPrevStatement(prevStatement);
             } else {
                 final ListStatement listStatement = (ListStatement) statement;
                 if (listStatement.getType() == ListStatementType.AXIOM
@@ -325,7 +320,10 @@ public class MetamathParsers {
                 } else {
                     context = context.createChildContext(listStatement);
                 }
+                listStatement.setCurrBlock(currBlock);
+                listStatement.setPrevStatement(prevStatement);
             }
+            prevStatement = statement;
         }
     }
 
@@ -363,23 +361,5 @@ public class MetamathParsers {
         }
         Collections.sort(frame.getTypes(), Comparator.comparing(ListStatement::getBegin));
         return frame;
-    }
-
-    private static void addToMap(Map<String,ListStatement> statementsMap, List<Statement> statements) {
-        for (Statement statement : statements) {
-            if (statement instanceof BlockStatement) {
-                addToMap(statementsMap, ((BlockStatement) statement).getContent());
-            } else {
-                final ListStatement listStatement = (ListStatement) statement;
-                if (listStatement.getLabel() != null) {
-                    final String label = listStatement.getLabel();
-                    if (statementsMap.containsKey(label)) {
-                        throw new ParserException("statementsMap.containsKey('" + label + "') at "
-                                + listStatement.getBegin());
-                    }
-                    statementsMap.put(label, listStatement);
-                }
-            }
-        }
     }
 }

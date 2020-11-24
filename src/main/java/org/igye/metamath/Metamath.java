@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Metamath {
@@ -31,15 +33,17 @@ public class Metamath {
                 + "]";
     }
 
-    public static void verifyProof(ListStatement theorem, MetamathDatabase database) {
+    public static void verifyProof(ListStatement theorem) {
         List<List<String>> stack = new ArrayList<>();
         if (theorem.getProof() != null) {
+            final Map<String, ListStatement> requiredStatements =
+                    theorem.findActiveStatements(new HashSet<>(theorem.getProof()));
             eval(
                     stack,
-                    theorem.getProof().stream().map(database::getStatement).collect(Collectors.toList())
+                    theorem.getProof().stream().map(requiredStatements::get).collect(Collectors.toList())
             );
         } else {
-            evalCompressed(stack, theorem, database);
+            evalCompressed(stack, theorem);
         }
         if (stack.size() != 1) {
             throw new MetamathException("stack.size() != 1");
@@ -49,14 +53,54 @@ public class Metamath {
         }
     }
 
-    private static void evalCompressed(List<List<String>> stack, ListStatement theorem, MetamathDatabase database) {
+    public static Map<String,ListStatement> findActiveStatements(Statement curStmt, Set<String> labels) {
+        final HashMap<String, ListStatement> result = new HashMap<>();
+        while (curStmt != null) {
+            if (curStmt instanceof BlockStatement) {
+                Map<String, ListStatement> foundAssertions = ((BlockStatement) curStmt).findAssertions(labels);
+                for (String foundAssertionLabel : foundAssertions.keySet()) {
+                    if (result.containsKey(foundAssertionLabel)) {
+                        throw new MetamathException("result.containsKey(foundAssertionLabel)");
+                    }
+                }
+                result.putAll(foundAssertions);
+            } else {
+                final ListStatement listStatement = (ListStatement) curStmt;
+                final String label = listStatement.getLabel();
+                if (label != null && labels.contains(label)) {
+                    if (result.containsKey(label)) {
+                        throw new MetamathException("result.containsKey(listStatement.getLabel())");
+                    } else {
+                        result.put(label, listStatement);
+                    }
+                }
+            }
+            curStmt = Metamath.determinePrevStatement(curStmt);
+        }
+
+        return result;
+    }
+
+    protected static Statement determinePrevStatement(Statement statement) {
+        if (statement.getPrevStatement() != null) {
+            return statement.getPrevStatement();
+        } else {
+            return statement.getCurrBlock() != null ? statement.getCurrBlock().getPrevStatement() : null;
+        }
+    }
+
+    private static void evalCompressed(List<List<String>> stack, ListStatement theorem) {
         final List<String> steps = MetamathParsers.splitEncodedProof(theorem.getCompressedProof().getEncodedProof());
         List<Object> args = new ArrayList<>();
         args.addAll(theorem.getFrame().getTypes());
         args.addAll(theorem.getFrame().getHypotheses());
+
+        final Map<String, ListStatement> requiredStatements =
+                theorem.findActiveStatements(new HashSet<>(theorem.getCompressedProof().getLabels()));
         theorem.getCompressedProof().getLabels().stream()
-                .map(database::getStatement)
+                .map(requiredStatements::get)
                 .forEach(args::add);
+
         for (String step : steps) {
             if ("Z".equals(step)) {
                 args.add(stack.get(stack.size()-1));

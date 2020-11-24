@@ -14,7 +14,7 @@ public class MetamathTest {
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/demo0.mm"));
 
         //when
-        Metamath.verifyProof(database.getStatement("th1"), database);
+        Metamath.verifyProof(database.getStatement("th1"));
 
         //then
         //no exception was thrown on the 'when' step
@@ -27,13 +27,13 @@ public class MetamathTest {
 
         try {
             //when
-            Metamath.verifyProof(database.getStatement("th2"), database);
+            Metamath.verifyProof(database.getStatement("th2"));
         } catch (MetamathException e) {
             //then
             assertEquals("Hypotheses don't match", e.getMessage());
             return;
         }
-        Assert.fail("A MetamathException should thrown on the previous step.");
+        Assert.fail("A MetamathException should be thrown on the 'when' step.");
     }
 
     @Test
@@ -42,9 +42,9 @@ public class MetamathTest {
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/set-reduced.mm"));
 
         //when
-        Metamath.verifyProof(database.getStatement("mp2"), database);
-        Metamath.verifyProof(database.getStatement("id"), database);
-        Metamath.verifyProof(database.getStatement("dfbi1ALT"), database);
+        Metamath.verifyProof(database.getStatement("mp2"));
+        Metamath.verifyProof(database.getStatement("id"));
+        Metamath.verifyProof(database.getStatement("dfbi1ALT"));
 
         //then
         //no exception was thrown on the 'when' step
@@ -57,7 +57,7 @@ public class MetamathTest {
         final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
 
         //when
-        Metamath.verifyProof(database.getStatement("fourierdlem112"), database);
+        Metamath.verifyProof(database.getStatement("fourierdlem112"));
 
         //then
         //no exception was thrown on the 'when' step
