@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.igye.metamath.Metamath.stringify;
+import static org.igye.metamath.MetamathParsers.strToInt;
 import static org.igye.textparser.TextParsers.inputStreamToTokenStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -173,6 +174,22 @@ public class MetamathParsersTest {
 
         //then
         assertTrue(statement.getContent().isEmpty());
+    }
+
+    @Test
+    public void strToInt_shouldParseNumbersFromCompressedProofs() {
+        assertEquals(1, strToInt("A"));
+        assertEquals(2, strToInt("B"));
+        assertEquals(20, strToInt("T"));
+        assertEquals(21, strToInt("UA"));
+        assertEquals(22, strToInt("UB"));
+        assertEquals(40, strToInt("UT"));
+        assertEquals(41, strToInt("VA"));
+        assertEquals(42, strToInt("VB"));
+        assertEquals(120, strToInt("YT"));
+        assertEquals(121, strToInt("UUA"));
+        assertEquals(620, strToInt("YYT"));
+        assertEquals(621, strToInt("UUUA"));
     }
 
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {

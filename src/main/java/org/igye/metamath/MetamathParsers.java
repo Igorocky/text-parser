@@ -201,6 +201,24 @@ public class MetamathParsers {
                 );
     }
 
+    protected static int strToInt(String str) {
+        int result = 0;
+        int base = 1;
+        for (int i = str.length()-2; i >= 0; i--) {
+            result += base*charToInt(str.charAt(i));
+            base *= 5;
+        }
+        return result*20 + charToInt(str.charAt(str.length()-1));
+    }
+
+    private static int charToInt(char c) {
+        if ('A' <= c && c <= 'T') {
+            return c-64; //65 is A
+        } else {
+            return c-84; //85 is U
+        }
+    }
+
     private static Parser<TokenStream<Character, PositionInText>,Comment,PositionInText> comment() {
         return charSeq(
                 "Metamath comment",
