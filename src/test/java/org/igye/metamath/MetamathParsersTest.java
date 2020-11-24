@@ -192,6 +192,15 @@ public class MetamathParsersTest {
         assertEquals(621, strToInt("UUUA"));
     }
 
+    @Test
+    public void splitEncodedProof_shouldSplitEncodedProofIntoParts() {
+        //when
+        final List<String> parts = MetamathParsers.splitEncodedProof("ABCZUACZYYWA");
+
+        //then
+        assertEquals(Arrays.asList("A", "B", "C", "Z", "UA", "C", "Z", "YYWA"), parts);
+    }
+
     private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {
         return inputStreamToTokenStream(new ByteArrayInputStream(str.getBytes()));
     }

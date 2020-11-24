@@ -201,6 +201,27 @@ public class MetamathParsers {
                 );
     }
 
+    protected static List<String> splitEncodedProof(String proofStr) {
+        final ArrayList<String> result = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < proofStr.length(); i++) {
+            final char c = proofStr.charAt(i);
+            if (c == 'Z') {
+                result.add("Z");
+            } else {
+                sb.append(c);
+                if ('A' <= c && c <= 'T') {
+                    result.add(sb.toString());
+                    sb = new StringBuilder();
+                }
+            }
+        }
+        if (sb.length() > 0) {
+            throw new ParserException("sb.length() > 0");
+        }
+        return result;
+    }
+
     protected static int strToInt(String str) {
         int result = 0;
         int base = 1;
