@@ -12539,4 +12539,1472 @@ $)
   id $p |- ( ph -> ph ) $=
     ( wi ax-1 mpd ) AAABZAAACAECD $.
 
-  
+  $( Alternate proof of ~ id .  This version is proved directly from the axioms
+     for demonstration purposes.  This proof is a popular example in the
+     literature and is identical, step for step, to the proofs of Theorem 1 of
+     [Margaris] p. 51, Example 2.7(a) of [Hamilton] p. 31, Lemma 10.3 of
+     [BellMachover] p. 36, and Lemma 1.8 of [Mendelson] p. 36.  It is also "Our
+     first proof" in Hirst and Hirst's _A Primer for Logic and Proof_ p. 17
+     (PDF p. 23) at ~ http://www.appstate.edu/~~hirstjl/primer/hirst.pdf .
+     Note that the second occurrence of ` ph ` in Steps 1 to 4 and the sixth in
+     Step 3 may simultaneously be replaced by any wff ` ps ` , which may ease
+     the understanding of the proof.  For a shorter version of the proof that
+     takes advantage of previously proved theorems, see ~ id .  (Contributed by
+     NM, 30-Sep-1992.)  (New usage is discouraged.)
+     (Proof modification is discouraged.) $)
+  id1 $p |- ( ph -> ph ) $=
+    ( wi ax-1 ax-2 ax-mp ) AAABZBZFAACAFABBGFBAFCAFADEE $.
+
+  $( Principle of identity with antecedent.  (Contributed by NM,
+     26-Nov-1995.) $)
+  idd $p |- ( ph -> ( ps -> ps ) ) $=
+    ( wi id a1i ) BBCABDE $.
+
+  ${
+    a1d.1 $e |- ( ph -> ps ) $.
+    $( Deduction introducing an embedded antecedent.  Deduction form of
+       ~ ax-1 .  (Contributed by NM, 5-Jan-1993.)  (Proof shortened by Stefan
+       Allan, 20-Mar-2006.) $)
+    a1d $p |- ( ph -> ( ch -> ps ) ) $=
+      ( wi ax-1 syl ) ABCBEDBCFG $.
+  $}
+
+  ${
+    a2d.1 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    $( Deduction distributing an embedded antecedent.  Deduction form of
+       ~ ax-2 .  (Contributed by NM, 23-Jun-1994.) $)
+    a2d $p |- ( ph -> ( ( ps -> ch ) -> ( ps -> th ) ) ) $=
+      ( wi ax-2 syl ) ABCDFFBCFBDFFEBCDGH $.
+  $}
+
+  ${
+    a1ii.1 $e |- ch $.
+    $( Add two antecedents to a wff.  (Contributed by Jeff Hankins,
+       4-Aug-2009.)  (Proof modification is discouraged.) $)
+    a1ii $p |- ( ph -> ( ps -> ch ) ) $=
+      ( wi a1i ) BCEACBDFF $.
+  $}
+
+  ${
+    a1iiOLD.1 $e |- ch $.
+    $( Obsolete proof of ~ a1ii as of 21-Jul-2019.  Shorter proof, but uses one
+       more axiom.  (Contributed by Wolf Lammen, 23-Jul-2013.)
+       (New usage is discouraged.)  (Proof modification is discouraged.) $)
+    a1iiOLD $p |- ( ph -> ( ps -> ch ) ) $=
+      ( a1i a1d ) ACBCADEF $.
+  $}
+
+  ${
+    sylcom.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    sylcom.2 $e |- ( ps -> ( ch -> th ) ) $.
+    $( Syllogism inference with commutation of antecedents.  (Contributed by
+       NM, 29-Aug-2004.)  (Proof shortened by Mel L. O'Cat, 2-Feb-2006.)
+       (Proof shortened by Stefan Allan, 23-Feb-2006.) $)
+    sylcom $p |- ( ph -> ( ps -> th ) ) $=
+      ( wi a2i syl ) ABCGBDGEBCDFHI $.
+  $}
+
+  ${
+    syl5com.1 $e |- ( ph -> ps ) $.
+    syl5com.2 $e |- ( ch -> ( ps -> th ) ) $.
+    $( Syllogism inference with commuted antecedents.  (Contributed by NM,
+       24-May-2005.) $)
+    syl5com $p |- ( ph -> ( ch -> th ) ) $=
+      ( a1d sylcom ) ACBDABCEGFH $.
+  $}
+
+  ${
+    $( Premise for ~ com12 .  See ~ pm2.04 for the theorem form. $)
+    com12.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( Inference that swaps (commutes) antecedents in an implication.
+       Inference associated with ~ pm2.04 .  Its associated inference is
+       ~ mpi .  (Contributed by NM, 29-Dec-1992.)  (Proof shortened by Wolf
+       Lammen, 4-Aug-2012.) $)
+    com12 $p |- ( ps -> ( ph -> ch ) ) $=
+      ( id syl5com ) BBACBEDF $.
+  $}
+
+  ${
+    syl5.1 $e |- ( ph -> ps ) $.
+    syl5.2 $e |- ( ch -> ( ps -> th ) ) $.
+    $( A syllogism rule of inference.  The first premise is used to replace the
+       second antecedent of the second premise.  (Contributed by NM,
+       27-Dec-1992.)  (Proof shortened by Wolf Lammen, 25-May-2013.) $)
+    syl5 $p |- ( ch -> ( ph -> th ) ) $=
+      ( syl5com com12 ) ACDABCDEFGH $.
+  $}
+
+  ${
+    syl6.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    syl6.2 $e |- ( ch -> th ) $.
+    $( A syllogism rule of inference.  The second premise is used to replace
+       the consequent of the first premise.  (Contributed by NM, 5-Jan-1993.)
+       (Proof shortened by Wolf Lammen, 30-Jul-2012.) $)
+    syl6 $p |- ( ph -> ( ps -> th ) ) $=
+      ( wi a1i sylcom ) ABCDECDGBFHI $.
+  $}
+
+  ${
+    syl56.1 $e |- ( ph -> ps ) $.
+    syl56.2 $e |- ( ch -> ( ps -> th ) ) $.
+    syl56.3 $e |- ( th -> ta ) $.
+    $( Combine ~ syl5 and ~ syl6 .  (Contributed by NM, 14-Nov-2013.) $)
+    syl56 $p |- ( ch -> ( ph -> ta ) ) $=
+      ( syl6 syl5 ) ABCEFCBDEGHIJ $.
+  $}
+
+  ${
+    syl6com.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    syl6com.2 $e |- ( ch -> th ) $.
+    $( Syllogism inference with commuted antecedents.  (Contributed by NM,
+       25-May-2005.) $)
+    syl6com $p |- ( ps -> ( ph -> th ) ) $=
+      ( syl6 com12 ) ABDABCDEFGH $.
+  $}
+
+  ${
+    mpcom.1 $e |- ( ps -> ph ) $.
+    mpcom.2 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( Modus ponens inference with commutation of antecedents.  (Contributed by
+       NM, 17-Mar-1996.) $)
+    mpcom $p |- ( ps -> ch ) $=
+      ( com12 mpd ) BACDABCEFG $.
+  $}
+
+  ${
+    syli.1 $e |- ( ps -> ( ph -> ch ) ) $.
+    syli.2 $e |- ( ch -> ( ph -> th ) ) $.
+    $( Syllogism inference with common nested antecedent.  (Contributed by NM,
+       4-Nov-2004.) $)
+    syli $p |- ( ps -> ( ph -> th ) ) $=
+      ( com12 sylcom ) BACDECADFGH $.
+  $}
+
+  ${
+    syl2im.1 $e |- ( ph -> ps ) $.
+    syl2im.2 $e |- ( ch -> th ) $.
+    syl2im.3 $e |- ( ps -> ( th -> ta ) ) $.
+    $( Replace two antecedents.  Implication-only version of ~ syl2an .
+       (Contributed by Wolf Lammen, 14-May-2013.) $)
+    syl2im $p |- ( ph -> ( ch -> ta ) ) $=
+      ( wi syl5 syl ) ABCEIFCDBEGHJK $.
+  $}
+
+  $( This theorem, called "Assertion," can be thought of as closed form of
+     modus ponens ~ ax-mp .  Theorem *2.27 of [WhiteheadRussell] p. 104.
+     (Contributed by NM, 15-Jul-1993.) $)
+  pm2.27 $p |- ( ph -> ( ( ph -> ps ) -> ps ) ) $=
+    ( wi id com12 ) ABCZABFDE $.
+
+  ${
+    mpdd.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    mpdd.2 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    $( A nested modus ponens deduction.  (Contributed by NM, 12-Dec-2004.) $)
+    mpdd $p |- ( ph -> ( ps -> th ) ) $=
+      ( wi a2d mpd ) ABCGBDGEABCDFHI $.
+  $}
+
+  ${
+    mpid.1 $e |- ( ph -> ch ) $.
+    mpid.2 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    $( A nested modus ponens deduction.  (Contributed by NM, 14-Dec-2004.) $)
+    mpid $p |- ( ph -> ( ps -> th ) ) $=
+      ( a1d mpdd ) ABCDACBEGFH $.
+  $}
+
+  ${
+    mpdi.1 $e |- ( ps -> ch ) $.
+    mpdi.2 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    $( A nested modus ponens deduction.  (Contributed by NM, 16-Apr-2005.)
+       (Proof shortened by Mel L. O'Cat, 15-Jan-2008.) $)
+    mpdi $p |- ( ph -> ( ps -> th ) ) $=
+      ( wi a1i mpdd ) ABCDBCGAEHFI $.
+  $}
+
+  ${
+    mpii.1 $e |- ch $.
+    mpii.2 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    $( A doubly nested modus ponens inference.  (Contributed by NM,
+       31-Dec-1993.)  (Proof shortened by Wolf Lammen, 31-Jul-2012.) $)
+    mpii $p |- ( ph -> ( ps -> th ) ) $=
+      ( a1i mpdi ) ABCDCBEGFH $.
+  $}
+
+  ${
+    syld.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    syld.2 $e |- ( ph -> ( ch -> th ) ) $.
+    $( Syllogism deduction.  (Contributed by NM, 5-Aug-1993.)  (Proof shortened
+       by Mel L. O'Cat, 19-Feb-2008.)  (Proof shortened by Wolf Lammen,
+       3-Aug-2012.)
+
+       Notice that ~ syld has the same form as ~ syl with ` ph ` added in front
+       of each hypothesis and conclusion.  When all theorems referenced in a
+       proof are converted in this way, we can replace ` ph ` with a hypothesis
+       of the proof, allowing the hypothesis to be eliminated with ~ id and
+       become an antecedent.  The Deduction Theorem for propositional calculus,
+       e.g.  Theorem 3 in [Margaris] p. 56, tells us that this procedure is
+       always possible. $)
+    syld $p |- ( ph -> ( ps -> th ) ) $=
+      ( wi a1d mpdd ) ABCDEACDGBFHI $.
+  $}
+
+  ${
+    mp2d.1 $e |- ( ph -> ps ) $.
+    mp2d.2 $e |- ( ph -> ch ) $.
+    mp2d.3 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    $( A double modus ponens deduction.  (Contributed by NM, 23-May-2013.)
+       (Proof shortened by Wolf Lammen, 23-Jul-2013.) $)
+    mp2d $p |- ( ph -> th ) $=
+      ( mpid mpd ) ABDEABCDFGHI $.
+  $}
+
+  ${
+    a1dd.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( Deduction introducing a nested embedded antecedent.  (Contributed by NM,
+       17-Dec-2004.)  (Proof shortened by Mel L. O'Cat, 15-Jan-2008.) $)
+    a1dd $p |- ( ph -> ( ps -> ( th -> ch ) ) ) $=
+      ( wi ax-1 syl6 ) ABCDCFECDGH $.
+  $}
+
+  ${
+    pm2.43i.1 $e |- ( ph -> ( ph -> ps ) ) $.
+    $( Inference absorbing redundant antecedent.  (Contributed by NM,
+       10-Jan-1993.)  (Proof shortened by Mel L. O'Cat, 28-Nov-2008.) $)
+    pm2.43i $p |- ( ph -> ps ) $=
+      ( id mpd ) AABADCE $.
+  $}
+
+  ${
+    pm2.43d.1 $e |- ( ph -> ( ps -> ( ps -> ch ) ) ) $.
+    $( Deduction absorbing redundant antecedent.  (Contributed by NM,
+       18-Aug-1993.)  (Proof shortened by Mel L. O'Cat, 28-Nov-2008.) $)
+    pm2.43d $p |- ( ph -> ( ps -> ch ) ) $=
+      ( id mpdi ) ABBCBEDF $.
+  $}
+
+  ${
+    pm2.43a.1 $e |- ( ps -> ( ph -> ( ps -> ch ) ) ) $.
+    $( Inference absorbing redundant antecedent.  (Contributed by NM,
+       7-Nov-1995.)  (Proof shortened by Mel L. O'Cat, 28-Nov-2008.) $)
+    pm2.43a $p |- ( ps -> ( ph -> ch ) ) $=
+      ( id mpid ) BABCBEDF $.
+  $}
+
+  ${
+    pm2.43b.1 $e |- ( ps -> ( ph -> ( ps -> ch ) ) ) $.
+    $( Inference absorbing redundant antecedent.  (Contributed by NM,
+       31-Oct-1995.) $)
+    pm2.43b $p |- ( ph -> ( ps -> ch ) ) $=
+      ( pm2.43a com12 ) BACABCDEF $.
+  $}
+
+  $( Absorption of redundant antecedent.  Also called the "Contraction" or
+     "Hilbert" axiom.  Theorem *2.43 of [WhiteheadRussell] p. 106.
+     (Contributed by NM, 10-Jan-1993.)  (Proof shortened by Mel L. O'Cat,
+     15-Aug-2004.) $)
+  pm2.43 $p |- ( ( ph -> ( ph -> ps ) ) -> ( ph -> ps ) ) $=
+    ( wi pm2.27 a2i ) AABCBABDE $.
+
+  ${
+    imim2d.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( Deduction adding nested antecedents.  (Contributed by NM,
+       10-Jan-1993.) $)
+    imim2d $p |- ( ph -> ( ( th -> ps ) -> ( th -> ch ) ) ) $=
+      ( wi a1d a2d ) ADBCABCFDEGH $.
+  $}
+
+  $( A closed form of syllogism (see ~ syl ).  Theorem *2.05 of
+     [WhiteheadRussell] p. 100.  (Contributed by NM, 29-Dec-1992.)  (Proof
+     shortened by Wolf Lammen, 6-Sep-2012.) $)
+  imim2 $p |- ( ( ph -> ps ) -> ( ( ch -> ph ) -> ( ch -> ps ) ) ) $=
+    ( wi id imim2d ) ABDZABCGEF $.
+
+  ${
+    embantd.1 $e |- ( ph -> ps ) $.
+    embantd.2 $e |- ( ph -> ( ch -> th ) ) $.
+    $( Deduction embedding an antecedent.  (Contributed by Wolf Lammen,
+       4-Oct-2013.) $)
+    embantd $p |- ( ph -> ( ( ps -> ch ) -> th ) ) $=
+      ( wi imim2d mpid ) ABCGBDEACDBFHI $.
+  $}
+
+  ${
+    3syld.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    3syld.2 $e |- ( ph -> ( ch -> th ) ) $.
+    3syld.3 $e |- ( ph -> ( th -> ta ) ) $.
+    $( Triple syllogism deduction.  (Contributed by Jeff Hankins,
+       4-Aug-2009.) $)
+    3syld $p |- ( ph -> ( ps -> ta ) ) $=
+      ( syld ) ABDEABCDFGIHI $.
+  $}
+
+  ${
+    sylsyld.1 $e |- ( ph -> ps ) $.
+    sylsyld.2 $e |- ( ph -> ( ch -> th ) ) $.
+    sylsyld.3 $e |- ( ps -> ( th -> ta ) ) $.
+    $( A double syllogism inference.  (Contributed by Alan Sare,
+       20-Apr-2011.) $)
+    sylsyld $p |- ( ph -> ( ch -> ta ) ) $=
+      ( wi syl syld ) ACDEGABDEIFHJK $.
+  $}
+
+  ${
+    imim12i.1 $e |- ( ph -> ps ) $.
+    imim12i.2 $e |- ( ch -> th ) $.
+    $( Inference joining two implications.  (Contributed by NM, 12-Mar-1993.)
+       (Proof shortened by Mel L. O'Cat, 29-Oct-2011.) $)
+    imim12i $p |- ( ( ps -> ch ) -> ( ph -> th ) ) $=
+      ( wi imim2i syl5 ) ABBCGDECDBFHI $.
+  $}
+
+  ${
+    imim1i.1 $e |- ( ph -> ps ) $.
+    $( Inference adding common consequents in an implication, thereby
+       interchanging the original antecedent and consequent.  (Contributed by
+       NM, 28-Dec-1992.)  (Proof shortened by Wolf Lammen, 4-Aug-2012.) $)
+    imim1i $p |- ( ( ps -> ch ) -> ( ph -> ch ) ) $=
+      ( id imim12i ) ABCCDCEF $.
+  $}
+
+  ${
+    imim3i.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( Inference adding three nested antecedents.  (Contributed by NM,
+       19-Dec-2006.) $)
+    imim3i $p |- ( ( th -> ph ) -> ( ( th -> ps ) -> ( th -> ch ) ) ) $=
+      ( wi imim2i a2d ) DAFDBCABCFDEGH $.
+  $}
+
+  ${
+    sylc.1 $e |- ( ph -> ps ) $.
+    sylc.2 $e |- ( ph -> ch ) $.
+    sylc.3 $e |- ( ps -> ( ch -> th ) ) $.
+    $( A syllogism inference combined with contraction.  (Contributed by NM,
+       4-May-1994.)  (Revised by NM, 13-Jul-2013.) $)
+    sylc $p |- ( ph -> th ) $=
+      ( syl2im pm2.43i ) ADABACDEFGHI $.
+  $}
+
+  ${
+    syl3c.1 $e |- ( ph -> ps ) $.
+    syl3c.2 $e |- ( ph -> ch ) $.
+    syl3c.3 $e |- ( ph -> th ) $.
+    syl3c.4 $e |- ( ps -> ( ch -> ( th -> ta ) ) ) $.
+    $( A syllogism inference combined with contraction.  (Contributed by Alan
+       Sare, 7-Jul-2011.) $)
+    syl3c $p |- ( ph -> ta ) $=
+      ( wi sylc mpd ) ADEHABCDEJFGIKL $.
+  $}
+
+  ${
+    syl6mpi.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    syl6mpi.2 $e |- th $.
+    syl6mpi.3 $e |- ( ch -> ( th -> ta ) ) $.
+    $( A syllogism inference.  (Contributed by Alan Sare, 8-Jul-2011.)  (Proof
+       shortened by Wolf Lammen, 13-Sep-2012.) $)
+    syl6mpi $p |- ( ph -> ( ps -> ta ) ) $=
+      ( mpi syl6 ) ABCEFCDEGHIJ $.
+  $}
+
+  ${
+    mpsyl.1 $e |- ph $.
+    mpsyl.2 $e |- ( ps -> ch ) $.
+    mpsyl.3 $e |- ( ph -> ( ch -> th ) ) $.
+    $( Modus ponens combined with a syllogism inference.  (Contributed by Alan
+       Sare, 20-Apr-2011.) $)
+    mpsyl $p |- ( ps -> th ) $=
+      ( a1i sylc ) BACDABEHFGI $.
+  $}
+
+  ${
+    syl6c.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    syl6c.2 $e |- ( ph -> ( ps -> th ) ) $.
+    syl6c.3 $e |- ( ch -> ( th -> ta ) ) $.
+    $( Inference combining ~ syl6 with contraction.  (Contributed by Alan Sare,
+       2-May-2011.) $)
+    syl6c $p |- ( ph -> ( ps -> ta ) ) $=
+      ( wi syl6 mpdd ) ABDEGABCDEIFHJK $.
+  $}
+
+  ${
+    syl6ci.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    syl6ci.2 $e |- ( ph -> th ) $.
+    syl6ci.3 $e |- ( ch -> ( th -> ta ) ) $.
+    $( A syllogism inference combined with contraction.  (Contributed by Alan
+       Sare, 18-Mar-2012.) $)
+    syl6ci $p |- ( ph -> ( ps -> ta ) ) $=
+      ( a1d syl6c ) ABCDEFADBGIHJ $.
+  $}
+
+  ${
+    syldd.1 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    syldd.2 $e |- ( ph -> ( ps -> ( th -> ta ) ) ) $.
+    $( Nested syllogism deduction.  (Contributed by NM, 12-Dec-2004.)  (Proof
+       shortened by Wolf Lammen, 11-May-2013.) $)
+    syldd $p |- ( ph -> ( ps -> ( ch -> ta ) ) ) $=
+      ( wi imim2 syl6c ) ABDEHCDHCEHGFDECIJ $.
+  $}
+
+  ${
+    syl5d.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    syl5d.2 $e |- ( ph -> ( th -> ( ch -> ta ) ) ) $.
+    $( A nested syllogism deduction.  (Contributed by NM, 14-May-1993.)  (Proof
+       shortened by Josh Purinton, 29-Dec-2000.)  (Proof shortened by Mel L.
+       O'Cat, 2-Feb-2006.) $)
+    syl5d $p |- ( ph -> ( th -> ( ps -> ta ) ) ) $=
+      ( wi a1d syldd ) ADBCEABCHDFIGJ $.
+  $}
+
+  ${
+    syl7.1 $e |- ( ph -> ps ) $.
+    syl7.2 $e |- ( ch -> ( th -> ( ps -> ta ) ) ) $.
+    $( A syllogism rule of inference.  The first premise is used to replace the
+       third antecedent of the second premise.  (Contributed by NM,
+       12-Jan-1993.)  (Proof shortened by Wolf Lammen, 3-Aug-2012.) $)
+    syl7 $p |- ( ch -> ( th -> ( ph -> ta ) ) ) $=
+      ( wi a1i syl5d ) CABDEABHCFIGJ $.
+  $}
+
+  ${
+    syl6d.1 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    syl6d.2 $e |- ( ph -> ( th -> ta ) ) $.
+    $( A nested syllogism deduction.  (Contributed by NM, 11-May-1993.)  (Proof
+       shortened by Josh Purinton, 29-Dec-2000.)  (Proof shortened by Mel L.
+       O'Cat, 2-Feb-2006.) $)
+    syl6d $p |- ( ph -> ( ps -> ( ch -> ta ) ) ) $=
+      ( wi a1d syldd ) ABCDEFADEHBGIJ $.
+  $}
+
+  ${
+    syl8.1 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    syl8.2 $e |- ( th -> ta ) $.
+    $( A syllogism rule of inference.  The second premise is used to replace
+       the consequent of the first premise.  (Contributed by NM, 1-Aug-1994.)
+       (Proof shortened by Wolf Lammen, 3-Aug-2012.) $)
+    syl8 $p |- ( ph -> ( ps -> ( ch -> ta ) ) ) $=
+      ( wi a1i syl6d ) ABCDEFDEHAGIJ $.
+  $}
+
+  ${
+    syl9.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    syl9.2 $e |- ( th -> ( ch -> ta ) ) $.
+    $( A nested syllogism inference with different antecedents.  (Contributed
+       by NM, 13-May-1993.)  (Proof shortened by Josh Purinton,
+       29-Dec-2000.) $)
+    syl9 $p |- ( ph -> ( th -> ( ps -> ta ) ) ) $=
+      ( wi a1i syl5d ) ABCDEFDCEHHAGIJ $.
+  $}
+
+  ${
+    syl9r.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    syl9r.2 $e |- ( th -> ( ch -> ta ) ) $.
+    $( A nested syllogism inference with different antecedents.  (Contributed
+       by NM, 14-May-1993.) $)
+    syl9r $p |- ( th -> ( ph -> ( ps -> ta ) ) ) $=
+      ( wi syl9 com12 ) ADBEHABCDEFGIJ $.
+  $}
+
+  ${
+    syl10.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    syl10.2 $e |- ( ph -> ( ps -> ( th -> ta ) ) ) $.
+    syl10.3 $e |- ( ch -> ( ta -> et ) ) $.
+    $( A nested syllogism inference.  (Contributed by Alan Sare,
+       17-Jul-2011.) $)
+    syl10 $p |- ( ph -> ( ps -> ( th -> et ) ) ) $=
+      ( wi syl6 syldd ) ABDEFHABCEFJGIKL $.
+  $}
+
+  ${
+    imim12d.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    imim12d.2 $e |- ( ph -> ( th -> ta ) ) $.
+    $( Deduction combining antecedents and consequents.  (Contributed by NM,
+       7-Aug-1994.)  (Proof shortened by Mel L. O'Cat, 30-Oct-2011.) $)
+    imim12d $p |- ( ph -> ( ( ch -> th ) -> ( ps -> ta ) ) ) $=
+      ( wi imim2d syl5d ) ABCCDHEFADECGIJ $.
+  $}
+
+  ${
+    imim1d.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( Deduction adding nested consequents.  (Contributed by NM, 3-Apr-1994.)
+       (Proof shortened by Wolf Lammen, 12-Sep-2012.) $)
+    imim1d $p |- ( ph -> ( ( ch -> th ) -> ( ps -> th ) ) ) $=
+      ( idd imim12d ) ABCDDEADFG $.
+  $}
+
+  $( A closed form of syllogism (see ~ syl ).  Theorem *2.06 of
+     [WhiteheadRussell] p. 100.  (Contributed by NM, 29-Dec-1992.)  (Proof
+     shortened by Wolf Lammen, 25-May-2013.) $)
+  imim1 $p |- ( ( ph -> ps ) -> ( ( ps -> ch ) -> ( ph -> ch ) ) ) $=
+    ( wi id imim1d ) ABDZABCGEF $.
+
+  $( Theorem *2.83 of [WhiteheadRussell] p. 108.  (Contributed by NM,
+     3-Jan-2005.) $)
+  pm2.83 $p |- ( ( ph -> ( ps -> ch ) )
+      -> ( ( ph -> ( ch -> th ) ) -> ( ph -> ( ps -> th ) ) ) ) $=
+    ( wi imim1 imim3i ) BCECDEBDEABCDFG $.
+
+  ${
+    com3.1 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    $( Commutation of antecedents.  Swap 2nd and 3rd.  (Contributed by NM,
+       27-Dec-1992.)  (Proof shortened by Wolf Lammen, 4-Aug-2012.) $)
+    com23 $p |- ( ph -> ( ch -> ( ps -> th ) ) ) $=
+      ( wi pm2.27 syl9 ) ABCDFCDECDGH $.
+
+    $( Commutation of antecedents.  Rotate right.  (Contributed by NM,
+       25-Apr-1994.) $)
+    com3r $p |- ( ch -> ( ph -> ( ps -> th ) ) ) $=
+      ( wi com23 com12 ) ACBDFABCDEGH $.
+
+    $( Commutation of antecedents.  Swap 1st and 3rd.  (Contributed by NM,
+       25-Apr-1994.)  (Proof shortened by Wolf Lammen, 28-Jul-2012.) $)
+    com13 $p |- ( ch -> ( ps -> ( ph -> th ) ) ) $=
+      ( com3r com23 ) CABDABCDEFG $.
+
+    $( Commutation of antecedents.  Rotate left.  (Contributed by NM,
+       25-Apr-1994.)  (Proof shortened by Wolf Lammen, 28-Jul-2012.) $)
+    com3l $p |- ( ps -> ( ch -> ( ph -> th ) ) ) $=
+      ( com3r ) CABDABCDEFF $.
+  $}
+
+  $( Swap antecedents.  Theorem *2.04 of [WhiteheadRussell] p. 100.  This was
+     the third axiom in Frege's logic system, specifically Proposition 8 of
+     [Frege1879] p. 35.  Its associated inference is ~ com12 .  (Contributed by
+     NM, 27-Dec-1992.)  (Proof shortened by Wolf Lammen, 12-Sep-2012.) $)
+  pm2.04 $p |- ( ( ph -> ( ps -> ch ) ) -> ( ps -> ( ph -> ch ) ) ) $=
+    ( wi id com23 ) ABCDDZABCGEF $.
+
+  ${
+    com4.1 $e |- ( ph -> ( ps -> ( ch -> ( th -> ta ) ) ) ) $.
+    $( Commutation of antecedents.  Swap 3rd and 4th.  (Contributed by NM,
+       25-Apr-1994.) $)
+    com34 $p |- ( ph -> ( ps -> ( th -> ( ch -> ta ) ) ) ) $=
+      ( wi pm2.04 syl6 ) ABCDEGGDCEGGFCDEHI $.
+
+    $( Commutation of antecedents.  Rotate left.  (Contributed by NM,
+       25-Apr-1994.)  (Proof shortened by Mel L. O'Cat, 15-Aug-2004.) $)
+    com4l $p |- ( ps -> ( ch -> ( th -> ( ph -> ta ) ) ) ) $=
+      ( wi com3l com34 ) BCADEABCDEGFHI $.
+
+    $( Commutation of antecedents.  Rotate twice.  (Contributed by NM,
+       25-Apr-1994.) $)
+    com4t $p |- ( ch -> ( th -> ( ph -> ( ps -> ta ) ) ) ) $=
+      ( com4l ) BCDAEABCDEFGG $.
+
+    $( Commutation of antecedents.  Rotate right.  (Contributed by NM,
+       25-Apr-1994.) $)
+    com4r $p |- ( th -> ( ph -> ( ps -> ( ch -> ta ) ) ) ) $=
+      ( com4t com4l ) CDABEABCDEFGH $.
+
+    $( Commutation of antecedents.  Swap 2nd and 4th.  (Contributed by NM,
+       25-Apr-1994.)  (Proof shortened by Wolf Lammen, 28-Jul-2012.) $)
+    com24 $p |- ( ph -> ( th -> ( ch -> ( ps -> ta ) ) ) ) $=
+      ( wi com4t com13 ) CDABEGABCDEFHI $.
+
+    $( Commutation of antecedents.  Swap 1st and 4th.  (Contributed by NM,
+       25-Apr-1994.)  (Proof shortened by Wolf Lammen, 28-Jul-2012.) $)
+    com14 $p |- ( th -> ( ps -> ( ch -> ( ph -> ta ) ) ) ) $=
+      ( wi com4l com3r ) BCDAEGABCDEFHI $.
+  $}
+
+  ${
+    com5.1 $e |- ( ph -> ( ps -> ( ch -> ( th -> ( ta -> et ) ) ) ) ) $.
+    $( Commutation of antecedents.  Swap 4th and 5th.  (Contributed by Jeff
+       Hankins, 28-Jun-2009.) $)
+    com45 $p |- ( ph -> ( ps -> ( ch -> ( ta -> ( th -> et ) ) ) ) ) $=
+      ( wi pm2.04 syl8 ) ABCDEFHHEDFHHGDEFIJ $.
+
+    $( Commutation of antecedents.  Swap 3rd and 5th.  (Contributed by Jeff
+       Hankins, 28-Jun-2009.) $)
+    com35 $p |- ( ph -> ( ps -> ( ta -> ( th -> ( ch -> et ) ) ) ) ) $=
+      ( wi com34 com45 ) ABDECFHABDCEFABCDEFHGIJI $.
+
+    $( Commutation of antecedents.  Swap 2nd and 5th.  (Contributed by Jeff
+       Hankins, 28-Jun-2009.) $)
+    com25 $p |- ( ph -> ( ta -> ( ch -> ( th -> ( ps -> et ) ) ) ) ) $=
+      ( wi com24 com45 ) ADCEBFHADCBEFABCDEFHGIJI $.
+
+    $( Commutation of antecedents.  Rotate left.  (Contributed by Jeff Hankins,
+       28-Jun-2009.)  (Proof shortened by Wolf Lammen, 29-Jul-2012.) $)
+    com5l $p |- ( ps -> ( ch -> ( th -> ( ta -> ( ph -> et ) ) ) ) ) $=
+      ( wi com4l com45 ) BCDAEFABCDEFHGIJ $.
+
+    $( Commutation of antecedents.  Swap 1st and 5th.  (Contributed by Jeff
+       Hankins, 28-Jun-2009.)  (Proof shortened by Wolf Lammen,
+       29-Jul-2012.) $)
+    com15 $p |- ( ta -> ( ps -> ( ch -> ( th -> ( ph -> et ) ) ) ) ) $=
+      ( wi com5l com4r ) BCDEAFHABCDEFGIJ $.
+
+    $( Commutation of antecedents.  Rotate left twice.  (Contributed by Jeff
+       Hankins, 28-Jun-2009.) $)
+    com52l $p |- ( ch -> ( th -> ( ta -> ( ph -> ( ps -> et ) ) ) ) ) $=
+      ( com5l ) BCDEAFABCDEFGHH $.
+
+    $( Commutation of antecedents.  Rotate right twice.  (Contributed by Jeff
+       Hankins, 28-Jun-2009.) $)
+    com52r $p |- ( th -> ( ta -> ( ph -> ( ps -> ( ch -> et ) ) ) ) ) $=
+      ( com52l com5l ) CDEABFABCDEFGHI $.
+
+    $( Commutation of antecedents.  Rotate right.  (Contributed by Wolf Lammen,
+       29-Jul-2012.) $)
+    com5r $p |- ( ta -> ( ph -> ( ps -> ( ch -> ( th -> et ) ) ) ) ) $=
+      ( com52l ) CDEABFABCDEFGHH $.
+  $}
+
+  $( Closed form of ~ imim12i and of ~ 3syl .  (Contributed by BJ,
+     16-Jul-2019.) $)
+  imim12 $p |- ( ( ph -> ps ) ->
+                      ( ( ch -> th ) -> ( ( ps -> ch ) -> ( ph -> th ) ) ) ) $=
+    ( wi imim2 com13 imim2i com24 ) ABEABCEZCDEZDBJKDEEAKJBDCDBFGHI $.
+
+  $( Elimination of a nested antecedent as a kind of reversal of inference
+     ~ ja .  (Contributed by Wolf Lammen, 9-May-2013.) $)
+  jarr $p |- ( ( ( ph -> ps ) -> ch ) -> ( ps -> ch ) ) $=
+    ( wi ax-1 imim1i ) BABDCBAEF $.
+
+  ${
+    pm2.86d.1 $e |- ( ph -> ( ( ps -> ch ) -> ( ps -> th ) ) ) $.
+    $( Deduction based on ~ pm2.86 .  (Contributed by NM, 29-Jun-1995.)  (Proof
+       shortened by Wolf Lammen, 3-Apr-2013.) $)
+    pm2.86d $p |- ( ph -> ( ps -> ( ch -> th ) ) ) $=
+      ( wi ax-1 syl5 com23 ) ACBDCBCFABDFCBGEHI $.
+  $}
+
+  $( Converse of axiom ~ ax-2 .  Theorem *2.86 of [WhiteheadRussell] p. 108.
+     (Contributed by NM, 25-Apr-1994.)  (Proof shortened by Wolf Lammen,
+     3-Apr-2013.) $)
+  pm2.86 $p |- ( ( ( ph -> ps ) -> ( ph -> ch ) ) ->
+                                                    ( ph -> ( ps -> ch ) ) ) $=
+    ( wi id pm2.86d ) ABDACDDZABCGEF $.
+
+  ${
+    pm2.86i.1 $e |- ( ( ph -> ps ) -> ( ph -> ch ) ) $.
+    $( Inference associated with ~ pm2.86 .  (Contributed by NM, 5-Aug-1993.)
+       (Proof shortened by Wolf Lammen, 3-Apr-2013.) $)
+    pm2.86i $p |- ( ph -> ( ps -> ch ) ) $=
+      ( wi ax-1 syl com12 ) BACBABEACEBAFDGH $.
+
+    $( Alternate proof of ~ pm2.86i with only three essential steps.
+       (Contributed by NM, 5-Aug-1993.)  (Revised by BJ, 19-Jul-2019.)
+       (Proof modification is discouraged.)  (New usage is discouraged.) $)
+    pm2.86iALT $p |- ( ph -> ( ps -> ch ) ) $=
+      ( wi pm2.86 ax-mp ) ABEACEEABCEEDABCFG $.
+  $}
+
+  $( The Linearity Axiom of the infinite-valued sentential logic (L-infinity)
+     of Lukasiewicz.  See ~ loowoz for an alternate axiom.  (Contributed by Mel
+     L. O'Cat, 12-Aug-2004.)  (Proof modification is discouraged.) $)
+  loolin $p |- ( ( ( ph -> ps ) -> ( ps -> ph ) ) -> ( ps -> ph ) ) $=
+    ( wi jarr pm2.43d ) ABCBACZCBAABFDE $.
+
+  $( An alternate for the Linearity Axiom of the infinite-valued sentential
+     logic (L-infinity) of Lukasiewicz ~ loolin , due to Barbara Wozniakowska,
+     _Reports on Mathematical Logic_ 10, 129-137 (1978).  (Contributed by Mel
+     L. O'Cat, 8-Aug-2004.) $)
+  loowoz $p |- ( ( ( ph -> ps ) -> ( ph -> ch ) )
+      -> ( ( ps -> ph ) -> ( ps -> ch ) ) ) $=
+    ( wi jarr a2d ) ABDACDZDBACABGEF $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        Logical negation
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  This section makes our first use of the third axiom of propositional
+  calculus, ~ ax-3 .
+
+$)
+
+  ${
+    con4d.1 $e |- ( ph -> ( -. ps -> -. ch ) ) $.
+    $( Deduction derived from axiom ~ ax-3 .  (Contributed by NM,
+       26-Mar-1995.) $)
+    con4d $p |- ( ph -> ( ch -> ps ) ) $=
+      ( wn wi ax-3 syl ) ABECEFCBFDBCGH $.
+  $}
+
+  ${
+    pm2.21d.1 $e |- ( ph -> -. ps ) $.
+    $( A contradiction implies anything.  Deduction from ~ pm2.21 .
+       (Contributed by NM, 10-Feb-1996.) $)
+    pm2.21d $p |- ( ph -> ( ps -> ch ) ) $=
+      ( wn a1d con4d ) ACBABECEDFG $.
+  $}
+
+  ${
+    pm2.21ddOLD.1 $e |- ( ph -> ps ) $.
+    pm2.21ddOLD.2 $e |- ( ph -> -. ps ) $.
+    $( Obsolete proof of ~ pm2.21dd as of 22-Jul-2019.  (Contributed by Mario
+       Carneiro, 9-Feb-2017.)  (Proof modification is discouraged.)
+       (New usage is discouraged.) $)
+    pm2.21ddOLD $p |- ( ph -> ch ) $=
+      ( pm2.21d mpd ) ABCDABCEFG $.
+  $}
+
+  $( From a wff and its negation, anything is true.  Theorem *2.21 of
+     [WhiteheadRussell] p. 104.  Also called the Duns Scotus law.  (Contributed
+     by NM, 29-Dec-1992.)  (Proof shortened by Wolf Lammen, 14-Sep-2012.) $)
+  pm2.21 $p |- ( -. ph -> ( ph -> ps ) ) $=
+    ( wn id pm2.21d ) ACZABFDE $.
+
+  $( Theorem *2.24 of [WhiteheadRussell] p. 104.  (Contributed by NM,
+     3-Jan-2005.) $)
+  pm2.24 $p |- ( ph -> ( -. ph -> ps ) ) $=
+    ( wn pm2.21 com12 ) ACABABDE $.
+
+  $( Proof by contradiction.  Theorem *2.18 of [WhiteheadRussell] p. 103.  Also
+     called the Law of Clavius.  See also ~ pm2.01 .  (Contributed by NM,
+     29-Dec-1992.) $)
+  pm2.18 $p |- ( ( -. ph -> ph ) -> ph ) $=
+    ( wn wi pm2.21 a2i con4d pm2.43i ) ABZACZAIAIHAIBZAJDEFG $.
+
+  ${
+    pm2.18d.1 $e |- ( ph -> ( -. ps -> ps ) ) $.
+    $( Deduction based on reductio ad absurdum.  (Contributed by FL,
+       12-Jul-2009.)  (Proof shortened by Andrew Salmon, 7-May-2011.) $)
+    pm2.18d $p |- ( ph -> ps ) $=
+      ( wn wi pm2.18 syl ) ABDBEBCBFG $.
+  $}
+
+  $( Converse of double negation.  Theorem *2.14 of [WhiteheadRussell] p. 102.
+     This was the fifth axiom of Frege, specifically Proposition 31 of
+     [Frege1879] p. 44.  In classical logic (our logic) this is always true.
+     In intuitionistic logic this is not always true; in intuitionistic logic,
+     when this is true for some ` ph ` , then ` ph ` is stable.  (Contributed
+     by NM, 29-Dec-1992.)  (Proof shortened by David Harvey, 5-Sep-1999.)
+     (Proof shortened by Josh Purinton, 29-Dec-2000.) $)
+  notnot2 $p |- ( -. -. ph -> ph ) $=
+    ( wn pm2.21 pm2.18d ) ABZBAEACD $.
+
+  ${
+    notnotrd.1 $e |- ( ph -> -. -. ps ) $.
+    $( Deduction converting double-negation into the original wff, aka the
+       double negation rule.  A translation of natural deduction rule ` -. -. `
+       -C, ` _G |- -. -. ps ` => ` _G |- ps ` ; see ~ natded .  This is
+       definition NNC in [Pfenning] p. 17.  This rule is valid in classical
+       logic (which MPE uses), but not intuitionistic logic.  (Contributed by
+       DAW, 8-Feb-2017.) $)
+    notnotrd $p |- ( ph -> ps ) $=
+      ( wn notnot2 syl ) ABDDBCBEF $.
+  $}
+
+  ${
+    notnotri.1 $e |- -. -. ph $.
+    $( Inference from double negation.  (Contributed by NM, 27-Feb-2008.) $)
+    notnotri $p |- ph $=
+      ( wn notnot2 ax-mp ) ACCABADE $.
+  $}
+
+  ${
+    con2d.1 $e |- ( ph -> ( ps -> -. ch ) ) $.
+    $( A contraposition deduction.  (Contributed by NM, 19-Aug-1993.) $)
+    con2d $p |- ( ph -> ( ch -> -. ps ) ) $=
+      ( wn notnot2 syl5 con4d ) ABEZCIEBACEBFDGH $.
+  $}
+
+  $( Contraposition.  Theorem *2.03 of [WhiteheadRussell] p. 100.  (Contributed
+     by NM, 29-Dec-1992.)  (Proof shortened by Wolf Lammen, 12-Feb-2013.) $)
+  con2 $p |- ( ( ph -> -. ps ) -> ( ps -> -. ph ) ) $=
+    ( wn wi id con2d ) ABCDZABGEF $.
+
+  ${
+    mt2d.1 $e |- ( ph -> ch ) $.
+    mt2d.2 $e |- ( ph -> ( ps -> -. ch ) ) $.
+    $( Modus tollens deduction.  (Contributed by NM, 4-Jul-1994.) $)
+    mt2d $p |- ( ph -> -. ps ) $=
+      ( wn con2d mpd ) ACBFDABCEGH $.
+  $}
+
+  ${
+    mt2i.1 $e |- ch $.
+    mt2i.2 $e |- ( ph -> ( ps -> -. ch ) ) $.
+    $( Modus tollens inference.  (Contributed by NM, 26-Mar-1995.)  (Proof
+       shortened by Wolf Lammen, 15-Sep-2012.) $)
+    mt2i $p |- ( ph -> -. ps ) $=
+      ( a1i mt2d ) ABCCADFEG $.
+  $}
+
+  ${
+    nsyl3.1 $e |- ( ph -> -. ps ) $.
+    nsyl3.2 $e |- ( ch -> ps ) $.
+    $( A negated syllogism inference.  (Contributed by NM, 1-Dec-1995.) $)
+    nsyl3 $p |- ( ch -> -. ph ) $=
+      ( wn wi a1i mt2d ) CABEABFGCDHI $.
+  $}
+
+  ${
+    con2i.a $e |- ( ph -> -. ps ) $.
+    $( A contraposition inference.  Its associated inference is ~ mt2 .
+       (Contributed by NM, 10-Jan-1993.)  (Proof shortened by Mel L. O'Cat,
+       28-Nov-2008.)  (Proof shortened by Wolf Lammen, 13-Jun-2013.) $)
+    con2i $p |- ( ps -> -. ph ) $=
+      ( id nsyl3 ) ABBCBDE $.
+  $}
+
+  ${
+    nsyl.1 $e |- ( ph -> -. ps ) $.
+    nsyl.2 $e |- ( ch -> ps ) $.
+    $( A negated syllogism inference.  (Contributed by NM, 31-Dec-1993.)
+       (Proof shortened by Wolf Lammen, 2-Mar-2013.) $)
+    nsyl $p |- ( ph -> -. ch ) $=
+      ( nsyl3 con2i ) CAABCDEFG $.
+  $}
+
+  $( Converse of double negation.  Theorem *2.12 of [WhiteheadRussell] p. 101.
+     This was the sixth axiom of Frege, specifically Proposition 41 of
+     [Frege1879] p. 47.  (Contributed by NM, 28-Dec-1992.)  (Proof shortened by
+     Wolf Lammen, 2-Mar-2013.) $)
+  notnot1 $p |- ( ph -> -. -. ph ) $=
+    ( wn id con2i ) ABZAECD $.
+
+  ${
+    negbi.1 $e |- ph $.
+    $( Infer double negation.  (Contributed by NM, 27-Feb-2008.) $)
+    notnoti $p |- -. -. ph $=
+      ( wn notnot1 ax-mp ) AACCBADE $.
+  $}
+
+  ${
+    con1d.1 $e |- ( ph -> ( -. ps -> ch ) ) $.
+    $( A contraposition deduction.  (Contributed by NM, 27-Dec-1992.) $)
+    con1d $p |- ( ph -> ( -. ch -> ps ) ) $=
+      ( wn notnot1 syl6 con4d ) ABCEZABECIEDCFGH $.
+  $}
+
+  ${
+    mt3d.1 $e |- ( ph -> -. ch ) $.
+    mt3d.2 $e |- ( ph -> ( -. ps -> ch ) ) $.
+    $( Modus tollens deduction.  (Contributed by NM, 26-Mar-1995.) $)
+    mt3d $p |- ( ph -> ps ) $=
+      ( wn con1d mpd ) ACFBDABCEGH $.
+  $}
+
+  ${
+    mt3i.1 $e |- -. ch $.
+    mt3i.2 $e |- ( ph -> ( -. ps -> ch ) ) $.
+    $( Modus tollens inference.  (Contributed by NM, 26-Mar-1995.)  (Proof
+       shortened by Wolf Lammen, 15-Sep-2012.) $)
+    mt3i $p |- ( ph -> ps ) $=
+      ( wn a1i mt3d ) ABCCFADGEH $.
+  $}
+
+  ${
+    nsyl2.1 $e |- ( ph -> -. ps ) $.
+    nsyl2.2 $e |- ( -. ch -> ps ) $.
+    $( A negated syllogism inference.  (Contributed by NM, 26-Jun-1994.) $)
+    nsyl2 $p |- ( ph -> ch ) $=
+      ( wn wi a1i mt3d ) ACBDCFBGAEHI $.
+  $}
+
+  $( Contraposition.  Theorem *2.15 of [WhiteheadRussell] p. 102.  (Contributed
+     by NM, 29-Dec-1992.)  (Proof shortened by Wolf Lammen, 12-Feb-2013.) $)
+  con1 $p |- ( ( -. ph -> ps ) -> ( -. ps -> ph ) ) $=
+    ( wn wi id con1d ) ACBDZABGEF $.
+
+  ${
+    con1i.a $e |- ( -. ph -> ps ) $.
+    $( A contraposition inference.  Its associated inference is ~ mt3 .
+       (Contributed by NM, 3-Jan-1993.)  (Proof shortened by Mel L. O'Cat,
+       28-Nov-2008.)  (Proof shortened by Wolf Lammen, 19-Jun-2013.) $)
+    con1i $p |- ( -. ps -> ph ) $=
+      ( wn id nsyl2 ) BDZBAGECF $.
+  $}
+
+  ${
+    con4i.1 $e |- ( -. ph -> -. ps ) $.
+    $( Inference rule derived from axiom ~ ax-3 .  Its associated inference is
+       ~ mt4 .  (Contributed by NM, 29-Dec-1992.)  (Proof shortened by Wolf
+       Lammen, 21-Jun-2013.) $)
+    con4i $p |- ( ps -> ph ) $=
+      ( wn notnot1 nsyl2 ) BBDABECF $.
+  $}
+
+  ${
+    pm2.21i.1 $e |- -. ph $.
+    $( A contradiction implies anything.  Inference associated with ~ pm2.21 .
+       (Contributed by NM, 16-Sep-1993.) $)
+    pm2.21i $p |- ( ph -> ps ) $=
+      ( wn a1i con4i ) BAADBDCEF $.
+  $}
+
+  ${
+    pm2.24ii.1 $e |- ph $.
+    pm2.24ii.2 $e |- -. ph $.
+    $( A contradiction implies anything.  Inference associated with ~ pm2.21i
+       and ~ pm2.24i .  (Contributed by NM, 27-Feb-2008.) $)
+    pm2.24ii $p |- ps $=
+      ( pm2.21i ax-mp ) ABCABDEF $.
+  $}
+
+  ${
+    con3d.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( A contraposition deduction.  Deduction form of ~ con3 .  (Contributed by
+       NM, 10-Jan-1993.) $)
+    con3d $p |- ( ph -> ( -. ch -> -. ps ) ) $=
+      ( wn notnot2 syl5 con1d ) ABEZCIEBACBFDGH $.
+  $}
+
+  $( Contraposition.  Theorem *2.16 of [WhiteheadRussell] p. 103.  This was the
+     fourth axiom of Frege, specifically Proposition 28 of [Frege1879] p. 43.
+     (Contributed by NM, 29-Dec-1992.)  (Proof shortened by Wolf Lammen,
+     13-Feb-2013.) $)
+  con3 $p |- ( ( ph -> ps ) -> ( -. ps -> -. ph ) ) $=
+    ( wi id con3d ) ABCZABFDE $.
+
+  ${
+    con3i.a $e |- ( ph -> ps ) $.
+    $( A contraposition inference.  Inference associated with ~ con3 .  Its
+       associated inference is ~ mto .  (Contributed by NM, 3-Jan-1993.)
+       (Proof shortened by Wolf Lammen, 20-Jun-2013.) $)
+    con3i $p |- ( -. ps -> -. ph ) $=
+      ( wn id nsyl ) BDZBAGECF $.
+  $}
+
+  ${
+    con3rr3.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( Rotate through consequent right.  (Contributed by Wolf Lammen,
+       3-Nov-2013.) $)
+    con3rr3 $p |- ( -. ch -> ( ph -> -. ps ) ) $=
+      ( wn con3d com12 ) ACEBEABCDFG $.
+  $}
+
+  ${
+    mt4.1 $e |- ph $.
+    mt4.2 $e |- ( -. ps -> -. ph ) $.
+    $( The rule of modus tollens.  Inference associated with ~ con4i .
+       (Contributed by Wolf Lammen, 12-May-2013.) $)
+    mt4 $p |- ps $=
+      ( con4i ax-mp ) ABCBADEF $.
+  $}
+
+  ${
+    mt4d.1 $e |- ( ph -> ps ) $.
+    mt4d.2 $e |- ( ph -> ( -. ch -> -. ps ) ) $.
+    $( Modus tollens deduction.  Deduction form of ~ mt4 .  (Contributed by NM,
+       9-Jun-2006.) $)
+    mt4d $p |- ( ph -> ch ) $=
+      ( con4d mpd ) ABCDACBEFG $.
+  $}
+
+  ${
+    mt4i.1 $e |- ch $.
+    mt4i.2 $e |- ( ph -> ( -. ps -> -. ch ) ) $.
+    $( Modus tollens inference.  (Contributed by Wolf Lammen, 12-May-2013.) $)
+    mt4i $p |- ( ph -> ps ) $=
+      ( a1i mt4d ) ACBCADFEG $.
+  $}
+
+  ${
+    nsyld.1 $e |- ( ph -> ( ps -> -. ch ) ) $.
+    nsyld.2 $e |- ( ph -> ( ta -> ch ) ) $.
+    $( A negated syllogism deduction.  (Contributed by NM, 9-Apr-2005.) $)
+    nsyld $p |- ( ph -> ( ps -> -. ta ) ) $=
+      ( wn con3d syld ) ABCGDGEADCFHI $.
+  $}
+
+  ${
+    nsyli.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    nsyli.2 $e |- ( th -> -. ch ) $.
+    $( A negated syllogism inference.  (Contributed by NM, 3-May-1994.) $)
+    nsyli $p |- ( ph -> ( th -> -. ps ) ) $=
+      ( wn con3d syl5 ) DCGABGFABCEHI $.
+  $}
+
+  ${
+    nsyl4.1 $e |- ( ph -> ps ) $.
+    nsyl4.2 $e |- ( -. ph -> ch ) $.
+    $( A negated syllogism inference.  (Contributed by NM, 15-Feb-1996.) $)
+    nsyl4 $p |- ( -. ch -> ps ) $=
+      ( wn con1i syl ) CFABACEGDH $.
+  $}
+
+  ${
+    pm2.24d.1 $e |- ( ph -> ps ) $.
+    $( Deduction version of ~ pm2.24 .  (Contributed by NM, 30-Jan-2006.) $)
+    pm2.24d $p |- ( ph -> ( -. ps -> ch ) ) $=
+      ( wn a1d con1d ) ACBABCEDFG $.
+  $}
+
+  ${
+    pm2.24i.1 $e |- ph $.
+    $( Inference version of ~ pm2.24 .  (Contributed by NM, 20-Aug-2001.) $)
+    pm2.24i $p |- ( -. ph -> ps ) $=
+      ( wn a1i con1i ) BAABDCEF $.
+  $}
+
+  $( Theorem *3.2 of [WhiteheadRussell] p. 111, expressed with primitive
+     connectives.  (Contributed by NM, 29-Dec-1992.)  (Proof shortened by Josh
+     Purinton, 29-Dec-2000.) $)
+  pm3.2im $p |- ( ph -> ( ps -> -. ( ph -> -. ps ) ) ) $=
+    ( wn wi pm2.27 con2d ) AABCZDBAGEF $.
+
+  $( Theorem 8 of [Margaris] p. 60.  (Contributed by NM, 5-Aug-1993.)  (Proof
+     shortened by Josh Purinton, 29-Dec-2000.) $)
+  mth8 $p |- ( ph -> ( -. ps -> -. ( ph -> ps ) ) ) $=
+    ( wi pm2.27 con3d ) AABCBABDE $.
+
+  ${
+    jc.1 $e |- ( ph -> ps ) $.
+    jc.2 $e |- ( ph -> ch ) $.
+    $( Inference joining the consequents of two premises.  (Contributed by NM,
+       28-Dec-1992.) $)
+    jc $p |- ( ph -> -. ( ps -> -. ch ) ) $=
+      ( wn wi pm3.2im sylc ) ABCBCFGFDEBCHI $.
+  $}
+
+  ${
+    impi.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( An importation inference.  (Contributed by NM, 29-Dec-1992.)  (Proof
+       shortened by Wolf Lammen, 20-Jul-2013.) $)
+    impi $p |- ( -. ( ph -> -. ps ) -> ch ) $=
+      ( wn wi con3rr3 con1i ) CABEFABCDGH $.
+  $}
+
+  ${
+    expi.1 $e |- ( -. ( ph -> -. ps ) -> ch ) $.
+    $( An exportation inference.  (Contributed by NM, 29-Dec-1992.)  (Proof
+       shortened by Mel L. O'Cat, 28-Nov-2008.) $)
+    expi $p |- ( ph -> ( ps -> ch ) ) $=
+      ( wn wi pm3.2im syl6 ) ABABEFECABGDH $.
+  $}
+
+  $( Simplification.  Similar to Theorem *3.27 (Simp) of [WhiteheadRussell]
+     p. 112.  (Contributed by NM, 3-Jan-1993.)  (Proof shortened by Wolf
+     Lammen, 13-Nov-2012.) $)
+  simprim $p |- ( -. ( ph -> -. ps ) -> ps ) $=
+    ( idd impi ) ABBABCD $.
+
+  $( Simplification.  Similar to Theorem *3.26 (Simp) of [WhiteheadRussell]
+     p. 112.  (Contributed by NM, 3-Jan-1993.)  (Proof shortened by Wolf
+     Lammen, 21-Jul-2012.) $)
+  simplim $p |- ( -. ( ph -> ps ) -> ph ) $=
+    ( wi pm2.21 con1i ) AABCABDE $.
+
+  $( Theorem *2.5 of [WhiteheadRussell] p. 107.  (Contributed by NM,
+     3-Jan-2005.)  (Proof shortened by Wolf Lammen, 9-Oct-2012.) $)
+  pm2.5 $p |- ( -. ( ph -> ps ) -> ( -. ph -> ps ) ) $=
+    ( wi wn simplim pm2.24d ) ABCDABABEF $.
+
+  $( Theorem *2.51 of [WhiteheadRussell] p. 107.  (Contributed by NM,
+     3-Jan-2005.) $)
+  pm2.51 $p |- ( -. ( ph -> ps ) -> ( ph -> -. ps ) ) $=
+    ( wi wn ax-1 con3i a1d ) ABCZDBDABHBAEFG $.
+
+  $( Theorem *2.521 of [WhiteheadRussell] p. 107.  (Contributed by NM,
+     3-Jan-2005.)  (Proof shortened by Wolf Lammen, 8-Oct-2012.) $)
+  pm2.521 $p |- ( -. ( ph -> ps ) -> ( ps -> ph ) ) $=
+    ( wi wn simplim a1d ) ABCDABABEF $.
+
+  $( Theorem *2.52 of [WhiteheadRussell] p. 107.  (Contributed by NM,
+     3-Jan-2005.)  (Proof shortened by Wolf Lammen, 8-Oct-2012.) $)
+  pm2.52 $p |- ( -. ( ph -> ps ) -> ( -. ph -> -. ps ) ) $=
+    ( wi wn pm2.521 con3d ) ABCDBAABEF $.
+
+  $( Exportation theorem expressed with primitive connectives.  (Contributed by
+     NM, 28-Dec-1992.) $)
+  expt $p |- ( ( -. ( ph -> -. ps ) -> ch ) -> ( ph -> ( ps -> ch ) ) ) $=
+    ( wn wi pm3.2im imim1d com12 ) AABDEDZCEBCEABICABFGH $.
+
+  $( Importation theorem expressed with primitive connectives.  (Contributed by
+     NM, 25-Apr-1994.)  (Proof shortened by Wolf Lammen, 20-Jul-2013.) $)
+  impt $p |- ( ( ph -> ( ps -> ch ) ) -> ( -. ( ph -> -. ps ) -> ch ) ) $=
+    ( wi wn simprim simplim imim1i mpdi ) ABCDZDABEZDEZBCABFLAJAKGHI $.
+
+  ${
+    pm2.61d.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    pm2.61d.2 $e |- ( ph -> ( -. ps -> ch ) ) $.
+    $( Deduction eliminating an antecedent.  (Contributed by NM, 27-Apr-1994.)
+       (Proof shortened by Wolf Lammen, 12-Sep-2013.) $)
+    pm2.61d $p |- ( ph -> ch ) $=
+      ( wn con1d syld pm2.18d ) ACACFBCABCEGDHI $.
+  $}
+
+  ${
+    pm2.61d1.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    pm2.61d1.2 $e |- ( -. ps -> ch ) $.
+    $( Inference eliminating an antecedent.  (Contributed by NM,
+       15-Jul-2005.) $)
+    pm2.61d1 $p |- ( ph -> ch ) $=
+      ( wn wi a1i pm2.61d ) ABCDBFCGAEHI $.
+  $}
+
+  ${
+    pm2.61d2.1 $e |- ( ph -> ( -. ps -> ch ) ) $.
+    pm2.61d2.2 $e |- ( ps -> ch ) $.
+    $( Inference eliminating an antecedent.  (Contributed by NM,
+       18-Aug-1993.) $)
+    pm2.61d2 $p |- ( ph -> ch ) $=
+      ( wi a1i pm2.61d ) ABCBCFAEGDH $.
+  $}
+
+  ${
+    ja.1 $e |- ( -. ph -> ch ) $.
+    ja.2 $e |- ( ps -> ch ) $.
+    $( Inference joining the antecedents of two premises.  (Contributed by NM,
+       24-Jan-1993.)  (Proof shortened by Mel L. O'Cat, 19-Feb-2008.) $)
+    ja $p |- ( ( ph -> ps ) -> ch ) $=
+      ( wi imim2i pm2.61d1 ) ABFACBCAEGDH $.
+  $}
+
+  ${
+    jad.1 $e |- ( ph -> ( -. ps -> th ) ) $.
+    jad.2 $e |- ( ph -> ( ch -> th ) ) $.
+    $( Deduction form of ~ ja .  (Contributed by Scott Fenton, 13-Dec-2010.)
+       (Proof shortened by Andrew Salmon, 17-Sep-2011.) $)
+    jad $p |- ( ph -> ( ( ps -> ch ) -> th ) ) $=
+      ( wi wn com12 ja ) BCGADBCADGABHDEIACDFIJI $.
+  $}
+
+  $( Elimination of a nested antecedent as a kind of reversal of inference
+     ~ ja .  (Contributed by Wolf Lammen, 10-May-2013.) $)
+  jarl $p |- ( ( ( ph -> ps ) -> ch ) -> ( -. ph -> ch ) ) $=
+    ( wn wi pm2.21 imim1i ) ADABECABFG $.
+
+  ${
+    pm2.61i.1 $e |- ( ph -> ps ) $.
+    pm2.61i.2 $e |- ( -. ph -> ps ) $.
+    $( Inference eliminating an antecedent.  (Contributed by NM, 5-Apr-1994.)
+       (Proof shortened by Wolf Lammen, 12-Sep-2013.) $)
+    pm2.61i $p |- ps $=
+      ( wi id ja ax-mp ) AAEBAFAABDCGH $.
+  $}
+
+  ${
+    pm2.61ii.1 $e |- ( -. ph -> ( -. ps -> ch ) ) $.
+    pm2.61ii.2 $e |- ( ph -> ch ) $.
+    pm2.61ii.3 $e |- ( ps -> ch ) $.
+    $( Inference eliminating two antecedents.  (Contributed by NM,
+       4-Jan-1993.)  (Proof shortened by Josh Purinton, 29-Dec-2000.) $)
+    pm2.61ii $p |- ch $=
+      ( wn pm2.61d2 pm2.61i ) ACEAGBCDFHI $.
+  $}
+
+  ${
+    pm2.61nii.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    pm2.61nii.2 $e |- ( -. ph -> ch ) $.
+    pm2.61nii.3 $e |- ( -. ps -> ch ) $.
+    $( Inference eliminating two antecedents.  (Contributed by NM,
+       13-Jul-2005.)  (Proof shortened by Andrew Salmon, 25-May-2011.)  (Proof
+       shortened by Wolf Lammen, 13-Nov-2012.) $)
+    pm2.61nii $p |- ch $=
+      ( pm2.61d1 pm2.61i ) ACABCDFGEH $.
+  $}
+
+  ${
+    pm2.61iii.1 $e |- ( -. ph -> ( -. ps -> ( -. ch -> th ) ) ) $.
+    pm2.61iii.2 $e |- ( ph -> th ) $.
+    pm2.61iii.3 $e |- ( ps -> th ) $.
+    pm2.61iii.4 $e |- ( ch -> th ) $.
+    $( Inference eliminating three antecedents.  (Contributed by NM,
+       2-Jan-2002.)  (Proof shortened by Wolf Lammen, 22-Sep-2013.) $)
+    pm2.61iii $p |- th $=
+      ( wn wi a1d pm2.61ii pm2.61i ) CDHABCIZDJEADNFKBDNGKLM $.
+  $}
+
+  $( Reductio ad absurdum.  Theorem *2.01 of [WhiteheadRussell] p. 100.  Also
+     called the weak Clavius law, and provable in minimal calculus, contrary to
+     the Clavius law ~ pm2.18 .  (Contributed by NM, 18-Aug-1993.)  (Proof
+     shortened by Mel L. O'Cat, 21-Nov-2008.)  (Proof shortened by Wolf Lammen,
+     31-Oct-2012.) $)
+  pm2.01 $p |- ( ( ph -> -. ph ) -> -. ph ) $=
+    ( wn id ja ) AABZEECZFD $.
+
+  ${
+    pm2.01d.1 $e |- ( ph -> ( ps -> -. ps ) ) $.
+    $( Deduction based on reductio ad absurdum.  (Contributed by NM,
+       18-Aug-1993.)  (Proof shortened by Wolf Lammen, 5-Mar-2013.) $)
+    pm2.01d $p |- ( ph -> -. ps ) $=
+      ( wn id pm2.61d1 ) ABBDZCGEF $.
+  $}
+
+  $( Theorem *2.6 of [WhiteheadRussell] p. 107.  (Contributed by NM,
+     3-Jan-2005.) $)
+  pm2.6 $p |- ( ( -. ph -> ps ) -> ( ( ph -> ps ) -> ps ) ) $=
+    ( wn wi id idd jad ) ACBDZABBHEHBFG $.
+
+  $( Theorem *2.61 of [WhiteheadRussell] p. 107.  Useful for eliminating an
+     antecedent.  (Contributed by NM, 4-Jan-1993.)  (Proof shortened by Wolf
+     Lammen, 22-Sep-2013.) $)
+  pm2.61 $p |- ( ( ph -> ps ) -> ( ( -. ph -> ps ) -> ps ) ) $=
+    ( wn wi pm2.6 com12 ) ACBDABDBABEF $.
+
+  $( Theorem *2.65 of [WhiteheadRussell] p. 107.  Proof by contradiction.
+     (Contributed by NM, 21-Jun-1993.)  (Proof shortened by Wolf Lammen,
+     8-Mar-2013.) $)
+  pm2.65 $p |- ( ( ph -> ps ) -> ( ( ph -> -. ps ) -> -. ph ) ) $=
+    ( wi wn idd con3 jad ) ABCZABDADZHIEABFG $.
+
+  ${
+    pm2.65i.1 $e |- ( ph -> ps ) $.
+    pm2.65i.2 $e |- ( ph -> -. ps ) $.
+    $( Inference rule for proof by contradiction.  (Contributed by NM,
+       18-May-1994.)  (Proof shortened by Wolf Lammen, 11-Sep-2013.) $)
+    pm2.65i $p |- -. ph $=
+      ( wn con2i con3i pm2.61i ) BAEABDFABCGH $.
+  $}
+
+  ${
+    pm2.21dd.1 $e |- ( ph -> ps ) $.
+    pm2.21dd.2 $e |- ( ph -> -. ps ) $.
+    $( A contradiction implies anything.  Deduction from ~ pm2.21 .
+       (Contributed by Mario Carneiro, 9-Feb-2017.)  (Proof shortened by Wolf
+       Lammen, 22-Jul-2019.) $)
+    pm2.21dd $p |- ( ph -> ch ) $=
+      ( pm2.65i pm2.21i ) ACABDEFG $.
+  $}
+
+  ${
+    pm2.65d.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    pm2.65d.2 $e |- ( ph -> ( ps -> -. ch ) ) $.
+    $( Deduction rule for proof by contradiction.  (Contributed by NM,
+       26-Jun-1994.)  (Proof shortened by Wolf Lammen, 26-May-2013.) $)
+    pm2.65d $p |- ( ph -> -. ps ) $=
+      ( nsyld pm2.01d ) ABABCBEDFG $.
+  $}
+
+  ${
+    mto.1 $e |- -. ps $.
+    mto.2 $e |- ( ph -> ps ) $.
+    $( The rule of modus tollens.  The rule says, "if ` ps ` is not true, and
+       ` ph ` implies ` ps ` , then ` ph ` must also be not true."  Modus
+       tollens is short for "modus tollendo tollens," a Latin phrase that means
+       "the mode that by denying denies" - remark in [Sanford] p. 39.  It is
+       also called denying the consequent.  Modus tollens is closely related to
+       modus ponens ~ ax-mp .  Note that this rule is also valid in
+       intuitionistic logic.  Inference associated with ~ con3i .  (Contributed
+       by NM, 19-Aug-1993.)  (Proof shortened by Wolf Lammen, 11-Sep-2013.) $)
+    mto $p |- -. ph $=
+      ( wn a1i pm2.65i ) ABDBEACFG $.
+  $}
+
+  ${
+    mtod.1 $e |- ( ph -> -. ch ) $.
+    mtod.2 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( Modus tollens deduction.  (Contributed by NM, 3-Apr-1994.)  (Proof
+       shortened by Wolf Lammen, 11-Sep-2013.) $)
+    mtod $p |- ( ph -> -. ps ) $=
+      ( wn a1d pm2.65d ) ABCEACFBDGH $.
+  $}
+
+  ${
+    mtoi.1 $e |- -. ch $.
+    mtoi.2 $e |- ( ph -> ( ps -> ch ) ) $.
+    $( Modus tollens inference.  (Contributed by NM, 5-Jul-1994.)  (Proof
+       shortened by Wolf Lammen, 15-Sep-2012.) $)
+    mtoi $p |- ( ph -> -. ps ) $=
+      ( wn a1i mtod ) ABCCFADGEH $.
+  $}
+
+  ${
+    mt2.1 $e |- ps $.
+    mt2.2 $e |- ( ph -> -. ps ) $.
+    $( A rule similar to modus tollens.  Inference associated with ~ con2i .
+       (Contributed by NM, 19-Aug-1993.)  (Proof shortened by Wolf Lammen,
+       10-Sep-2013.) $)
+    mt2 $p |- -. ph $=
+      ( a1i pm2.65i ) ABBACEDF $.
+  $}
+
+  ${
+    mt3.1 $e |- -. ps $.
+    mt3.2 $e |- ( -. ph -> ps ) $.
+    $( A rule similar to modus tollens.  Inference associated with ~ con1i .
+       (Contributed by NM, 18-May-1994.)  (Proof shortened by Wolf Lammen,
+       11-Sep-2013.) $)
+    mt3 $p |- ph $=
+      ( wn mto notnotri ) AAEBCDFG $.
+  $}
+
+  $( Peirce's axiom.  This odd-looking theorem is the "difference" between an
+     intuitionistic system of propositional calculus and a classical system and
+     is not accepted by intuitionists.  When Peirce's axiom is added to an
+     intuitionistic system, the system becomes equivalent to our classical
+     system ~ ax-1 through ~ ax-3 .  A curious fact about this theorem is that
+     it requires ~ ax-3 for its proof even though the result has no negation
+     connectives in it.  (Contributed by NM, 29-Dec-1992.)  (Proof shortened by
+     Wolf Lammen, 9-Oct-2012.) $)
+  peirce $p |- ( ( ( ph -> ps ) -> ph ) -> ph ) $=
+    ( wi simplim id ja ) ABCAAABDAEF $.
+
+  $( The Inversion Axiom of the infinite-valued sentential logic (L-infinity)
+     of Lukasiewicz.  Using ~ dfor2 , we can see that this essentially
+     expresses "disjunction commutes."  Theorem *2.69 of [WhiteheadRussell]
+     p. 108.  (Contributed by NM, 12-Aug-2004.) $)
+  looinv $p |- ( ( ( ph -> ps ) -> ps ) -> ( ( ps -> ph ) -> ph ) ) $=
+    ( wi imim1 peirce syl6 ) ABCZBCBACGACAGBADABEF $.
+
+  $( Theorem used to justify definition of biconditional ~ df-bi .
+     (Contributed by NM, 11-May-1999.)  (Proof shortened by Josh Purinton,
+     29-Dec-2000.) $)
+  bijust $p |- -. ( ( -. ( ( ph -> ps ) -> -. ( ps -> ph ) )
+                      -> -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) )
+               -> -. ( -. ( ( ph -> ps ) -> -. ( ps -> ph ) )
+                      -> -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) ) ) $=
+    ( wi wn id pm2.01 mt2 ) ABCBACDCDZHCZIDCIHEIFG $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        Logical equivalence
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  The definition ~ df-bi in this section is our first definition, which
+  introduces and defines the biconditional connective ` <-> ` . We define a wff
+  of the form ` ( ph <-> ps ) ` as an abbreviation for
+  ` -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) ` .
+
+  Unlike most traditional developments, we have chosen not to have a separate
+  symbol such as "Df." to mean "is defined as."  Instead, we will later use the
+  biconditional connective for this purpose ( ~ df-or is its first use), as it
+  allows us to use logic to manipulate definitions directly.  This greatly
+  simplifies many proofs since it eliminates the need for a separate mechanism
+  for introducing and eliminating definitions.
+$)
+
+  $( Declare the biconditional connective. $)
+  $c <-> $. $( Double arrow (read:  'if and only if' or
+               'is logically equivalent to') $)
+
+  $( Extend our wff definition to include the biconditional connective. $)
+  wb $a wff ( ph <-> ps ) $.
+
+  $( Define the biconditional (logical 'iff').
+
+     The definition ~ df-bi in this section is our first definition, which
+     introduces and defines the biconditional connective ` <-> ` .  We define a
+     wff of the form ` ( ph <-> ps ) ` as an abbreviation for
+     ` -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) ` .
+
+     Unlike most traditional developments, we have chosen not to have a
+     separate symbol such as "Df." to mean "is defined as."  Instead, we will
+     later use the biconditional connective for this purpose ( ~ df-or is its
+     first use), as it allows us to use logic to manipulate definitions
+     directly.  This greatly simplifies many proofs since it eliminates the
+     need for a separate mechanism for introducing and eliminating
+     definitions.  Of course, we cannot use this mechanism to define the
+     biconditional itself, since it hasn't been introduced yet.  Instead, we
+     use a more general form of definition, described as follows.
+
+     In its most general form, a definition is simply an assertion that
+     introduces a new symbol (or a new combination of existing symbols, as in
+     ~ df-3an ) that is eliminable and does not strengthen the existing
+     language.  The latter requirement means that the set of provable
+     statements not containing the new symbol (or new combination) should
+     remain exactly the same after the definition is introduced.  Our
+     definition of the biconditional may look unusual compared to most
+     definitions, but it strictly satisfies these requirements.
+
+     The justification for our definition is that if we mechanically replace
+     ` ( ph <-> ps ) ` (the definiendum i.e. the thing being defined) with
+     ` -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) ` (the definiens i.e. the
+     defining expression) in the definition, the definition becomes the
+     previously proved theorem ~ bijust .  It is impossible to use ~ df-bi to
+     prove any statement expressed in the original language that can't be
+     proved from the original axioms, because if we simply replace each
+     instance of ~ df-bi in the proof with the corresponding ~ bijust instance,
+     we will end up with a proof from the original axioms.
+
+     Note that from Metamath's point of view, a definition is just another
+     axiom - i.e. an assertion we claim to be true - but from our high level
+     point of view, we are not strengthening the language.  To indicate this
+     fact, we prefix definition labels with "df-" instead of "ax-".  (This
+     prefixing is an informal convention that means nothing to the Metamath
+     proof verifier; it is just a naming convention for human readability.)
+
+     After we define the constant true ` T. ` ( ~ df-tru ) and the constant
+     false ` F. ` ( ~ df-fal ), we will be able to prove these truth table
+     values: ` ( ( T. <-> T. ) <-> T. ) ` ( ~ trubitru ),
+     ` ( ( T. <-> F. ) <-> F. ) ` ( ~ trubifal ), ` ( ( F. <-> T. ) <-> F. ) `
+     ( ~ falbitru ), and ` ( ( F. <-> F. ) <-> T. ) ` ( ~ falbifal ).
+
+     See ~ dfbi1 , ~ dfbi2 , and ~ dfbi3 for theorems suggesting typical
+     textbook definitions of ` <-> ` , showing that our definition has the
+     properties we expect.  Theorem ~ dfbi1 is particularly useful if we want
+     to eliminate ` <-> ` from an expression to convert it to primitives.
+     Theorem ~ dfbi shows this definition rewritten in an abbreviated form
+     after conjunction is introduced, for easier understanding.
+
+     Contrast with ` \/ ` ( ~ df-or ), ` -> ` ( ~ wi ), ` -/\ ` ( ~ df-nan ),
+     and ` \/_ ` ( ~ df-xor ) .  In some sense ` <-> ` returns true if two
+     truth values are equal; ` = ` ( ~ df-cleq ) returns true if two classes
+     are equal.  (Contributed by NM, 27-Dec-1992.) $)
+  df-bi $a |- -. ( ( ( ph <-> ps ) -> -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) )
+        -> -. ( -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) -> ( ph <-> ps ) ) ) $.
+
+  $( $j justification 'bijust' for 'df-bi'; $)
+
+  $( Property of the biconditional connective.  (Contributed by NM,
+     11-May-1999.) $)
+  bi1 $p |- ( ( ph <-> ps ) -> ( ph -> ps ) ) $=
+    ( wb wi wn df-bi simplim ax-mp syl ) ABCZABDZBADEZDEZKJMDZMJDEZDENABFNOGHKL
+    GI $.
+
+  $( Property of the biconditional connective.  (Contributed by NM,
+     11-May-1999.) $)
+  bi3 $p |- ( ( ph -> ps ) -> ( ( ps -> ph ) -> ( ph <-> ps ) ) ) $=
+    ( wi wb wn df-bi simprim ax-mp expi ) ABCZBACZABDZLJKECEZCZMLCZECEOABFNOGHI
+    $.
+
+  ${
+    impbii.1 $e |- ( ph -> ps ) $.
+    impbii.2 $e |- ( ps -> ph ) $.
+    $( Infer an equivalence from an implication and its converse.  (Contributed
+       by NM, 29-Dec-1992.) $)
+    impbii $p |- ( ph <-> ps ) $=
+      ( wi wb bi3 mp2 ) ABEBAEABFCDABGH $.
+  $}
+
+  ${
+    impbidd.1 $e |- ( ph -> ( ps -> ( ch -> th ) ) ) $.
+    impbidd.2 $e |- ( ph -> ( ps -> ( th -> ch ) ) ) $.
+    $( Deduce an equivalence from two implications.  (Contributed by Rodolfo
+       Medina, 12-Oct-2010.) $)
+    impbidd $p |- ( ph -> ( ps -> ( ch <-> th ) ) ) $=
+      ( wi wb bi3 syl6c ) ABCDGDCGCDHEFCDIJ $.
+  $}
+
+  ${
+    impbid21d.1 $e |- ( ps -> ( ch -> th ) ) $.
+    impbid21d.2 $e |- ( ph -> ( th -> ch ) ) $.
+    $( Deduce an equivalence from two implications.  (Contributed by Wolf
+       Lammen, 12-May-2013.) $)
+    impbid21d $p |- ( ph -> ( ps -> ( ch <-> th ) ) ) $=
+      ( wi a1i a1d impbidd ) ABCDBCDGGAEHADCGBFIJ $.
+  $}
+
+  ${
+    impbid.1 $e |- ( ph -> ( ps -> ch ) ) $.
+    impbid.2 $e |- ( ph -> ( ch -> ps ) ) $.
+    $( Deduce an equivalence from two implications.  (Contributed by NM,
+       24-Jan-1993.)  Revised to prove it from ~ impbid21d .  (Revised by Wolf
+       Lammen, 3-Nov-2012.) $)
+    impbid $p |- ( ph -> ( ps <-> ch ) ) $=
+      ( wb impbid21d pm2.43i ) ABCFAABCDEGH $.
+  $}
+
+  $( Relate the biconditional connective to primitive connectives.  See
+     ~ dfbi1ALT for an unusual version proved directly from axioms.
+     (Contributed by NM, 29-Dec-1992.) $)
+  dfbi1 $p |- ( ( ph <-> ps ) <-> -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) ) $=
+    ( wb wi wn df-bi simplim ax-mp bi3 impi impbii ) ABCZABDZBADZEDEZLODZOLDEZD
+    EPABFPQGHMNLABIJK $.
+
+  $( Alternate proof of ~ dfbi1 .  This proof, discovered by Gregory Bush on
+     8-Mar-2004, has several curious properties.  First, it has only 17 steps
+     directly from the axioms and ~ df-bi , compared to over 800 steps were the
+     proof of ~ dfbi1 expanded into axioms.  Second, step 2 demands only the
+     property of "true"; any axiom (or theorem) could be used.  It might be
+     thought, therefore, that it is in some sense redundant, but in fact no
+     proof is shorter than this (measured by number of steps).  Third, it
+     illustrates how intermediate steps can "blow up" in size even in short
+     proofs.  Fourth, the compressed proof is only 182 bytes (or 17 bytes in
+     D-proof notation), but the generated web page is over 200kB with
+     intermediate steps that are essentially incomprehensible to humans (other
+     than Gregory Bush).  If there were an obfuscated code contest for proofs,
+     this would be a contender.  This "blowing up" and incomprehensibility of
+     the intermediate steps vividly demonstrate the advantages of using many
+     layered intermediate theorems, since each theorem is easier to
+     understand.  (Contributed by Gregory Bush, 10-Mar-2004.)
+     (New usage is discouraged.)  (Proof modification is discouraged.) $)
+  dfbi1ALT $p |-
+                ( ( ph <-> ps ) <-> -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) ) $=
+    ( wch wth wb wi wn df-bi ax-1 ax-mp ax-3 ax-2 ) ABEZABFBAFGFGZFNMFGFGZMNEZA
+    BHCDCFFZOPFZCDIRGZQGZFZQRFSPOFZSFZFZUASUBISUCTFZFZUDUAFUEUFTGZUCGZFZUEUHUIM
+    NHUHUGIJTUCKJUESIJSUCTLJJRQKJJJ $.
