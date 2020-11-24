@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -339,16 +340,11 @@ public class MetamathParsers {
         frame.setAssertion(assertion);
         frame.setHypotheses(context.getAllHypotheses());
         frame.setTypes(new ArrayList<>());
-        final List<String> allSymbols = Stream.concat(
+        final Set<String> allSymbols = Stream.concat(
                 frame.getHypotheses().stream().flatMap(hyp -> hyp.getSymbols().stream()),
                 frame.getAssertion().getSymbols().stream()
-        ).collect(Collectors.toList());
-        Set<String> processedSymbols = new HashSet<>();
-        for (int i = allSymbols.size()-1; i >= 0; i--) {
-            final String sym = allSymbols.get(i);
-            if (processedSymbols.contains(sym)) {
-                continue;
-            }
+        ).collect(Collectors.toSet());
+        for (String sym : allSymbols) {
             if (context.getConstant(sym) != null) {
                 continue;
             }
@@ -359,14 +355,13 @@ public class MetamathParsers {
                             + sym + "' at " + assertion.getBegin());
                 } else {
                     frame.getTypes().add(type);
-                    processedSymbols.add(sym);
                     continue;
                 }
             }
             throw new ParserException("Only constant or variable was expected but got: '"
                     + sym + "' at " + assertion.getBegin());
         }
-        Collections.reverse(frame.getTypes());
+        Collections.sort(frame.getTypes(), Comparator.comparing(ListStatement::getBegin));
         return frame;
     }
 

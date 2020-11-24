@@ -23,7 +23,7 @@ public class MetamathTest {
 
         //when
         Metamath.verifyProof(database.getStatement("mp2"), database);
-//        Metamath.verifyProof(database.getStatement("id"), database);
+        Metamath.verifyProof(database.getStatement("id"), database);
 
         //then
         //no exception was thrown on the 'when' step
