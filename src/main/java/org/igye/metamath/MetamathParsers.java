@@ -1,6 +1,7 @@
 package org.igye.metamath;
 
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.igye.textparser.ParseResult;
 import org.igye.textparser.Parser;
@@ -187,13 +188,15 @@ public class MetamathParsers {
                 literal("("),
                 list(nonSpace(")")),
                 literal(")"),
-                spacePadded(nonSpace())
+                list(nonSpace("$."))
         )
                 .map((list, pos) -> CompressedProof.builder()
                         .begin(pos.getStart())
                         .end(pos.getEnd())
                         .labels(((List<String>) ((List<Object>) list).get(1)))
-                        .encodedProof((String) ((List<Object>) list).get(3))
+                        .encodedProof(
+                                StringUtils.join(((List<String>) ((List<Object>) list).get(3)), "")
+                        )
                         .build()
                 );
     }

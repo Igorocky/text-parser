@@ -134,6 +134,18 @@ public class MetamathParsersTest {
     }
 
     @Test
+    public void compressedProof_shouldParseCompressedProofWhenTheProofConsistsOfFewParts() {
+        //when
+        CompressedProof proof = MetamathParsers.compressedProof().parse(
+                tokenStreamFromString("( wi ax-mp ) BCEAB\n   CGDFHH ")
+        ).get();
+
+        //then
+        assertEquals(Arrays.asList("wi", "ax-mp"), proof.getLabels());
+        assertEquals("BCEABCGDFHH", proof.getEncodedProof());
+    }
+
+    @Test
     public void blockStatement_shouldParseBlockStatement() {
         //when
         BlockStatement statement = MetamathParsers.blockStatement().parse(tokenStreamFromString(
