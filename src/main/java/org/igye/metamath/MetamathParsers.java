@@ -40,11 +40,15 @@ public class MetamathParsers {
     private static final HashSet<String> KEYWORDS = new HashSet<>(Arrays.asList("${", "$}", "$c", "$v", "$f", "$e", "$d",
             "$a", "$p", "$.", "$=", "$(", "$)", "$[", "$]"));
 
-    protected static Map<String,ListStatement> defineFramesAndBuildMap(List<Statement> statements) {
-        defineFrames(statements);
-        final HashMap<String, ListStatement> statementsMap = new HashMap<>();
-        addToMap(statementsMap, statements);
-        return statementsMap;
+    @SneakyThrows
+    public static MetamathDatabase load(String filePath) {
+        return load(new FileInputStream(filePath));
+    }
+
+    public static MetamathDatabase load(InputStream inputStream) {
+        final List<Statement> statements = parse(inputStream);
+        final Map<String, ListStatement> statementMap = defineFramesAndBuildMap(statements);
+        return new MetamathDatabase(statements, statementMap);
     }
 
     @SneakyThrows
@@ -232,6 +236,13 @@ public class MetamathParsers {
         );
     }
 
+    private static Map<String,ListStatement> defineFramesAndBuildMap(List<Statement> statements) {
+        defineFrames(statements);
+        final HashMap<String, ListStatement> statementsMap = new HashMap<>();
+        addToMap(statementsMap, statements);
+        return statementsMap;
+    }
+
     private static void defineFrames(List<Statement> statements) {
         defineFrames(new MetamathContext(), statements);
     }
@@ -261,10 +272,10 @@ public class MetamathParsers {
         }
         final Frame frame = new Frame();
         frame.setAssertion(assertion);
-        frame.setHypothesis(context.getAllHypotheses());
+        frame.setHypotheses(context.getAllHypotheses());
         frame.setTypes(new ArrayList<>());
         final List<String> allSymbols = Stream.concat(
-                frame.getHypothesis().stream().flatMap(hyp -> hyp.getSymbols().stream()),
+                frame.getHypotheses().stream().flatMap(hyp -> hyp.getSymbols().stream()),
                 frame.getAssertion().getSymbols().stream()
         ).collect(Collectors.toList());
         Set<String> processedSymbols = new HashSet<>();
@@ -300,8 +311,7 @@ public class MetamathParsers {
                 addToMap(statementsMap, ((BlockStatement) statement).getContent());
             } else {
                 final ListStatement listStatement = (ListStatement) statement;
-                if (listStatement.getType() == ListStatementType.AXIOM
-                        || listStatement.getType() == ListStatementType.THEOREM) {
+                if (listStatement.getLabel() != null) {
                     final String label = listStatement.getLabel();
                     if (statementsMap.containsKey(label)) {
                         throw new ParserException("statementsMap.containsKey('" + label + "') at "

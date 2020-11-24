@@ -1,6 +1,5 @@
 package org.igye.metamath;
 
-import org.apache.commons.lang3.StringUtils;
 import org.igye.common.Utils;
 import org.igye.textparser.PositionInText;
 import org.igye.textparser.TokenStream;
@@ -8,11 +7,9 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
+import static org.igye.metamath.Metamath.stringify;
 import static org.igye.textparser.TextParsers.inputStreamToTokenStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -20,42 +17,21 @@ import static org.junit.Assert.assertTrue;
 public class MetamathParsersTest {
     @Test
     public void defineFramesAndBuildMap_shouldDefineFramesForAllAxiomsAndTheorems() {
-        //given
-        List<Statement> statements = MetamathParsers.parse(Utils.inputStreamFromClasspath("/demo0.mm"));
-//        List<Statement> statements = MetamathParsers.parse("D:\\Install\\metamath\\metamath\\set.mm");
-
         //when
-        final Map<String, ListStatement> map = MetamathParsers.defineFramesAndBuildMap(statements);
+        final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/demo0.mm"));
+//        final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
 
         //then
-        assertEquals("[[], [], term 0]", stringify(map.get("tze").getFrame()));
-        assertEquals("[[term t, term r], [], term ( t + r )]", stringify(map.get("tpl").getFrame()));
-        assertEquals("[[term t, term r], [], wff t = r]", stringify(map.get("weq").getFrame()));
-        assertEquals("[[wff P, wff Q], [], wff ( P -> Q )]", stringify(map.get("wim").getFrame()));
+        assertEquals("[[], [], term 0]", stringify(database.getStatement("tze").getFrame()));
+        assertEquals("[[term t, term r], [], term ( t + r )]", stringify(database.getStatement("tpl").getFrame()));
+        assertEquals("[[term t, term r], [], wff t = r]", stringify(database.getStatement("weq").getFrame()));
+        assertEquals("[[wff P, wff Q], [], wff ( P -> Q )]", stringify(database.getStatement("wim").getFrame()));
         assertEquals(
                 "[[term t, term r, term s], [], |- ( t = r -> ( t = s -> r = s ) )]",
-                stringify(map.get("a1").getFrame())
+                stringify(database.getStatement("a1").getFrame())
         );
-        assertEquals("[[term t], [], |- ( t + 0 ) = t]", stringify(map.get("a2").getFrame()));
-        assertEquals("[[wff P, wff Q], [|- P, |- ( P -> Q )], |- Q]", stringify(map.get("mp").getFrame()));
-    }
-
-    private String stringify(ListStatement statement) {
-        return StringUtils.join(statement.getSymbols(), ' ');
-    }
-
-    private String stringify(Collection<ListStatement> statements) {
-        return "["
-                + statements.stream().map(this::stringify).collect(Collectors.joining(", "))
-                + "]";
-    }
-
-    private String stringify(Frame frame) {
-        return "["
-                + stringify(frame.getTypes())
-                + ", " + stringify(frame.getHypothesis())
-                + ", " + stringify(frame.getAssertion())
-                + "]";
+        assertEquals("[[term t], [], |- ( t + 0 ) = t]", stringify(database.getStatement("a2").getFrame()));
+        assertEquals("[[wff P, wff Q], [|- P, |- ( P -> Q )], |- Q]", stringify(database.getStatement("mp").getFrame()));
     }
 
     @Test

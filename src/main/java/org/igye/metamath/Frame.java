@@ -1,18 +1,20 @@
 package org.igye.metamath;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class Frame {
     private List<ListStatement> types;
-    private List<ListStatement> hypothesis;
+    private List<ListStatement> hypotheses;
     private ListStatement assertion;
+    private int arity = -1;
+
+    public int getArity() {
+        if (arity < 0) {
+            arity = types.size() + hypotheses.size();
+        }
+        return arity;
+    }
 }
