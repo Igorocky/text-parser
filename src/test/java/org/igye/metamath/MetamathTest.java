@@ -5,6 +5,10 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.junit.Assert.assertEquals;
 
 public class MetamathTest {
@@ -58,6 +62,27 @@ public class MetamathTest {
 
         //when
         Metamath.verifyProof(database.getStatement("fourierdlem112"));
+
+        //then
+        //no exception was thrown on the 'when' step
+    }
+
+    @Test
+    @Ignore
+    public void verifyProof_shouldSuccessfullyVerifyAllTheoremsFromSetMm() {
+        //given
+        System.out.println(Instant.now() + " loading");
+        final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
+
+        final List<ListStatement> allTheorems = database.getAllAssertions().stream()
+                .filter(a -> a.getType() == ListStatementType.THEOREM)
+                .collect(Collectors.toList());
+        System.out.println(Instant.now() + " loaded " + allTheorems.size() + " theorems");
+
+        System.out.println(Instant.now() + " verifying");
+        //when
+        allTheorems.forEach(Metamath::verifyProof);
+        System.out.println(Instant.now() + " done");
 
         //then
         //no exception was thrown on the 'when' step

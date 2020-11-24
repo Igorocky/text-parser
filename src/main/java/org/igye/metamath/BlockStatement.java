@@ -33,7 +33,9 @@ public class BlockStatement implements Statement {
                         (
                                 listStatement.getType() == ListStatementType.AXIOM
                                         || listStatement.getType() == ListStatementType.THEOREM
-                        ) && labels.contains(listStatement.getLabel())
+                        ) && (
+                                        labels == null || labels.contains(listStatement.getLabel())
+                        )
                 ) {
                     result.put(listStatement.getLabel(), listStatement);
                 }
