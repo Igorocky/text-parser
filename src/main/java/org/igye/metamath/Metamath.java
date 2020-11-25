@@ -34,7 +34,7 @@ public class Metamath {
     }
 
     public static void verifyProof(ListStatement theorem) {
-        List<List<String>> stack = new ArrayList<>();
+        List<StackNode> stack = new ArrayList<>();
         if (theorem.getProof() != null) {
             final Map<String, ListStatement> requiredStatements =
                     theorem.findActiveStatements(new HashSet<>(theorem.getProof()));
@@ -48,7 +48,7 @@ public class Metamath {
         if (stack.size() != 1) {
             throw new MetamathException("stack.size() != 1");
         }
-        if (!stack.get(0).equals(theorem.getSymbols())) {
+        if (!stack.get(0).getExpr().equals(theorem.getSymbols())) {
             throw new MetamathException("!stack.get(0).equals(theorem.getSymbols())");
         }
     }
@@ -89,7 +89,7 @@ public class Metamath {
         }
     }
 
-    private static void evalCompressed(List<List<String>> stack, ListStatement theorem) {
+    private static void evalCompressed(List<StackNode> stack, ListStatement theorem) {
         final List<String> steps = MetamathParsers.splitEncodedProof(theorem.getCompressedProof().getEncodedProof());
         List<Object> args = new ArrayList<>();
         args.addAll(theorem.getFrame().getTypes());
@@ -106,8 +106,8 @@ public class Metamath {
                 args.add(stack.get(stack.size()-1));
             } else {
                 Object arg = args.get(MetamathParsers.strToInt(step)-1);
-                if (arg instanceof List) {
-                    stack.add((List<String>) arg);
+                if (arg instanceof StackNode) {
+                    stack.add((StackNode) arg);
                 } else {
                     eval(stack, Collections.singletonList(((ListStatement) arg)));
                 }
@@ -115,47 +115,57 @@ public class Metamath {
         }
     }
 
-    private static void eval(List<List<String>> stack, List<ListStatement> statements) {
+    private static void eval(List<StackNode> stack, List<ListStatement> statements) {
         for (ListStatement statement : statements) {
             if (statement.getType() == ListStatementType.FLOATING
                     || statement.getType() == ListStatementType.ESSENTIAL) {
-                stack.add(statement.getSymbols());
+                stack.add(new ConstStackNode(statement));
             } else {
-                apply(stack, statement.getFrame());
+                apply(stack, statement);
             }
         }
     }
 
-    private static void apply(List<List<String>> stack, Frame frame) {
+    private static void apply(List<StackNode> stack, ListStatement statement) {
+        final Frame frame = statement.getFrame();
         if (stack.size() < frame.getArity()) {
             throw new MetamathException("stack.size() < frame.getTypes().size() + frame.getHypothesis().size()");
         }
         final Map<String, List<String>> substitution = determineSubstitution(stack, frame);
         checkHypothesisMatch(stack, frame, substitution);
+        final ArrayList<StackNode> args = new ArrayList<>();
         for (int i = 0; i < frame.getArity(); i++) {
-            stack.remove(stack.size()-1);
+            args.add(stack.remove(stack.size()-1));
         }
-        stack.add(applySubstitution(frame.getAssertion().getSymbols(), substitution));
+        Collections.reverse(args);
+        stack.add(
+                RuleStackNode.builder()
+                        .args(args)
+                        .assertion(statement)
+                        .substitution(substitution)
+                        .expr(applySubstitution(frame.getAssertion().getSymbols(), substitution))
+                        .build()
+        );
     }
 
-    private static Map<String,List<String>> determineSubstitution(List<List<String>> stack, Frame frame) {
+    private static Map<String,List<String>> determineSubstitution(List<StackNode> stack, Frame frame) {
         final HashMap<String, List<String>> substitution = new HashMap<>();
         final int stackBaseIdx = stack.size() - frame.getArity();
         for (int i = 0; i < frame.getTypes().size(); i++) {
             final ListStatement frameType = frame.getTypes().get(i);
-            final List<String> stackType = stack.get(stackBaseIdx + i);
-            if (!stackType.get(0).equals(frameType.getSymbols().get(0))) {
+            final StackNode stackType = stack.get(stackBaseIdx + i);
+            if (!stackType.getExpr().get(0).equals(frameType.getSymbols().get(0))) {
                 throw new MetamathException("!stackType.get(0).equals(frameType.getSymbols().get(0))");
             }
-            substitution.put(frameType.getSymbols().get(1), tail(stackType));
+            substitution.put(frameType.getSymbols().get(1), tail(stackType.getExpr()));
         }
         return substitution;
     }
 
-    private static void checkHypothesisMatch(List<List<String>> stack, Frame frame, Map<String, List<String>> substitution) {
+    private static void checkHypothesisMatch(List<StackNode> stack, Frame frame, Map<String, List<String>> substitution) {
         final int stackBaseIdx = stack.size() - frame.getHypotheses().size();
         for (int i = 0; i < frame.getHypotheses().size(); i++) {
-            if (!applySubstitution(frame.getHypotheses().get(i).getSymbols(), substitution).equals(stack.get(stackBaseIdx + i))) {
+            if (!applySubstitution(frame.getHypotheses().get(i).getSymbols(), substitution).equals(stack.get(stackBaseIdx + i).getExpr())) {
                 throw new MetamathException("Hypotheses don't match");
             }
         }

@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -71,21 +72,30 @@ public class MetamathTest {
     @Ignore
     public void verifyProof_shouldSuccessfullyVerifyAllTheoremsFromSetMm() {
         //given
-        System.out.println(Instant.now() + " loading");
+        final Instant loadingStart = Instant.now();
+        System.out.println(loadingStart + " loading");
         final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
 
         final List<ListStatement> allTheorems = database.getAllAssertions().stream()
                 .filter(a -> a.getType() == ListStatementType.THEOREM)
                 .collect(Collectors.toList());
-        System.out.println(Instant.now() + " loaded " + allTheorems.size() + " theorems");
+        final Instant loadingEnd = Instant.now();
+        System.out.println(loadingEnd + " loaded " + allTheorems.size()
+                + " theorems in " + getDurationStr(loadingStart, loadingEnd));
 
-        System.out.println(Instant.now() + " verifying");
+        final Instant verifyingStart = Instant.now();
+        System.out.println(verifyingStart + " verifying");
         //when
         allTheorems.forEach(Metamath::verifyProof);
-        System.out.println(Instant.now() + " done");
+        final Instant verifyingEnd = Instant.now();
+        System.out.println(verifyingEnd + " verification completed in " + getDurationStr(verifyingStart, verifyingEnd));
 
         //then
         //no exception was thrown on the 'when' step
+    }
+
+    private String getDurationStr(Instant start, Instant end) {
+        return Duration.between(start, end).getSeconds() + "s";
     }
 
 }
