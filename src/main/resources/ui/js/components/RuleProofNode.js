@@ -11,7 +11,7 @@ const RuleProofNode = ({node,allNodes}) => {
     const charLength = fontSize*0.6
     const charHeight = charLength*0.85
 
-    function renderArgAndParam({key,ex,arg,param,subs}) {
+    function renderArgAndParam({key,ex,centerX,arg,param,subs,swapSubs}) {
         const argStr = arg.join(' ')
         const paramStr = param.join(' ')
 
@@ -20,10 +20,16 @@ const RuleProofNode = ({node,allNodes}) => {
 
         const argLength = argStr.length*charLength
         const paramLength = paramStr.length*charLength
-        if (argLength < paramLength) {
-            argBottomLineEx = argBottomLineEx.translate(null,(paramLength-argLength)/2)
+
+        if (hasValue(centerX)) {
+            argBottomLineEx = argBottomLineEx.translate(null, centerX - argLength / 2 - argBottomLineEx.start.x)
+            paramBottomLineEx = paramBottomLineEx.translate(null, centerX - paramLength / 2 - paramBottomLineEx.start.x)
         } else {
-            paramBottomLineEx = paramBottomLineEx.translate(null,(argLength-paramLength)/2)
+            if (argLength < paramLength) {
+                argBottomLineEx = argBottomLineEx.translate(null,(paramLength-argLength)/2)
+            } else {
+                paramBottomLineEx = paramBottomLineEx.translate(null,(argLength-paramLength)/2)
+            }
         }
 
         const argBottomLine = argBottomLineEx.scale(argLength)
@@ -35,7 +41,7 @@ const RuleProofNode = ({node,allNodes}) => {
         const paramBoundaries = SvgBoundaries.fromPoints([paramLeftLine.end,paramBottomLine.end]).addAbsoluteMargin(SCALE*0.5)
         return {
             svgElems: [
-                SVG.text({key:`${key}-arg-text`, x:ex.start.x, y:ex.start.y, fill:'black', fontSize:fontSizePx, fontFamily},
+                SVG.text({key:`${key}-arg-text`, x:argBottomLine.start.x, y:argBottomLine.start.y, fill:'black', fontSize:fontSizePx, fontFamily},
                     argStr
                 ),
                 // svgPolygon({
@@ -52,18 +58,19 @@ const RuleProofNode = ({node,allNodes}) => {
                 //     boundaries: paramBoundaries,
                 //     props: {fill:'none', stroke:'green', strokeWidth: SCALE*0.1}
                 // }),
-                ...determineSubsIndexes({param,subs}).flatMap((idxMapping,idx) => renderMapping({
+                ...determineSubsIndexes({param:swapSubs?arg:param,subs}).flatMap((idxMapping,idx) => renderMapping({
                     key:`${key}-mapping-${idx}`,
-                    argEx:argBottomLineEx,
-                    paramEx: paramBottomLineEx,
-                    idxMapping
+                    argEx: swapSubs?paramBottomLineEx:argBottomLineEx,
+                    paramEx: swapSubs?argBottomLineEx:paramBottomLineEx,
+                    idxMapping,
+                    swapSubs
                 }))
             ],
             boundaries: mergeSvgBoundaries([argBoundaries,paramBoundaries])
         }
     }
 
-    function renderMapping({key, argEx, paramEx, idxMapping}) {
+    function renderMapping({key, argEx, paramEx, idxMapping, swapSubs}) {
         const argBottom = argEx.translate(null, charLength*idxMapping.argBeginIdx).scale(charLength*(idxMapping.argEndIdx-idxMapping.argBeginIdx+1))
         const argLeft = argEx.translateTo(argBottom.start).rotate(90).scale(charHeight)
 
@@ -80,8 +87,8 @@ const RuleProofNode = ({node,allNodes}) => {
                 props: {fill:'none', stroke:'red', strokeWidth: SCALE*0.1}
             }),
             new Vector(
-                new Point((argBoundaries.minX + argBoundaries.maxX)/2, argBoundaries.maxY),
-                new Point((paramBoundaries.minX + paramBoundaries.maxX)/2, paramBoundaries.minY)
+                new Point((argBoundaries.minX + argBoundaries.maxX)/2, swapSubs?argBoundaries.minY:argBoundaries.maxY),
+                new Point((paramBoundaries.minX + paramBoundaries.maxX)/2, swapSubs?paramBoundaries.maxY:paramBoundaries.minY)
             ).toSvgLine({
                 key:`${key}-line`,
                 props: {fill:'none', stroke:'red', strokeWidth: SCALE*0.1}
@@ -124,11 +131,11 @@ const RuleProofNode = ({node,allNodes}) => {
         }))
     }
 
-    function renderAllParams() {
+    function renderAllParams({ex}) {
         const resultSvgElems = []
         let resultBoundaries = SvgBoundaries.fromPoints([SVG_EX.start, SVG_EX.end])
 
-        let lastEx = SVG_EX
+        let lastEx = ex
         for (let i = 0; i < node.params.length; i++) {
             const {svgElems, boundaries} = renderArgAndParam({
                 key: `argAndParam-${i}`,
@@ -142,10 +149,22 @@ const RuleProofNode = ({node,allNodes}) => {
             resultBoundaries = mergeSvgBoundaries([resultBoundaries, boundaries])
         }
 
+        const {svgElems, boundaries} = renderArgAndParam({
+            key: `assertion`,
+            ex: ex.translate(ex.rotate(-90), resultBoundaries.maxY-ex.start.y + charHeight*4).translate(null,(resultBoundaries.maxX - resultBoundaries.minX)/2),
+            centerX: (resultBoundaries.minX + resultBoundaries.maxX)/2,
+            arg: node.retVal,
+            param: node.expr,
+            subs: node.substitution,
+            swapSubs:true
+        })
+        resultSvgElems.push(...svgElems)
+        resultBoundaries = mergeSvgBoundaries([resultBoundaries, boundaries])
+
         return {svgElems: resultSvgElems, boundaries: resultBoundaries}
     }
 
-    const {svgElems, boundaries} = renderAllParams()
+    const {svgElems, boundaries} = renderAllParams({ex:SVG_EX})
 
     return RE.svg(
         {
