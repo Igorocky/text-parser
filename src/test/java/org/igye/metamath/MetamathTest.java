@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 public class MetamathTest {
@@ -92,6 +93,37 @@ public class MetamathTest {
 
         //then
         //no exception was thrown on the 'when' step
+    }
+
+    @Test
+    public void visualizeProof_shouldProduceCorrectlyFilledDto() {
+        //given
+        final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/demo0.mm"));
+
+        //when
+        final List<StackNodeDto> dtos = Metamath.visualizeProof(database.getStatement("th1"));
+
+        //then
+        final StackNodeDto dto = dtos.get(0);
+        assertEquals(4, dto.getArgs().size());
+
+        assertEquals("mp", dto.getLabel());
+        assertEquals(
+                asList(
+                        asList("wff", "P"),
+                        asList("wff", "Q"),
+                        asList("|-", "P"),
+                        asList("|-", "(", "P", "->", "Q", ")")
+                ),
+                dto.getParams()
+        );
+        assertEquals(asList("|-", "Q"), dto.getRetVal());
+
+        assertEquals(2, dto.getSubstitution().size());
+        assertEquals(asList("(", "t", "+", "0", ")", "=", "t"), dto.getSubstitution().get("P"));
+        assertEquals(asList("t", "=", "t"), dto.getSubstitution().get("Q"));
+
+        assertEquals(asList("|-", "t", "=", "t"), dto.getExpr());
     }
 
     private String getDurationStr(Instant start, Instant end) {

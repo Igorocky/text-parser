@@ -10,7 +10,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Metamath {
 
@@ -33,7 +36,71 @@ public class Metamath {
                 + "]";
     }
 
-    public static void verifyProof(ListStatement theorem) {
+    public static List<StackNodeDto> visualizeProof(ListStatement theorem) {
+        final ArrayList<StackNodeDto> result = new ArrayList<>();
+        final StackNode proof = verifyProof(theorem);
+        Map<StackNode, Integer> ids = generateIds(proof);
+        iterateNodes(proof, node -> {
+            if (node instanceof RuleStackNode) {
+                final RuleStackNode ruleNode = (RuleStackNode) node;
+                final Frame frame = ruleNode.getAssertion().getFrame();
+                result.add(
+                        StackNodeDto.builder()
+                                .id(ids.get(node))
+                                .args(ruleNode.getArgs().stream().map(ids::get).collect(Collectors.toList()))
+                                .label(ruleNode.getAssertion().getLabel())
+                                .params(
+                                        Stream.concat(
+                                                frame.getTypes().stream(),
+                                                frame.getHypotheses().stream()
+                                        )
+                                                .map(stm -> stm.getSymbols())
+                                                .collect(Collectors.toList())
+                                )
+                                .retVal(ruleNode.getAssertion().getSymbols())
+                                .substitution(ruleNode.getSubstitution())
+                                .expr(ruleNode.getExpr())
+                                .build()
+                );
+            } else {
+                final ConstStackNode constNode = (ConstStackNode) node;
+                result.add(
+                        StackNodeDto.builder()
+                                .id(ids.get(node))
+                                .label(constNode.getStatement().getLabel())
+                                .expr(constNode.getExpr())
+                                .build()
+                );
+            }
+        });
+
+        return result;
+    }
+
+    private static void iterateNodes(StackNode node, Consumer<StackNode> nodeConsumer) {
+        Set<StackNode> processed = new HashSet<>();
+        Stack<StackNode> toProcess = new Stack<>();
+        toProcess.push(node);
+        while (!toProcess.isEmpty()) {
+            final StackNode curNode = toProcess.pop();
+            if (!processed.contains(curNode)) {
+                nodeConsumer.accept(curNode);
+                processed.add(curNode);
+                if (curNode instanceof RuleStackNode) {
+                    toProcess.addAll(((RuleStackNode) curNode).getArgs());
+                }
+            }
+        }
+    }
+
+    private static Map<StackNode,Integer> generateIds(StackNode root) {
+        final int[] id = {0};
+        final HashMap<StackNode, Integer> ids = new HashMap<>();
+        iterateNodes(root, node -> ids.put(node, id[0]++));
+        return ids;
+    }
+
+    public static StackNode verifyProof(ListStatement theorem) {
         List<StackNode> stack = new ArrayList<>();
         if (theorem.getProof() != null) {
             final Map<String, ListStatement> requiredStatements =
@@ -48,9 +115,11 @@ public class Metamath {
         if (stack.size() != 1) {
             throw new MetamathException("stack.size() != 1");
         }
-        if (!stack.get(0).getExpr().equals(theorem.getSymbols())) {
+        final StackNode finalStackNode = stack.get(0);
+        if (!finalStackNode.getExpr().equals(theorem.getSymbols())) {
             throw new MetamathException("!stack.get(0).equals(theorem.getSymbols())");
         }
+        return finalStackNode;
     }
 
     public static Map<String,ListStatement> findActiveStatements(Statement curStmt, Set<String> labels) {

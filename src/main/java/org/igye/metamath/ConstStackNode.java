@@ -1,5 +1,8 @@
 package org.igye.metamath;
 
+import lombok.Getter;
+
+@Getter
 public class ConstStackNode extends StackNode {
     private ListStatement statement;
 
