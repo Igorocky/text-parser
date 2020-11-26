@@ -2,6 +2,8 @@
 
 const RuleProofNode = ({node,allNodes}) => {
 
+    console.log({allNodes})
+
     const SCALE = 10
     const fontFamily = 'courier'
     const fontSize = (SCALE*2)
@@ -13,56 +15,144 @@ const RuleProofNode = ({node,allNodes}) => {
         const argStr = arg.join(' ')
         const paramStr = param.join(' ')
 
-        const argBottomLine = ex.scale(argStr.length*charLength)
-        const argLeftLine = ex.rotate(90).scale(charHeight)
+        let argBottomLineEx = ex
+        let paramBottomLineEx = ex.translate(ex.rotate(-90),6*charHeight)
 
-        const paramBottomLineEx = ex.translate(ex.rotate(-90),6*charHeight)
-        const paramBottomLine = paramBottomLineEx.scale(paramStr.length*charLength)
+        const argLength = argStr.length*charLength
+        const paramLength = paramStr.length*charLength
+        if (argLength < paramLength) {
+            argBottomLineEx = argBottomLineEx.translate(null,(paramLength-argLength)/2)
+        } else {
+            paramBottomLineEx = paramBottomLineEx.translate(null,(argLength-paramLength)/2)
+        }
+
+        const argBottomLine = argBottomLineEx.scale(argLength)
+        const argLeftLine = argBottomLineEx.rotate(90).scale(charHeight)
+        const paramBottomLine = paramBottomLineEx.scale(paramLength)
         const paramLeftLine = paramBottomLineEx.rotate(90).scale(charHeight)
 
-        const argBoundaries = SvgBoundaries.fromPoints([argLeftLine.end,argBottomLine.end]).addAbsoluteMargin(SCALE*0.5);
-        const paramBoundaries = SvgBoundaries.fromPoints([paramLeftLine.end,paramBottomLine.end]).addAbsoluteMargin(SCALE*0.5);
+        const argBoundaries = SvgBoundaries.fromPoints([argLeftLine.end,argBottomLine.end]).addAbsoluteMargin(SCALE*0.5)
+        const paramBoundaries = SvgBoundaries.fromPoints([paramLeftLine.end,paramBottomLine.end]).addAbsoluteMargin(SCALE*0.5)
         return {
             svgElems: [
                 SVG.text({key:`${key}-arg-text`, x:ex.start.x, y:ex.start.y, fill:'black', fontSize:fontSizePx, fontFamily},
                     argStr
                 ),
-                svgPolygon({
-                    key: `${key}-arg-border`,
-                    boundaries: argBoundaries,
-                    props: {fill:'none', stroke:'green', strokeWidth: SCALE*0.1}
-                }),
+                // svgPolygon({
+                //     key: `${key}-arg-border`,
+                //     boundaries: argBoundaries,
+                //     props: {fill:'none', stroke:'green', strokeWidth: SCALE*0.1}
+                // }),
                 SVG.text({key:`${key}-param-text`,
                         x:paramBottomLineEx.start.x, y:paramBottomLineEx.start.y, fill:'black', fontSize:fontSizePx, fontFamily},
                     paramStr
                 ),
-                svgPolygon({
-                    key: `${key}-param-border`,
-                    boundaries: paramBoundaries,
-                    props: {fill:'none', stroke:'green', strokeWidth: SCALE*0.1}
-                })
+                // svgPolygon({
+                //     key: `${key}-param-border`,
+                //     boundaries: paramBoundaries,
+                //     props: {fill:'none', stroke:'green', strokeWidth: SCALE*0.1}
+                // }),
+                ...determineSubsIndexes({param,subs}).flatMap((idxMapping,idx) => renderMapping({
+                    key:`${key}-mapping-${idx}`,
+                    argEx:argBottomLineEx,
+                    paramEx: paramBottomLineEx,
+                    idxMapping
+                }))
             ],
             boundaries: mergeSvgBoundaries([argBoundaries,paramBoundaries])
         }
     }
 
-    const argAndParam = renderArgAndParam({
-        key: 'argAndParam',
-        ex: SVG_EX,
-        arg: ["wff", "(", "t", "+", "0", ")", "=", "t"],
-        param: ["wff", "P"],
-        subs: {
-            "P": ["(", "t", "+", "0", ")", "=", "t"],
-            "Q": ["t", "=", "t"]
+    function renderMapping({key, argEx, paramEx, idxMapping}) {
+        const argBottom = argEx.translate(null, charLength*idxMapping.argBeginIdx).scale(charLength*(idxMapping.argEndIdx-idxMapping.argBeginIdx+1))
+        const argLeft = argEx.translateTo(argBottom.start).rotate(90).scale(charHeight)
+
+        const paramBottom = paramEx.translate(null, charLength*idxMapping.paramBeginIdx).scale(charLength*(idxMapping.paramEndIdx-idxMapping.paramBeginIdx+1))
+        const paramLeft = paramEx.translateTo(paramBottom.start).rotate(90).scale(charHeight)
+
+        const selectionMargin = SCALE*0.5;
+        const argBoundaries = SvgBoundaries.fromPoints([argLeft.end, argBottom.end]).addAbsoluteMargin(selectionMargin);
+        const paramBoundaries = SvgBoundaries.fromPoints([paramLeft.end, paramBottom.end]).addAbsoluteMargin(selectionMargin);
+        return [
+            svgPolygon({
+                key:`${key}-arg`,
+                boundaries: argBoundaries,
+                props: {fill:'none', stroke:'red', strokeWidth: SCALE*0.1}
+            }),
+            new Vector(
+                new Point((argBoundaries.minX + argBoundaries.maxX)/2, argBoundaries.maxY),
+                new Point((paramBoundaries.minX + paramBoundaries.maxX)/2, paramBoundaries.minY)
+            ).toSvgLine({
+                key:`${key}-line`,
+                props: {fill:'none', stroke:'red', strokeWidth: SCALE*0.1}
+            })
+        ]
+    }
+
+    function calcSymLengths({symbols}) {
+        return symbols.reduce(
+            (acc,sym) => acc === null
+                ? [{begin:0,end:sym.length-1,len:sym.length}]
+                : [...acc, {begin:acc.last().end+2,end:acc.last().end+sym.length+1,len:sym.length}],
+            null
+        )
+    }
+
+    function determineSubsIndexes({param,subs}) {
+        const arg = []
+        const symIdxMapping = []
+        for (let i = 0; i < param.length; i++) {
+            const subExp = subs[param[i]];
+            if (subExp) {
+                symIdxMapping.push({
+                    paramIdx: i,
+                    argBeginIdx:arg.length,
+                    argEndIdx:arg.length + subExp.length - 1,
+                })
+                arg.push(...subExp)
+            } else {
+                arg.push(param[i])
+            }
         }
-    })
+        const argSymLen = calcSymLengths({symbols:arg})
+        const paramSymLen = calcSymLengths({symbols:param})
+        return symIdxMapping.map(m => ({
+            argBeginIdx: argSymLen[m.argBeginIdx].begin,
+            argEndIdx: argSymLen[m.argEndIdx].end,
+            paramBeginIdx: paramSymLen[m.paramIdx].begin,
+            paramEndIdx: paramSymLen[m.paramIdx].begin,
+        }))
+    }
+
+    function renderAllParams() {
+        const resultSvgElems = []
+        let resultBoundaries = SvgBoundaries.fromPoints([SVG_EX.start, SVG_EX.end])
+
+        let lastEx = SVG_EX
+        for (let i = 0; i < node.params.length; i++) {
+            const {svgElems, boundaries} = renderArgAndParam({
+                key: `argAndParam-${i}`,
+                ex: lastEx,
+                arg: allNodes[node.args[i]].expr,
+                param: node.params[i],
+                subs: node.substitution
+            })
+            resultSvgElems.push(...svgElems)
+            lastEx = lastEx.translate(null, (boundaries.maxX - boundaries.minX) + charLength*5)
+            resultBoundaries = mergeSvgBoundaries([resultBoundaries, boundaries])
+        }
+
+        return {svgElems: resultSvgElems, boundaries: resultBoundaries}
+    }
+
+    const {svgElems, boundaries} = renderAllParams()
 
     return RE.svg(
         {
             width: 800,
             height: 200,
-            boundaries: argAndParam.boundaries.addAbsoluteMargin(SCALE*5),
+            boundaries: boundaries.addAbsoluteMargin(SCALE*5),
         },
-        argAndParam.svgElems,
+        svgElems,
     )
 }
