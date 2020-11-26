@@ -103,6 +103,11 @@ public class MetamathTest {
         //when
         final List<StackNodeDto> dtos = Metamath.visualizeProof(database.getStatement("th1"));
 
+//        Utils.saveDtoToFile(
+//                dtos,
+//                "D:\\programs\\java\\text-parser\\target\\th1.json"
+//        );
+
         //then
         final StackNodeDto dto = dtos.get(0);
         assertEquals(4, dto.getArgs().size());
