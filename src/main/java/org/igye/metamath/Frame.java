@@ -6,6 +6,7 @@ import java.util.List;
 
 @Data
 public class Frame {
+    private MetamathContext context;
     private List<ListStatement> types;
     private List<ListStatement> hypotheses;
     private ListStatement assertion;

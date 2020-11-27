@@ -335,6 +335,7 @@ public class MetamathParsers {
             );
         }
         final Frame frame = new Frame();
+        frame.setContext(context);
         frame.setAssertion(assertion);
         frame.setHypotheses(context.getAllHypotheses());
         frame.setTypes(new ArrayList<>());

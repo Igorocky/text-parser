@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
@@ -36,15 +37,15 @@ public class Metamath {
                 + "]";
     }
 
-    public static List<StackNodeDto> visualizeProof(ListStatement theorem) {
-        final ArrayList<StackNodeDto> result = new ArrayList<>();
+    public static ProofDto visualizeProof(ListStatement theorem) {
+        final ArrayList<StackNodeDto> nodes = new ArrayList<>();
         final StackNode proof = verifyProof(theorem);
         Map<StackNode, Integer> ids = generateIds(proof);
         iterateNodes(proof, node -> {
             if (node instanceof RuleStackNode) {
                 final RuleStackNode ruleNode = (RuleStackNode) node;
                 final Frame frame = ruleNode.getAssertion().getFrame();
-                result.add(
+                nodes.add(
                         StackNodeDto.builder()
                                 .id(ids.get(node))
                                 .args(ruleNode.getArgs().stream().map(ids::get).collect(Collectors.toList()))
@@ -58,6 +59,7 @@ public class Metamath {
                                                 .map(stm -> stm.getSymbols())
                                                 .collect(Collectors.toList())
                                 )
+                                .numOfTypes(frame.getTypes().size())
                                 .retVal(ruleNode.getAssertion().getSymbols())
                                 .substitution(ruleNode.getSubstitution())
                                 .expr(ruleNode.getExpr())
@@ -65,7 +67,7 @@ public class Metamath {
                 );
             } else {
                 final ConstStackNode constNode = (ConstStackNode) node;
-                result.add(
+                nodes.add(
                         StackNodeDto.builder()
                                 .id(ids.get(node))
                                 .type(constNode.getStatement().getType().getShortName().toUpperCase())
@@ -76,7 +78,23 @@ public class Metamath {
             }
         });
 
-        return result;
+        final HashMap<String, String> varTypes = new HashMap<>();
+        nodes.stream()
+                .flatMap(node -> Stream.concat(
+                        Stream.concat(
+                                node.getParams()==null?Stream.empty():node.getParams().stream().flatMap(List::stream),
+                                node.getRetVal()==null?Stream.empty():node.getRetVal().stream()
+                        ),
+                        node.getExpr().stream()
+                ))
+                .map(theorem.getFrame().getContext()::getType)
+                .filter(Objects::nonNull)
+                .forEach(var -> varTypes.put(var.getSymbols().get(1), var.getSymbols().get(0)));
+
+        return ProofDto.builder()
+                .nodes(nodes)
+                .varTypes(varTypes)
+                .build();
     }
 
     private static void iterateNodes(StackNode node, Consumer<StackNode> nodeConsumer) {

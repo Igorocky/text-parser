@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,7 +66,7 @@ public class MetamathTest {
         //when
         Metamath.verifyProof(database.getStatement("fourierdlem112"));
 
-//        final String assertionNameToSave = "2p2e4";
+//        final String assertionNameToSave = "sqrt2irr";
 //        Utils.saveDtoToFile(
 //                Metamath.visualizeProof(database.getStatement(assertionNameToSave)),
 //                "D:\\programs\\java\\text-parser\\target\\" + assertionNameToSave + ".json"
@@ -107,15 +108,24 @@ public class MetamathTest {
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/demo0.mm"));
 
         //when
-        final List<StackNodeDto> dtos = Metamath.visualizeProof(database.getStatement("th1"));
+        final ProofDto proofDto = Metamath.visualizeProof(database.getStatement("th1"));
 
 //        Utils.saveDtoToFile(
-//                dtos,
+//                proofDto,
 //                "D:\\programs\\java\\text-parser\\target\\th1.json"
 //        );
 
         //then
-        final StackNodeDto dto = dtos.get(0);
+
+        final HashMap<Object, Object> expectedVarTypes = new HashMap<>();
+        expectedVarTypes.put("P","wff");
+        expectedVarTypes.put("Q","wff");
+        expectedVarTypes.put("r","term");
+        expectedVarTypes.put("s","term");
+        expectedVarTypes.put("t","term");
+        assertEquals(expectedVarTypes,proofDto.getVarTypes());
+
+        final StackNodeDto dto = proofDto.getNodes().get(0);
         assertEquals(4, dto.getArgs().size());
 
         assertEquals("mp", dto.getLabel());

@@ -1,6 +1,6 @@
 "use strict";
 
-const RuleProofNode = ({node,allNodes}) => {
+const RuleProofNode = ({node,allNodes,varColors}) => {
 
     const SCALE = 10
     const pxSize = 1.5
@@ -9,9 +9,9 @@ const RuleProofNode = ({node,allNodes}) => {
     const fontSizePx = fontSize+'px'
     const charLength = fontSize*0.6
     const charHeight = charLength*0.85
-    const subsAvailableColors = ['green', 'orange', 'blue', 'cyan', 'red', 'olive', 'magenta', 'pink', 'brown', 'lawngreen']
+    const subsAvailableColors = ['green', 'orange', 'cyan', 'olive', 'pink', 'brown', 'lawngreen', 'blue', 'red', 'magenta']
 
-    function renderArgAndParam({key,ex,centerX,argIdx,arg,param,subs,swapSubs,subsColors}) {
+    function renderArgAndParam({key,ex,centerX,argIdx,arg,param,subs,swapSubs,subsColors,varColors}) {
         const argStr = arg.join(' ')
         const paramStr = param.join(' ')
 
@@ -52,13 +52,8 @@ const RuleProofNode = ({node,allNodes}) => {
                     },
                     argIdx
                 ):null,
-                SVG.text({key:`${key}-arg-text`, x:argBottomLine.start.x, y:argBottomLine.start.y, fill:'black', fontSize:fontSizePx, fontFamily},
-                    argStr
-                ),
-                SVG.text({key:`${key}-param-text`,
-                        x:paramBottomLineEx.start.x, y:paramBottomLineEx.start.y, fill:'black', fontSize:fontSizePx, fontFamily},
-                    paramStr
-                ),
+                ...renderColoredExpr({key:`${key}-arg-text`,ex:argBottomLine.normalize(),expr:arg,colors:varColors}),
+                ...renderColoredExpr({key:`${key}-param-text`,ex:paramBottomLineEx.normalize(),expr:param,colors:varColors}),
                 ...determineSubsIndexes({param:swapSubs?arg:param,subs,subsColors}).flatMap((idxMapping,idx) => renderMapping({
                     key:`${key}-mapping-${idx}`,
                     argEx: swapSubs?paramBottomLineEx:argBottomLineEx,
@@ -73,6 +68,26 @@ const RuleProofNode = ({node,allNodes}) => {
             argBoundaries,
             paramBoundaries
         }
+    }
+
+    function renderColoredExpr({key,ex,expr,colors}) {
+        const result = []
+        for (let i = 0; i < expr.length; i++) {
+            const text = expr[i];
+            result.push(SVG.text({
+                    key:`${key}-${i}`,
+                    x:ex.start.x,
+                    y:ex.start.y,
+                    fill:colors[text]??'black',
+                    fontSize:fontSizePx,
+                    fontFamily,
+                    fontWeight:colors[text]?'900':'none'
+                },
+                text
+            ))
+            ex = ex.translate(null,charLength*(text.length+1))
+        }
+        return result
     }
 
     function incY({boundaries,dy}) {
@@ -163,7 +178,8 @@ const RuleProofNode = ({node,allNodes}) => {
                 arg: allNodes[node.args[i]].expr,
                 param: node.params[i],
                 subs: node.substitution,
-                subsColors
+                subsColors,
+                varColors
             })
             resultSvgElems.push(...svgElems)
             lastEx = lastEx.translate(null, (boundaries.maxX - boundaries.minX) + charLength*5)
@@ -179,7 +195,8 @@ const RuleProofNode = ({node,allNodes}) => {
             param: node.expr,
             subs: node.substitution,
             swapSubs:true,
-            subsColors
+            subsColors,
+            varColors
         })
         resultSvgElems.push(...svgElems)
         resultBoundaries = mergeSvgBoundaries(resultBoundaries, boundaries)
@@ -208,7 +225,7 @@ const RuleProofNode = ({node,allNodes}) => {
 
         const labelFontSizeFactor = 1.5
         const labelBegin = new Point(
-            ruleBoundaries.minX-(node.type.length+2+node.label.length+3)*charLength*labelFontSizeFactor,
+            ruleBoundaries.minX-(node.type.length+1+node.label.length+3)*charLength*labelFontSizeFactor,
             ruleMidY+charHeight*labelFontSizeFactor/2
         )
         resultSvgElems.push(SVG.text({
@@ -217,7 +234,7 @@ const RuleProofNode = ({node,allNodes}) => {
                 y:labelBegin.y,
                 fill:'black',
                 fontSize:(fontSize*labelFontSizeFactor)+'px', fontFamily},
-            `${node.type}: ${node.label}`
+            `${node.type} ${node.label}`
         ))
         resultBoundaries = resultBoundaries.addPoints(labelBegin)
 

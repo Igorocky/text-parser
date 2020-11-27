@@ -18,6 +18,7 @@ public class StackNodeDto {
     private String type;
     private String label;
     private List<List<String>> params;
+    private int numOfTypes;
     private List<String> retVal;
     private Map<String,List<String>> substitution;
     private List<String> expr;
