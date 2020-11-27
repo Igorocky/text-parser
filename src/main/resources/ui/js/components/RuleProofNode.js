@@ -183,8 +183,9 @@ const RuleProofNode = ({node,allNodes}) => {
 
         const ruleBoundaries = mergeSvgBoundaries([resultParamBoundaries, argBoundaries])
         const midLineProps = {fill:'none', stroke:'black', strokeWidth: SCALE*0.1}
+        let ruleMidY
         if (resultParamBoundaries) {
-            const ruleMidY = (ruleBoundaries.minY + ruleBoundaries.maxY) / 2
+            ruleMidY = (ruleBoundaries.minY + ruleBoundaries.maxY) / 2
             resultSvgElems.push(svgLine({
                 key: `rule-line`,
                 from: new Point(ruleBoundaries.minX, ruleMidY),
@@ -192,7 +193,7 @@ const RuleProofNode = ({node,allNodes}) => {
                 props:midLineProps
             }))
         } else {
-            const ruleMidY = argBoundaries.minY - charHeight
+            ruleMidY = argBoundaries.minY - charHeight
             resultSvgElems.push(svgLine({
                 key: `rule-line`,
                 from: new Point(argBoundaries.minX, ruleMidY),
@@ -200,6 +201,16 @@ const RuleProofNode = ({node,allNodes}) => {
                 props:midLineProps
             }))
         }
+
+        const labelFontSizeFactor = 1.5
+        resultSvgElems.push(SVG.text({
+                key:`label`,
+                x:ruleBoundaries.minX-(node.label.length+3)*charLength*labelFontSizeFactor,
+                y:ruleMidY+charHeight*labelFontSizeFactor/2,
+                fill:'black',
+                fontSize:(fontSize*labelFontSizeFactor)+'px', fontFamily},
+            node.label
+        ))
 
         return {svgElems: resultSvgElems, boundaries: resultBoundaries}
     }
