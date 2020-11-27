@@ -65,6 +65,11 @@ public class MetamathTest {
         //when
         Metamath.verifyProof(database.getStatement("fourierdlem112"));
 
+//        Utils.saveDtoToFile(
+//                Metamath.visualizeProof(database.getStatement("fourierdlem112")),
+//                "D:\\programs\\java\\text-parser\\target\\fourierdlem112.json"
+//        );
+
         //then
         //no exception was thrown on the 'when' step
     }

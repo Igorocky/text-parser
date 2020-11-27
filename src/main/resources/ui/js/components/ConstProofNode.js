@@ -2,5 +2,8 @@
 
 const ConstProofNode = ({node}) => {
 
-    return node.expr.join(' ')
+    return RE.Fragment({},
+        RE.span({}, `${node.type} ${node.label??''}: `),
+        RE.span({style:{fontFamily:'courier', fontSize:'15px'}}, node.expr.join(' ')),
+    )
 }

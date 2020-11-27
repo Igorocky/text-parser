@@ -15,6 +15,7 @@ import java.util.Map;
 public class StackNodeDto {
     private int id;
     private List<Integer> args;
+    private String type;
     private String label;
     private List<List<String>> params;
     private List<String> retVal;

@@ -2,8 +2,6 @@
 
 const RuleProofNode = ({node,allNodes}) => {
 
-    console.log({allNodes})
-
     const SCALE = 10
     const pxSize = 1.5
     const fontFamily = 'courier'
@@ -11,7 +9,7 @@ const RuleProofNode = ({node,allNodes}) => {
     const fontSizePx = fontSize+'px'
     const charLength = fontSize*0.6
     const charHeight = charLength*0.85
-    const subsAvailableColors = ['green', 'orange', 'blue', 'cyan', 'red']
+    const subsAvailableColors = ['green', 'orange', 'blue', 'cyan', 'red', 'olive', 'magenta', 'pink', 'brown', 'lawngreen']
 
     function renderArgAndParam({key,ex,centerX,argIdx,arg,param,subs,swapSubs,subsColors}) {
         const argStr = arg.join(' ')
@@ -143,7 +141,7 @@ const RuleProofNode = ({node,allNodes}) => {
             argBeginIdx: argSymLen[m.argBeginIdx].begin,
             argEndIdx: argSymLen[m.argEndIdx].end,
             paramBeginIdx: paramSymLen[m.paramIdx].begin,
-            paramEndIdx: paramSymLen[m.paramIdx].begin,
+            paramEndIdx: paramSymLen[m.paramIdx].end,
         }))
     }
 
@@ -210,7 +208,7 @@ const RuleProofNode = ({node,allNodes}) => {
 
         const labelFontSizeFactor = 1.5
         const labelBegin = new Point(
-            ruleBoundaries.minX-(node.label.length+3)*charLength*labelFontSizeFactor,
+            ruleBoundaries.minX-(node.type.length+2+node.label.length+3)*charLength*labelFontSizeFactor,
             ruleMidY+charHeight*labelFontSizeFactor/2
         )
         resultSvgElems.push(SVG.text({
@@ -219,7 +217,7 @@ const RuleProofNode = ({node,allNodes}) => {
                 y:labelBegin.y,
                 fill:'black',
                 fontSize:(fontSize*labelFontSizeFactor)+'px', fontFamily},
-            node.label
+            `${node.type}: ${node.label}`
         ))
         resultBoundaries = resultBoundaries.addPoints(labelBegin)
 

@@ -48,6 +48,7 @@ public class Metamath {
                         StackNodeDto.builder()
                                 .id(ids.get(node))
                                 .args(ruleNode.getArgs().stream().map(ids::get).collect(Collectors.toList()))
+                                .type(ruleNode.getAssertion().getType().getShortName().toUpperCase())
                                 .label(ruleNode.getAssertion().getLabel())
                                 .params(
                                         Stream.concat(
@@ -67,6 +68,7 @@ public class Metamath {
                 result.add(
                         StackNodeDto.builder()
                                 .id(ids.get(node))
+                                .type(constNode.getStatement().getType().getShortName().toUpperCase())
                                 .label(constNode.getStatement().getLabel())
                                 .expr(constNode.getExpr())
                                 .build()

@@ -11,18 +11,22 @@ public enum ListStatementType {
     AXIOM("a"),
     THEOREM("p");
 
-    private final String name;
+    private final String shortName;
 
-    ListStatementType(String name) {
-        this.name = name;
+    ListStatementType(String shortName) {
+        this.shortName = shortName;
     }
 
     public static ListStatementType fromString(String name) {
         for (ListStatementType value : values()) {
-            if (value.name.equals(name)) {
+            if (value.shortName.equals(name)) {
                 return value;
             }
         }
         throw new ParserException("Cannot find ListStatementType by name '" + name + "'");
+    }
+
+    public String getShortName() {
+        return shortName;
     }
 }
