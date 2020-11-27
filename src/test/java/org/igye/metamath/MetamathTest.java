@@ -65,9 +65,10 @@ public class MetamathTest {
         //when
         Metamath.verifyProof(database.getStatement("fourierdlem112"));
 
+//        final String assertionNameToSave = "2p2e4";
 //        Utils.saveDtoToFile(
-//                Metamath.visualizeProof(database.getStatement("fourierdlem112")),
-//                "D:\\programs\\java\\text-parser\\target\\fourierdlem112.json"
+//                Metamath.visualizeProof(database.getStatement(assertionNameToSave)),
+//                "D:\\programs\\java\\text-parser\\target\\" + assertionNameToSave + ".json"
 //        );
 
         //then

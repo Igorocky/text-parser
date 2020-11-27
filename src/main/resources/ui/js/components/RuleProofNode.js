@@ -91,7 +91,7 @@ const RuleProofNode = ({node,allNodes}) => {
 
         const dy = charHeight*1.2
         const argBoundaries = incY({boundaries:SvgBoundaries.fromPoints(argLeft.end, argBottom.end),dy})
-        const paramBoundaries = incY({boundaries:SvgBoundaries.fromPoints(paramLeft.end, paramBottom.end),dy:dy*0.2})
+        const paramBoundaries = incY({boundaries:SvgBoundaries.fromPoints(paramLeft.end, paramBottom.end),dy:dy*0.4})
         return [
             svgPolygon({
                 key:`${key}-arg`,
