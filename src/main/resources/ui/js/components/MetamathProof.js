@@ -59,7 +59,7 @@ const MetamathProof = () => {
                     RE.th({key:'node-id', style:{width:'2%'}}),
                     RE.th({key:'explanation', style:{width:'98%'}}),
                 ),
-                state[s.NODES_TO_SHOW].map(node => RE.tr({key: `node-${node.id}`, style: {}},
+                state[s.NODES_TO_SHOW].map(node => RE.tr({key: `node-${node.id}`, id:node.id, style: {}},
                     RE.td({style: {...tableStyle}}, node.id),
                     RE.td({style: {...tableStyle, overflow:'auto'}},
                         hasValue(node.args)

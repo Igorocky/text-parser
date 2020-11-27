@@ -48,7 +48,11 @@ const RuleProofNode = ({node,allNodes,varColors,hideTypes}) => {
                         y:argIdxTextStart.y,
                         fill:'black',
                         fontSize:fontSizePx,
-                        fontFamily
+                        fontFamily,
+                        style:{cursor: 'pointer'},
+                        onClick: () => {
+                            location.hash = "#" + argIdx
+                        }
                     },
                     argIdx
                 ):null,
