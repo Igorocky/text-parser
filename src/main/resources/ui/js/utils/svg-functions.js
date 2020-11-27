@@ -200,7 +200,7 @@ function degToRad(deg) {
  * @param {SvgBoundaries[]} boundariesList
  */
 function mergeSvgBoundaries(boundariesList) {
-    return boundariesList.reduce((prev, curr) => new SvgBoundaries(
+    return boundariesList.reduce((prev, curr) => !hasValue(prev) ? curr : !hasValue(curr) ? prev : new SvgBoundaries(
             Math.min(prev.minX, curr.minX),
             Math.max(prev.maxX, curr.maxX),
             Math.min(prev.minY, curr.minY),

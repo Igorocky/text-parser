@@ -4,6 +4,16 @@ function hasValue(variable) {
     return variable !== undefined && variable !== null
 }
 
+function nvl(...args) {
+    for (let i = 0; i < arg.length; i++) {
+        const arg = args[i];
+        if (hasValue(arg)) {
+            return arg
+        }
+    }
+    return undefined
+}
+
 function isObject(obj) {
     return typeof obj === 'object' && !Array.isArray(obj)
 }

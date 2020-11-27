@@ -67,8 +67,17 @@ const RuleProofNode = ({node,allNodes}) => {
                     swapSubs
                 }))
             ],
-            boundaries: mergeSvgBoundaries([argBoundaries,paramBoundaries])
+            boundaries: mergeSvgBoundaries([argBoundaries,paramBoundaries]),
+            argBoundaries,
+            paramBoundaries
         }
+    }
+
+    function incY({boundaries,dy}) {
+        return new SvgBoundaries(
+            boundaries.minX, boundaries.maxX,
+            boundaries.minY-dy, boundaries.maxY+dy,
+        )
     }
 
     function renderMapping({key, argEx, paramEx, idxMapping, swapSubs}) {
@@ -78,9 +87,9 @@ const RuleProofNode = ({node,allNodes}) => {
         const paramBottom = paramEx.translate(null, charLength*idxMapping.paramBeginIdx).scale(charLength*(idxMapping.paramEndIdx-idxMapping.paramBeginIdx+1))
         const paramLeft = paramEx.translateTo(paramBottom.start).rotate(90).scale(charHeight)
 
-        const selectionMargin = SCALE*0.5;
-        const argBoundaries = SvgBoundaries.fromPoints([argLeft.end, argBottom.end]).addAbsoluteMargin(selectionMargin);
-        const paramBoundaries = SvgBoundaries.fromPoints([paramLeft.end, paramBottom.end]).addAbsoluteMargin(selectionMargin);
+        const dy = charHeight*1.2
+        const argBoundaries = incY({boundaries:SvgBoundaries.fromPoints([argLeft.end, argBottom.end]),dy})
+        const paramBoundaries = incY({boundaries:SvgBoundaries.fromPoints([paramLeft.end, paramBottom.end]),dy:dy*0.2})
         return [
             svgPolygon({
                 key:`${key}-arg`,
@@ -136,7 +145,8 @@ const RuleProofNode = ({node,allNodes}) => {
 
     function renderAllParams({ex}) {
         const resultSvgElems = []
-        let resultBoundaries = SvgBoundaries.fromPoints([SVG_EX.start, SVG_EX.end])
+        let resultBoundaries = null
+        let resultParamBoundaries = null
 
         const subsColors = Object.getOwnPropertyNames(node.substitution)
             .map((name,idx) => ({name,color:subsAvailableColors[idx]}))
@@ -144,7 +154,7 @@ const RuleProofNode = ({node,allNodes}) => {
 
         let lastEx = ex
         for (let i = 0; i < node.params.length; i++) {
-            const {svgElems, boundaries} = renderArgAndParam({
+            const {svgElems, boundaries, paramBoundaries} = renderArgAndParam({
                 key: `argAndParam-${i}`,
                 ex: lastEx,
                 arg: allNodes[node.args[i]].expr,
@@ -155,12 +165,13 @@ const RuleProofNode = ({node,allNodes}) => {
             resultSvgElems.push(...svgElems)
             lastEx = lastEx.translate(null, (boundaries.maxX - boundaries.minX) + charLength*5)
             resultBoundaries = mergeSvgBoundaries([resultBoundaries, boundaries])
+            resultParamBoundaries = mergeSvgBoundaries([resultParamBoundaries, paramBoundaries])
         }
 
-        const {svgElems, boundaries} = renderArgAndParam({
+        const {svgElems, boundaries, argBoundaries} = renderArgAndParam({
             key: `assertion`,
-            ex: ex.translate(ex.rotate(-90), resultBoundaries.maxY-ex.start.y + charHeight*4).translate(null,(resultBoundaries.maxX - resultBoundaries.minX)/2),
-            centerX: (resultBoundaries.minX + resultBoundaries.maxX)/2,
+            ex: !hasValue(resultBoundaries) ? ex : ex.translate(ex.rotate(-90), resultBoundaries.maxY-ex.start.y + charHeight*4),
+            centerX: !hasValue(resultBoundaries) ? undefined : (resultParamBoundaries.minX + resultParamBoundaries.maxX)/2,
             arg: node.retVal,
             param: node.expr,
             subs: node.substitution,
@@ -169,6 +180,26 @@ const RuleProofNode = ({node,allNodes}) => {
         })
         resultSvgElems.push(...svgElems)
         resultBoundaries = mergeSvgBoundaries([resultBoundaries, boundaries])
+
+        const ruleBoundaries = mergeSvgBoundaries([resultParamBoundaries, argBoundaries])
+        const midLineProps = {fill:'none', stroke:'black', strokeWidth: SCALE*0.1}
+        if (resultParamBoundaries) {
+            const ruleMidY = (ruleBoundaries.minY + ruleBoundaries.maxY) / 2
+            resultSvgElems.push(svgLine({
+                key: `rule-line`,
+                from: new Point(ruleBoundaries.minX, ruleMidY),
+                to: new Point(ruleBoundaries.maxX, ruleMidY),
+                props:midLineProps
+            }))
+        } else {
+            const ruleMidY = argBoundaries.minY - charHeight
+            resultSvgElems.push(svgLine({
+                key: `rule-line`,
+                from: new Point(argBoundaries.minX, ruleMidY),
+                to: new Point(argBoundaries.maxX, ruleMidY),
+                props:midLineProps
+            }))
+        }
 
         return {svgElems: resultSvgElems, boundaries: resultBoundaries}
     }
