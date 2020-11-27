@@ -1,6 +1,6 @@
 "use strict";
 
-const RuleProofNode = ({node,allNodes,varColors}) => {
+const RuleProofNode = ({node,allNodes,varColors,hideTypes}) => {
 
     const SCALE = 10
     const pxSize = 1.5
@@ -170,7 +170,7 @@ const RuleProofNode = ({node,allNodes,varColors}) => {
             .reduce((acc,elem) => ({...acc,[elem.name]:elem.color}), {})
 
         let lastEx = ex
-        for (let i = 0; i < node.params.length; i++) {
+        for (let i = hideTypes?node.numOfTypes:0; i < node.params.length; i++) {
             const {svgElems, boundaries, paramBoundaries} = renderArgAndParam({
                 key: `argAndParam-${i}`,
                 ex: lastEx,

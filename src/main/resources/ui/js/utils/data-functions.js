@@ -4,6 +4,10 @@ function hasValue(variable) {
     return variable !== undefined && variable !== null
 }
 
+function hasNoValue(variable) {
+    return !hasValue(variable)
+}
+
 function nvl(...args) {
     for (let i = 0; i < arg.length; i++) {
         const arg = args[i];
