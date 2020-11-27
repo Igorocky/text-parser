@@ -5,6 +5,7 @@ const RuleProofNode = ({node,allNodes}) => {
     console.log({allNodes})
 
     const SCALE = 10
+    const pxSize = 1.5
     const fontFamily = 'courier'
     const fontSize = (SCALE*2)
     const fontSizePx = fontSize+'px'
@@ -12,7 +13,7 @@ const RuleProofNode = ({node,allNodes}) => {
     const charHeight = charLength*0.85
     const subsAvailableColors = ['green', 'orange', 'blue', 'cyan', 'red']
 
-    function renderArgAndParam({key,ex,centerX,arg,param,subs,swapSubs,subsColors}) {
+    function renderArgAndParam({key,ex,centerX,argIdx,arg,param,subs,swapSubs,subsColors}) {
         const argStr = arg.join(' ')
         const paramStr = param.join(' ')
 
@@ -38,27 +39,28 @@ const RuleProofNode = ({node,allNodes}) => {
         const paramBottomLine = paramBottomLineEx.scale(paramLength)
         const paramLeftLine = paramBottomLineEx.rotate(90).scale(charHeight)
 
-        const argBoundaries = SvgBoundaries.fromPoints([argLeftLine.end,argBottomLine.end]).addAbsoluteMargin(SCALE*0.5)
-        const paramBoundaries = SvgBoundaries.fromPoints([paramLeftLine.end,paramBottomLine.end]).addAbsoluteMargin(SCALE*0.5)
+        const argBoundaries = SvgBoundaries.fromPoints(argLeftLine.end,argBottomLine.end).addAbsoluteMargin(SCALE*0.5)
+        const paramBoundaries = SvgBoundaries.fromPoints(paramLeftLine.end,paramBottomLine.end).addAbsoluteMargin(SCALE*0.5)
+        const argIdxTextStart = new Point(argBottomLine.start.x, argBottomLine.start.y-charHeight*3)
         return {
             svgElems: [
+                hasValue(argIdx)?SVG.text({
+                        key:`${key}-arg-idx`,
+                        x:argIdxTextStart.x,
+                        y:argIdxTextStart.y,
+                        fill:'black',
+                        fontSize:fontSizePx,
+                        fontFamily
+                    },
+                    argIdx
+                ):null,
                 SVG.text({key:`${key}-arg-text`, x:argBottomLine.start.x, y:argBottomLine.start.y, fill:'black', fontSize:fontSizePx, fontFamily},
                     argStr
                 ),
-                // svgPolygon({
-                //     key: `${key}-arg-border`,
-                //     boundaries: argBoundaries,
-                //     props: {fill:'none', stroke:'green', strokeWidth: SCALE*0.1}
-                // }),
                 SVG.text({key:`${key}-param-text`,
                         x:paramBottomLineEx.start.x, y:paramBottomLineEx.start.y, fill:'black', fontSize:fontSizePx, fontFamily},
                     paramStr
                 ),
-                // svgPolygon({
-                //     key: `${key}-param-border`,
-                //     boundaries: paramBoundaries,
-                //     props: {fill:'none', stroke:'green', strokeWidth: SCALE*0.1}
-                // }),
                 ...determineSubsIndexes({param:swapSubs?arg:param,subs,subsColors}).flatMap((idxMapping,idx) => renderMapping({
                     key:`${key}-mapping-${idx}`,
                     argEx: swapSubs?paramBottomLineEx:argBottomLineEx,
@@ -67,7 +69,9 @@ const RuleProofNode = ({node,allNodes}) => {
                     swapSubs
                 }))
             ],
-            boundaries: mergeSvgBoundaries([argBoundaries,paramBoundaries]),
+            boundaries: mergeSvgBoundaries(argBoundaries,paramBoundaries)
+                .addPoints(argIdxTextStart.withY(oldY => oldY-charHeight*2))
+                .addPoints(paramBottomLineEx.start.withY(oldY => oldY+charHeight*2)),
             argBoundaries,
             paramBoundaries
         }
@@ -88,8 +92,8 @@ const RuleProofNode = ({node,allNodes}) => {
         const paramLeft = paramEx.translateTo(paramBottom.start).rotate(90).scale(charHeight)
 
         const dy = charHeight*1.2
-        const argBoundaries = incY({boundaries:SvgBoundaries.fromPoints([argLeft.end, argBottom.end]),dy})
-        const paramBoundaries = incY({boundaries:SvgBoundaries.fromPoints([paramLeft.end, paramBottom.end]),dy:dy*0.2})
+        const argBoundaries = incY({boundaries:SvgBoundaries.fromPoints(argLeft.end, argBottom.end),dy})
+        const paramBoundaries = incY({boundaries:SvgBoundaries.fromPoints(paramLeft.end, paramBottom.end),dy:dy*0.2})
         return [
             svgPolygon({
                 key:`${key}-arg`,
@@ -157,6 +161,7 @@ const RuleProofNode = ({node,allNodes}) => {
             const {svgElems, boundaries, paramBoundaries} = renderArgAndParam({
                 key: `argAndParam-${i}`,
                 ex: lastEx,
+                argIdx:node.args[i],
                 arg: allNodes[node.args[i]].expr,
                 param: node.params[i],
                 subs: node.substitution,
@@ -164,8 +169,8 @@ const RuleProofNode = ({node,allNodes}) => {
             })
             resultSvgElems.push(...svgElems)
             lastEx = lastEx.translate(null, (boundaries.maxX - boundaries.minX) + charLength*5)
-            resultBoundaries = mergeSvgBoundaries([resultBoundaries, boundaries])
-            resultParamBoundaries = mergeSvgBoundaries([resultParamBoundaries, paramBoundaries])
+            resultBoundaries = mergeSvgBoundaries(resultBoundaries, boundaries)
+            resultParamBoundaries = mergeSvgBoundaries(resultParamBoundaries, paramBoundaries)
         }
 
         const {svgElems, boundaries, argBoundaries} = renderArgAndParam({
@@ -179,9 +184,9 @@ const RuleProofNode = ({node,allNodes}) => {
             subsColors
         })
         resultSvgElems.push(...svgElems)
-        resultBoundaries = mergeSvgBoundaries([resultBoundaries, boundaries])
+        resultBoundaries = mergeSvgBoundaries(resultBoundaries, boundaries)
 
-        const ruleBoundaries = mergeSvgBoundaries([resultParamBoundaries, argBoundaries])
+        const ruleBoundaries = mergeSvgBoundaries(resultParamBoundaries, argBoundaries)
         const midLineProps = {fill:'none', stroke:'black', strokeWidth: SCALE*0.1}
         let ruleMidY
         if (resultParamBoundaries) {
@@ -200,17 +205,23 @@ const RuleProofNode = ({node,allNodes}) => {
                 to: new Point(argBoundaries.maxX, ruleMidY),
                 props:midLineProps
             }))
+            resultBoundaries = resultBoundaries.addPoints(new Point(argBoundaries.minX, ruleMidY-charHeight))
         }
 
         const labelFontSizeFactor = 1.5
+        const labelBegin = new Point(
+            ruleBoundaries.minX-(node.label.length+3)*charLength*labelFontSizeFactor,
+            ruleMidY+charHeight*labelFontSizeFactor/2
+        )
         resultSvgElems.push(SVG.text({
                 key:`label`,
-                x:ruleBoundaries.minX-(node.label.length+3)*charLength*labelFontSizeFactor,
-                y:ruleMidY+charHeight*labelFontSizeFactor/2,
+                x:labelBegin.x,
+                y:labelBegin.y,
                 fill:'black',
                 fontSize:(fontSize*labelFontSizeFactor)+'px', fontFamily},
             node.label
         ))
+        resultBoundaries = resultBoundaries.addPoints(labelBegin)
 
         return {svgElems: resultSvgElems, boundaries: resultBoundaries}
     }
@@ -219,10 +230,12 @@ const RuleProofNode = ({node,allNodes}) => {
 
     return RE.svg(
         {
-            width: 800,
-            height: 200,
-            boundaries: boundaries.addAbsoluteMargin(SCALE*5),
+            width: boundaries.width()/pxSize,
+            height: boundaries.height()/pxSize,
+            boundaries: boundaries,
         },
+        // SVG.rect({key:'background', x:-100000, y:-100000, width:200000, height:200000, fill:'lightyellow'}),
         svgElems,
+        // boundaries.toRect({key:`boundaries`,color:'red'})
     )
 }

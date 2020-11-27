@@ -17,7 +17,7 @@ const MetamathProof = () => {
         })
     }
 
-    const tableStyle = {borderCollapse: 'collapse', border: '1px solid lightgray', fontSize: '15px'};
+    const tableStyle = {borderCollapse: 'collapse', border: '1px solid lightgray', fontSize: '15px', padding:'10px'};
     return RE.table({style:{borderCollapse: 'collapse'}},
         RE.tbody({style:{borderCollapse: 'collapse'}},
             RE.tr({style: {}},
