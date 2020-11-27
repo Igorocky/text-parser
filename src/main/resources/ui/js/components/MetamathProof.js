@@ -53,15 +53,15 @@ const MetamathProof = () => {
     const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'10px'};
 
     function renderProof() {
-        return RE.table({style:{borderCollapse: 'collapse'}},
+        return RE.table({style:{borderCollapse: 'collapse', tableLayout: 'fixed', width:'100%'}},
             RE.tbody({style:{borderCollapse: 'collapse'}},
                 RE.tr({style: {}},
-                    RE.th({key:'node-id'}),
-                    RE.th({key:'explanation'}),
+                    RE.th({key:'node-id', style:{width:'2%'}}),
+                    RE.th({key:'explanation', style:{width:'98%'}}),
                 ),
                 state[s.NODES_TO_SHOW].map(node => RE.tr({key: `node-${node.id}`, style: {}},
                     RE.td({style: {...tableStyle}}, node.id),
-                    RE.td({style: {...tableStyle}},
+                    RE.td({style: {...tableStyle, overflow:'auto'}},
                         hasValue(node.args)
                             ? re(RuleProofNode,{node, allNodes:state[s.NODES_TO_SHOW_MAP], varColors, hideTypes:state[s.HIDE_TYPES]})
                             : re(ConstProofNode,{node})
