@@ -1,6 +1,6 @@
 "use strict";
 
-const MetamathProof = ({type, name, description, proof}) => {
+const MetamathProof = ({type, name, description, assertion, proof}) => {
 
     const s = {
         PROOF: 'PROOF',
@@ -69,13 +69,14 @@ const MetamathProof = ({type, name, description, proof}) => {
         )
     }
 
-    return RE.Container.col.top.left({},{},
+    return RE.Container.col.top.left({},{style:{marginBottom:'20px'}},
         RE.Container.row.center.center({},{style:{fontSize:'18px', fontWeight:'700', marginRight:'10px'}},
             RE.span({},type),
             RE.span({style:{color:'rgb(0, 102, 51)'}},name),
         ),
         RE.div({}, description),
-        RE.Container.row.left.center({},{},
+        RE.div({}, re(Assertion,{...assertion,varColors})),
+        RE.Container.row.left.center({style:{marginBottom:'-20px'}},{},
             RE.Button(
                 {
                     onClick: () => setState(prevState => createNewState({prevState,params:{[s.HIDE_TYPES]:!prevState[s.HIDE_TYPES]}}))

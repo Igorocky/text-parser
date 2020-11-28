@@ -2,15 +2,6 @@
 
 const RuleProofNode = ({node,allNodes,varColors,hideTypes}) => {
 
-    const SCALE = 10
-    const pxSize = 1.5
-    const fontFamily = 'courier'
-    const fontSize = (SCALE*2)
-    const fontSizePx = fontSize+'px'
-    const charLength = fontSize*0.6
-    const charHeight = charLength*0.85
-    const subsAvailableColors = ['green', 'orange', 'cyan', 'olive', 'pink', 'brown', 'lawngreen', 'blue', 'red', 'magenta']
-
     function renderArgAndParam({key,ex,centerX,argIdx,arg,param,subs,swapSubs,subsColors,varColors}) {
         const argStr = arg.join(' ')
         const paramStr = param.join(' ')
@@ -56,8 +47,8 @@ const RuleProofNode = ({node,allNodes,varColors,hideTypes}) => {
                     },
                     argIdx
                 ):null,
-                ...renderColoredExpr({key:`${key}-arg-text`,ex:argBottomLine.normalize(),expr:arg,colors:varColors}),
-                ...renderColoredExpr({key:`${key}-param-text`,ex:paramBottomLineEx.normalize(),expr:param,colors:varColors}),
+                ...(renderColoredExpr({key:`${key}-arg-text`,ex:argBottomLine.normalize(),expr:arg,colors:varColors}).svgElems),
+                ...(renderColoredExpr({key:`${key}-param-text`,ex:paramBottomLineEx.normalize(),expr:param,colors:varColors}).svgElems),
                 ...determineSubsIndexes({param:swapSubs?arg:param,subs,subsColors}).flatMap((idxMapping,idx) => renderMapping({
                     key:`${key}-mapping-${idx}`,
                     argEx: swapSubs?paramBottomLineEx:argBottomLineEx,
@@ -72,26 +63,6 @@ const RuleProofNode = ({node,allNodes,varColors,hideTypes}) => {
             argBoundaries,
             paramBoundaries
         }
-    }
-
-    function renderColoredExpr({key,ex,expr,colors}) {
-        const result = []
-        for (let i = 0; i < expr.length; i++) {
-            const text = expr[i];
-            result.push(SVG.text({
-                    key:`${key}-${i}`,
-                    x:ex.start.x,
-                    y:ex.start.y,
-                    fill:colors[text]??'black',
-                    fontSize:fontSizePx,
-                    fontFamily,
-                    fontWeight:colors[text]?'900':'none'
-                },
-                text
-            ))
-            ex = ex.translate(null,charLength*(text.length+1))
-        }
-        return result
     }
 
     function incY({boundaries,dy}) {
