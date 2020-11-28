@@ -47,14 +47,38 @@ public class MetamathTools {
         copyUiFileToDir("/ui/js/components/ConstProofNode.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/RuleProofNode.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/MetamathAssertionView.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/components/MetamathIndexTable.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/components/MetamathIndexView.js", dirToSaveTo);
+
+        final List<AssertionDto> assertionDtos = assertions.stream()
+                .map(MetamathTools::visualizeAssertion)
+                .collect(Collectors.toList());
+
         File dataDir = new File(dirToSaveTo, "data");
-        for (ListStatement assertion : assertions) {
-            createAssertionHtmlFile(
-                    MetamathTools.visualizeAssertion(assertion),
-                    dataDir,
-                    createRelPathToSaveTo(assertion.getLabel())
-            );
+        for (AssertionDto assertionDto : assertionDtos) {
+            createAssertionHtmlFile(assertionDto, dataDir, createRelPathToSaveTo(assertionDto.getName()));
         }
+
+        final IndexDto index = buildIndex(assertionDtos);
+        createHtmlFile("","MetamathIndexView", index, new File(dirToSaveTo, "index.html"));
+    }
+
+    private static IndexDto buildIndex(List<AssertionDto> assertionDtos) {
+        final int[] id = {0};
+        return IndexDto.builder()
+                .elems(
+                        assertionDtos.stream()
+                                .map(assertionDto ->
+                                        IndexElemDto.builder()
+                                                .id(id[0]++)
+                                                .type(assertionDto.getType())
+                                                .label(assertionDto.getName())
+                                                .expression(assertionDto.getAssertion().getRetVal())
+                                                .build()
+                                )
+                                .collect(Collectors.toList())
+                )
+                .build();
     }
 
     public static AssertionDto visualizeAssertion(ListStatement assertion) {
@@ -370,20 +394,27 @@ public class MetamathTools {
         FileUtils.writeStringToFile(destFile, modifier.apply(content), StandardCharsets.UTF_8);
     }
 
-    private static void createAssertionHtmlFile(AssertionDto assertionDto, File dataDir, List<String> relPath) {
+    private static void createHtmlFile(String relPathPrefix, String viewComponentName, Object viewProps, File file) {
         copyFromClasspath(
                 "/ui/index.html",
-                html -> {
-                    final String relPathPrefix = relPath.stream()
-                            .map(p -> "..")
-                            .collect(Collectors.joining("/"))
-                            + "/";
-                    return html
-                            .replace("href=\"", "href=\"" + relPathPrefix)
-                            .replace("src=\"", "src=\"" + relPathPrefix)
-                            .replace("'$ComponentName'", "MetamathAssertionView")
-                            .replace("'$viewProps'", Utils.toJson(Utils.toJson(assertionDto)));
-                },
+                html -> html
+                        .replace("href=\"", "href=\"" + relPathPrefix)
+                        .replace("src=\"", "src=\"" + relPathPrefix)
+                        .replace("'$ComponentName'", viewComponentName)
+                        .replace("'$viewProps'", Utils.toJson(Utils.toJson(viewProps))),
+                file
+        );
+    }
+
+    private static void createAssertionHtmlFile(AssertionDto assertionDto, File dataDir, List<String> relPath) {
+        final String relPathPrefix = relPath.stream()
+                .map(p -> "..")
+                .collect(Collectors.joining("/"))
+                + "/";
+        createHtmlFile(
+                relPathPrefix,
+                "MetamathAssertionView",
+                assertionDto,
                 new File(dataDir, StringUtils.join(relPath, '/'))
         );
     }
