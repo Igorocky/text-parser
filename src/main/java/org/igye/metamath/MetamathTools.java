@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Metamath {
+public class MetamathTools {
 
     private static final Pattern COMPONENT_NAME_PATTERN = Pattern.compile("const viewComponent = ComponentName");
     private static final Pattern VIEW_PROPS_PATTERN = Pattern.compile("const viewProps = \\{\\}");
@@ -57,8 +57,9 @@ public class Metamath {
         copyUiFileToDir("/ui/js/components/MetamathProof.js", dirToSaveTo);
         for (ListStatement assertion : assertions) {
             if (assertion.getType() == ListStatementType.THEOREM) {
-                createProofHtmlFile(
-                        Metamath.visualizeProof(assertion),
+                createAssertionHtmlFile(
+                        assertion,
+                        MetamathTools.visualizeProof(assertion),
                         new File(dirToSaveTo,assertion.getLabel()+".html")
                 );
             }
@@ -169,7 +170,7 @@ public class Metamath {
                     }
                 }
             }
-            curStmt = Metamath.determinePrevStatement(curStmt);
+            curStmt = MetamathTools.determinePrevStatement(curStmt);
         }
 
         return result;
@@ -181,7 +182,7 @@ public class Metamath {
 
     public static String stringify(Collection<ListStatement> statements) {
         return "["
-                + statements.stream().map(Metamath::stringify).collect(Collectors.joining(", "))
+                + statements.stream().map(MetamathTools::stringify).collect(Collectors.joining(", "))
                 + "]";
     }
 
@@ -354,7 +355,7 @@ public class Metamath {
         FileUtils.writeStringToFile(destFile, modifier.apply(content), StandardCharsets.UTF_8);
     }
 
-    private static void createProofHtmlFile(ProofDto proofDto, File destFile) {
+    private static void createAssertionHtmlFile(ListStatement assertion, ProofDto proofDto, File destFile) {
         copyFromClasspath(
                 "/ui/index.html",
                 html -> {
@@ -366,13 +367,25 @@ public class Metamath {
                     html = Utils.replace(
                             html,
                             VIEW_PROPS_PATTERN,
-                            matcher -> "const viewProps = "
-                                    + Utils.toJson(Collections.singletonMap("proof", proofDto))
+                            matcher -> {
+                                final Map<String, Object> viewProps = new HashMap<>();
+                                viewProps.put("type", getTypeStr(assertion.getType()));
+                                viewProps.put("name", assertion.getLabel());
+                                viewProps.put("description", assertion.getDescription());
+                                viewProps.put("proof", proofDto);
+                                return "const viewProps = " + Utils.toJson(viewProps);
+                            }
                     );
                     return html;
                 },
                 destFile
         );
+    }
+
+    private static String getTypeStr(ListStatementType type) {
+        return type == ListStatementType.AXIOM ? "Axiom"
+                : type == ListStatementType.THEOREM ? "Theorem"
+                : type.name();
     }
 
 }

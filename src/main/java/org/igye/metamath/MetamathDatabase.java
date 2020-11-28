@@ -12,7 +12,7 @@ public class MetamathDatabase {
     }
 
     public ListStatement getStatement(String label) {
-        return Metamath.findActiveStatements(
+        return MetamathTools.findActiveStatements(
                 allStatements.get(allStatements.size()-1),
                 Collections.singleton(label)
         ).get(label);

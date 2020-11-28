@@ -1,6 +1,6 @@
 "use strict";
 
-const MetamathProof = ({proof}) => {
+const MetamathProof = ({type, name, description, proof}) => {
 
     const s = {
         PROOF: 'PROOF',
@@ -70,6 +70,11 @@ const MetamathProof = ({proof}) => {
     }
 
     return RE.Container.col.top.left({},{},
+        RE.Container.row.center.center({},{style:{fontSize:'18px', fontWeight:'700', marginRight:'10px'}},
+            RE.span({},type),
+            RE.span({style:{color:'rgb(0, 102, 51)'}},name),
+        ),
+        RE.div({}, description),
         RE.Container.row.left.center({},{},
             RE.Button(
                 {

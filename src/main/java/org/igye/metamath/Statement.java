@@ -13,6 +13,6 @@ public interface Statement {
     String getDescription();
 
     default Map<String,ListStatement> findActiveStatements(Set<String> labels) {
-        return Metamath.findActiveStatements(Metamath.determinePrevStatement(this),labels);
+        return MetamathTools.findActiveStatements(MetamathTools.determinePrevStatement(this),labels);
     }
 }

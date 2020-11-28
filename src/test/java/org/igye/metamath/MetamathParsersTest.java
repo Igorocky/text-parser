@@ -9,7 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.igye.metamath.Metamath.stringify;
+import static org.igye.metamath.MetamathTools.stringify;
 import static org.igye.metamath.MetamathParsers.strToInt;
 import static org.igye.textparser.TextParsers.inputStreamToTokenStream;
 import static org.junit.Assert.assertEquals;

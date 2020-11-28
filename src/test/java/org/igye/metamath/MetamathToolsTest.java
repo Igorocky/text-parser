@@ -14,14 +14,14 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
-public class MetamathTest {
+public class MetamathToolsTest {
     @Test
     public void verifyProof_shouldNotFailOnValidProof() {
         //given
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/demo0.mm"));
 
         //when
-        Metamath.verifyProof(database.getStatement("th1"));
+        MetamathTools.verifyProof(database.getStatement("th1"));
 
         //then
         //no exception was thrown on the 'when' step
@@ -34,7 +34,7 @@ public class MetamathTest {
 
         try {
             //when
-            Metamath.verifyProof(database.getStatement("th2"));
+            MetamathTools.verifyProof(database.getStatement("th2"));
         } catch (MetamathException e) {
             //then
             assertEquals("Hypotheses don't match", e.getMessage());
@@ -49,9 +49,9 @@ public class MetamathTest {
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/set-reduced.mm"));
 
         //when
-        Metamath.verifyProof(database.getStatement("mp2"));
-        Metamath.verifyProof(database.getStatement("id"));
-        Metamath.verifyProof(database.getStatement("dfbi1ALT"));
+        MetamathTools.verifyProof(database.getStatement("mp2"));
+        MetamathTools.verifyProof(database.getStatement("id"));
+        MetamathTools.verifyProof(database.getStatement("dfbi1ALT"));
 
         //then
         //no exception was thrown on the 'when' step
@@ -64,7 +64,7 @@ public class MetamathTest {
         final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
 
         //when
-        Metamath.verifyProof(database.getStatement("fourierdlem112"));
+        MetamathTools.verifyProof(database.getStatement("fourierdlem112"));
 
 //        final String assertionNameToSave = "sqrt2irr";
 //        Utils.saveDtoToFile(
@@ -94,7 +94,7 @@ public class MetamathTest {
         final Instant verifyingStart = Instant.now();
         System.out.println(verifyingStart + " verifying");
         //when
-        allTheorems.forEach(Metamath::verifyProof);
+        allTheorems.forEach(MetamathTools::verifyProof);
         final Instant verifyingEnd = Instant.now();
         System.out.println(verifyingEnd + " verification completed in " + getDurationStr(verifyingStart, verifyingEnd));
 
@@ -108,7 +108,7 @@ public class MetamathTest {
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/demo0.mm"));
 
         //when
-        final ProofDto proofDto = Metamath.visualizeProof(database.getStatement("th1"));
+        final ProofDto proofDto = MetamathTools.visualizeProof(database.getStatement("th1"));
 
 //        Utils.saveDtoToFile(
 //                proofDto,
@@ -154,7 +154,7 @@ public class MetamathTest {
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/set-reduced.mm"));
 
         //when
-        Metamath.generateProofExplorer(
+        MetamathTools.generateProofExplorer(
                 database.getAllAssertions().stream()
                         .filter(a -> a.getType() == ListStatementType.THEOREM)
                         .limit(10)
