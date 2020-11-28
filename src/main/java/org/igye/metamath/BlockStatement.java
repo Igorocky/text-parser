@@ -21,6 +21,7 @@ public class BlockStatement implements Statement {
     private Statement prevStatement;
     private BlockStatement currBlock;
     private List<Statement> content;
+    private String description;
 
     public Map<String,ListStatement> findAssertions(Set<String> labels) {
         final HashMap<String, ListStatement> result = new HashMap<>();

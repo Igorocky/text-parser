@@ -10,6 +10,7 @@ public interface Statement {
     PositionInText getEnd();
     Statement getPrevStatement();
     BlockStatement getCurrBlock();
+    String getDescription();
 
     default Map<String,ListStatement> findActiveStatements(Set<String> labels) {
         return Metamath.findActiveStatements(Metamath.determinePrevStatement(this),labels);

@@ -23,4 +23,5 @@ public class ListStatement implements Statement {
     private List<String> proof;
     private CompressedProof compressedProof;
     private Frame frame;
+    private String description;
 }

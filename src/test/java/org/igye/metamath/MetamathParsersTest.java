@@ -16,8 +16,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class MetamathParsersTest {
+
     @Test
-    public void defineFramesAndBuildMap_shouldDefineFramesForAllAxiomsAndTheorems() {
+    public void load_shouldDefineFramesForAllAxiomsAndTheorems() {
         //when
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/demo0.mm"));
 //        final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
@@ -36,9 +37,23 @@ public class MetamathParsersTest {
     }
 
     @Test
+    public void load_shouldAddDescriptionsToAllAssertions() {
+        //when
+        final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/demo0.mm"));
+
+        //then
+        assertEquals("Define the modus ponens inference rule", database.getStatement("mp").getDescription());
+        assertEquals("Prove a theorem", database.getStatement("th1").getDescription());
+        assertEquals(
+                "A theorem with invalid proof (two proof steps were swapped in comparison to the previous theorem)",
+                database.getStatement("th2").getDescription()
+        );
+    }
+
+    @Test
     public void parse_shouldParseMetamathFile() {
         //when
-        List<Statement> statements = MetamathParsers.parse(Utils.inputStreamFromClasspath("/peano.mm"));
+        List<Statement> statements = MetamathParsers.parse(Utils.inputStreamFromClasspath("/peano.mm")).getRight();
 //        List<Statement> statements = MetamathParsers.parse("D:\\Install\\metamath\\metamath\\set.mm");
 
         //then

@@ -46,17 +46,20 @@ public class MetamathParsers {
     }
 
     public static MetamathDatabase load(InputStream inputStream) {
-        final List<Statement> statements = parse(inputStream);
+        Pair<Preprocessed, List<Statement>> parsed = parse(inputStream);
+        final List<Statement> statements = parsed.getRight();
         defineFrames(statements);
-        return new MetamathDatabase(statements);
+        final MetamathDatabase database = new MetamathDatabase(statements);
+        appendDescriptions(database, parsed.getLeft().getCode());
+        return database;
     }
 
     @SneakyThrows
-    protected static List<Statement> parse(String filePath) {
+    protected static Pair<Preprocessed,List<Statement>> parse(String filePath) {
         return parse(new FileInputStream(filePath));
     }
 
-    protected static List<Statement> parse(InputStream inputStream) {
+    protected static Pair<Preprocessed,List<Statement>> parse(InputStream inputStream) {
         final Preprocessed preprocessed = preprocess(inputStream);
         final ArrayList<Statement> statements = new ArrayList<>();
         stream(
@@ -76,7 +79,7 @@ public class MetamathParsers {
                         + " at line=" + position.getLine() + ", col=" + position.getCol());
             }
         });
-        return statements;
+        return Pair.of(preprocessed,statements);
     }
 
     @SneakyThrows
@@ -86,6 +89,7 @@ public class MetamathParsers {
 
     protected static Preprocessed preprocess(InputStream inputStream) {
         final Preprocessed preprocessed = new Preprocessed();
+        final Object[] prevPart = {null};
         stream(
                 or(comment(), nonComment()),
                 () -> TextParsers.inputStreamToTokenStream(inputStream)
@@ -95,10 +99,15 @@ public class MetamathParsers {
             }
             Object part = partParseResult.get();
             if (part instanceof NonComment) {
-                preprocessed.getCode().add((NonComment) part);
+                final NonComment nonComment = (NonComment) part;
+                if (prevPart[0] != null && prevPart[0] instanceof Comment) {
+                    nonComment.setPrecedingComment((Comment) prevPart[0]);
+                }
+                preprocessed.getCode().add(nonComment);
             } else {
                 preprocessed.getComments().add((Comment) part);
             }
+            prevPart[0] = part;
         });
         return preprocessed;
     }
@@ -362,5 +371,23 @@ public class MetamathParsers {
         }
         Collections.sort(frame.getTypes(), Comparator.comparing(ListStatement::getBegin));
         return frame;
+    }
+
+    private static void appendDescriptions(MetamathDatabase database, List<NonComment> preprocessedCode) {
+        final List<ListStatement> allAssertions = database.getAllAssertions();
+        Collections.sort(allAssertions, Comparator.comparing(ListStatement::getBegin));
+        for (int i = 0; i < preprocessedCode.size(); i++) {
+            NonComment codePart = preprocessedCode.get(i);
+            if (codePart.getPrecedingComment() != null) {
+                int aIdx = 0;
+                while (aIdx < allAssertions.size() && allAssertions.get(aIdx).getBegin().compareTo(codePart.getBegin()) < 0) {
+                    aIdx++;
+                }
+                if (allAssertions.size() <= aIdx) {
+                    return;
+                }
+                allAssertions.get(aIdx).setDescription(codePart.getPrecedingComment().getText().trim());
+            }
+        }
     }
 }

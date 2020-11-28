@@ -11,6 +11,7 @@ import org.igye.textparser.PositionInText;
 @NoArgsConstructor
 @Builder
 public class NonComment {
+    private Comment precedingComment;
     private PositionInText begin;
     private PositionInText end;
     private String text;
