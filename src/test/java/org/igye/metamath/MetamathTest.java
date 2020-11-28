@@ -155,7 +155,10 @@ public class MetamathTest {
 
         //when
         Metamath.generateProofExplorer(
-                database.getAllAssertions().stream().limit(10).collect(Collectors.toList()),
+                database.getAllAssertions().stream()
+                        .filter(a -> a.getType() == ListStatementType.THEOREM)
+                        .limit(10)
+                        .collect(Collectors.toList()),
                 "D:\\programs\\java\\text-parser\\target\\proof-explorer"
         );
     }

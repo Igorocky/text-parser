@@ -1,9 +1,9 @@
 "use strict";
 
-const MetamathProof = ({proofDto}) => {
+const MetamathProof = ({proof}) => {
 
     const s = {
-        PROOF_DTO: 'PROOF_DTO',
+        PROOF: 'PROOF',
         NODES_TO_SHOW: 'NODES_TO_SHOW',
         NODES_TO_SHOW_MAP: 'NODES_TO_SHOW_MAP',
         HIDE_TYPES: 'HIDE_TYPES',
@@ -27,16 +27,16 @@ const MetamathProof = ({proofDto}) => {
         if (hideTypes) {
             const requiredNodeIds = [
                 1,
-                ...proofDto.nodes.flatMap(node =>
+                ...proof.nodes.flatMap(node =>
                     hasNoValue(node.args)?[]:node.args.filter((id,idx) => idx >= node.numOfTypes)
                 )
             ]
-            nodesToShow = proofDto.nodes.filter(({id}) => requiredNodeIds.includes(id))
+            nodesToShow = proof.nodes.filter(({id}) => requiredNodeIds.includes(id))
         } else {
-            nodesToShow = proofDto.nodes
+            nodesToShow = proof.nodes
         }
         return createObj({
-            [s.PROOF_DTO]: proofDto,
+            [s.PROOF]: proof,
             [s.NODES_TO_SHOW]: nodesToShow,
             [s.NODES_TO_SHOW_MAP]: createNodesMap(nodesToShow),
             [s.HIDE_TYPES]: hideTypes,
@@ -44,14 +44,13 @@ const MetamathProof = ({proofDto}) => {
     }
 
     const typeColors = {wff:'blue',term:'black',setvar:'red',['class']:'magenta'}
-    const varTypes = state[s.PROOF_DTO].varTypes
+    const varTypes = state[s.PROOF].varTypes
     const varColors = Object.getOwnPropertyNames(varTypes)
         .map(varName => [varName,typeColors[varTypes[varName]]??'gold'])
         .reduce((acc,[varName,color]) => ({...acc, [varName]:color}), {})
 
-    const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'10px'};
-
     function renderProof() {
+        const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'10px'}
         return RE.table({style:{borderCollapse: 'collapse', tableLayout: 'fixed', width:'100%'}},
             RE.tbody({style:{borderCollapse: 'collapse'}},
                 RE.tr({style: {}},

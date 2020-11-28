@@ -367,7 +367,7 @@ public class Metamath {
                             html,
                             VIEW_PROPS_PATTERN,
                             matcher -> "const viewProps = "
-                                    + Utils.toJson(Collections.singletonMap("proofDto", proofDto))
+                                    + Utils.toJson(Collections.singletonMap("proof", proofDto))
                     );
                     return html;
                 },
