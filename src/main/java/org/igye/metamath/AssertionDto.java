@@ -12,7 +12,11 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProofDto {
-    private List<StackNodeDto> nodes;
+public class AssertionDto {
+    private String type;
+    private String name;
+    private String description;
     private Map<String,String> varTypes;
+    private StackNodeDto assertion;
+    private List<StackNodeDto> proof;
 }

@@ -22,14 +22,10 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MetamathTools {
-
-    private static final Pattern COMPONENT_NAME_PATTERN = Pattern.compile("const viewComponent = ComponentName");
-    private static final Pattern VIEW_PROPS_PATTERN = Pattern.compile("const viewProps = \\{\\}");
 
     public static void main(String[] args) {
         System.out.println(Instant.now().toString()
@@ -56,76 +52,107 @@ public class MetamathTools {
         copyUiFileToDir("/ui/js/components/Assertion.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/ConstProofNode.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/RuleProofNode.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/components/MetamathProof.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/components/MetamathAssertionView.js", dirToSaveTo);
         for (ListStatement assertion : assertions) {
             if (assertion.getType() == ListStatementType.THEOREM) {
                 createAssertionHtmlFile(
-                        assertion,
-                        MetamathTools.visualizeProof(assertion),
+                        MetamathTools.visualizeAssertion(assertion),
                         new File(dirToSaveTo,assertion.getLabel()+".html")
                 );
             }
         }
     }
 
-    public static ProofDto visualizeProof(ListStatement theorem) {
-        final ArrayList<StackNodeDto> nodes = new ArrayList<>();
-        final StackNode proof = verifyProof(theorem);
-        Map<StackNode, Integer> ids = generateIds(proof);
-        iterateNodes(proof, node -> {
-            if (node instanceof RuleStackNode) {
-                final RuleStackNode ruleNode = (RuleStackNode) node;
-                final Frame frame = ruleNode.getAssertion().getFrame();
-                nodes.add(
-                        StackNodeDto.builder()
-                                .id(ids.get(node))
-                                .args(ruleNode.getArgs().stream().map(ids::get).collect(Collectors.toList()))
-                                .type(ruleNode.getAssertion().getType().getShortName().toUpperCase())
-                                .label(ruleNode.getAssertion().getLabel())
-                                .params(
-                                        Stream.concat(
-                                                frame.getTypes().stream(),
-                                                frame.getHypotheses().stream()
-                                        )
-                                                .map(stm -> stm.getSymbols())
-                                                .collect(Collectors.toList())
-                                )
-                                .numOfTypes(frame.getTypes().size())
-                                .retVal(ruleNode.getAssertion().getSymbols())
-                                .substitution(ruleNode.getSubstitution())
-                                .expr(ruleNode.getExpr())
-                                .build()
-                );
-            } else {
-                final ConstStackNode constNode = (ConstStackNode) node;
-                nodes.add(
-                        StackNodeDto.builder()
-                                .id(ids.get(node))
-                                .type(constNode.getStatement().getType().getShortName().toUpperCase())
-                                .label(constNode.getStatement().getLabel())
-                                .expr(constNode.getExpr())
-                                .build()
-                );
-            }
-        });
+    public static AssertionDto visualizeAssertion(ListStatement assertion) {
+        final AssertionDto.AssertionDtoBuilder assertionDto = AssertionDto.builder();
+        assertionDto.type(getTypeStr(assertion.getType()));
+        assertionDto.name(assertion.getLabel());
+        assertionDto.description(assertion.getDescription());
+        assertionDto.assertion(
+                StackNodeDto.builder()
+                        .params(
+                                assertion.getFrame().getHypotheses().stream()
+                                        .map(ListStatement::getSymbols)
+                                        .collect(Collectors.toList())
+                        )
+                        .retVal(assertion.getFrame().getAssertion().getSymbols())
+                        .build()
+        );
 
         final HashMap<String, String> varTypes = new HashMap<>();
-        nodes.stream()
-                .flatMap(node -> Stream.concat(
-                        Stream.concat(
-                                node.getParams()==null?Stream.empty():node.getParams().stream().flatMap(List::stream),
-                                node.getRetVal()==null?Stream.empty():node.getRetVal().stream()
-                        ),
-                        node.getExpr().stream()
-                ))
-                .map(theorem.getFrame().getContext()::getType)
+        assertionDto.varTypes(varTypes);
+        varTypes.putAll(extractVarTypes(
+                assertion.getFrame().getContext(),
+                Stream.concat(
+                        assertion.getFrame().getHypotheses().stream().flatMap(h -> h.getSymbols().stream()),
+                        assertion.getFrame().getAssertion().getSymbols().stream()
+                )
+        ));
+
+        if (assertion.getType() == ListStatementType.THEOREM) {
+            final ArrayList<StackNodeDto> nodes = new ArrayList<>();
+            final StackNode proof = verifyProof(assertion);
+            Map<StackNode, Integer> ids = generateIds(proof);
+            iterateNodes(proof, node -> {
+                if (node instanceof RuleStackNode) {
+                    final RuleStackNode ruleNode = (RuleStackNode) node;
+                    final Frame frame = ruleNode.getAssertion().getFrame();
+                    nodes.add(
+                            StackNodeDto.builder()
+                                    .id(ids.get(node))
+                                    .args(ruleNode.getArgs().stream().map(ids::get).collect(Collectors.toList()))
+                                    .type(ruleNode.getAssertion().getType().getShortName().toUpperCase())
+                                    .label(ruleNode.getAssertion().getLabel())
+                                    .params(
+                                            Stream.concat(
+                                                    frame.getTypes().stream(),
+                                                    frame.getHypotheses().stream()
+                                            )
+                                                    .map(stm -> stm.getSymbols())
+                                                    .collect(Collectors.toList())
+                                    )
+                                    .numOfTypes(frame.getTypes().size())
+                                    .retVal(ruleNode.getAssertion().getSymbols())
+                                    .substitution(ruleNode.getSubstitution())
+                                    .expr(ruleNode.getExpr())
+                                    .build()
+                    );
+                } else {
+                    final ConstStackNode constNode = (ConstStackNode) node;
+                    nodes.add(
+                            StackNodeDto.builder()
+                                    .id(ids.get(node))
+                                    .type(constNode.getStatement().getType().getShortName().toUpperCase())
+                                    .label(constNode.getStatement().getLabel())
+                                    .expr(constNode.getExpr())
+                                    .build()
+                    );
+                }
+            });
+            assertionDto.proof(nodes);
+
+            varTypes.putAll(extractVarTypes(
+                    assertion.getFrame().getContext(),
+                    nodes.stream()
+                            .flatMap(node -> Stream.concat(
+                                    Stream.concat(
+                                            node.getParams()==null?Stream.empty():node.getParams().stream().flatMap(List::stream),
+                                            node.getRetVal()==null?Stream.empty():node.getRetVal().stream()
+                                    ),
+                                    node.getExpr().stream()
+                            ))
+            ));
+        }
+
+        return assertionDto.build();
+    }
+
+    private static Map<String,String> extractVarTypes(MetamathContext context, Stream<String> symbols) {
+        final HashMap<String, String> varTypes = new HashMap<>();
+        symbols.map(context::getType)
                 .filter(Objects::nonNull)
                 .forEach(var -> varTypes.put(var.getSymbols().get(1), var.getSymbols().get(0)));
-
-        return ProofDto.builder()
-                .nodes(nodes)
-                .varTypes(varTypes)
-                .build();
+        return varTypes;
     }
 
     public static StackNode verifyProof(ListStatement theorem) {
@@ -357,40 +384,18 @@ public class MetamathTools {
         FileUtils.writeStringToFile(destFile, modifier.apply(content), StandardCharsets.UTF_8);
     }
 
-    private static void createAssertionHtmlFile(ListStatement assertion, ProofDto proofDto, File destFile) {
+    private static void createAssertionHtmlFile(AssertionDto assertionDto, File destFile) {
         copyFromClasspath(
                 "/ui/index.html",
-                html -> {
-                    html = Utils.replace(
-                            html,
-                            COMPONENT_NAME_PATTERN,
-                            matcher -> "const viewComponent = MetamathProof"
-                    );
-                    html = Utils.replace(
-                            html,
-                            VIEW_PROPS_PATTERN,
-                            matcher -> {
-                                final Map<String, Object> viewProps = new HashMap<>();
-                                viewProps.put("type", getTypeStr(assertion.getType()));
-                                viewProps.put("name", assertion.getLabel());
-                                viewProps.put("description", assertion.getDescription());
-                                viewProps.put(
-                                        "assertion",
-                                        StackNodeDto.builder()
-                                                .params(
-                                                        assertion.getFrame().getHypotheses().stream()
-                                                                .map(ListStatement::getSymbols)
-                                                                .collect(Collectors.toList())
-                                                )
-                                                .retVal(assertion.getFrame().getAssertion().getSymbols())
-                                                .build()
-                                );
-                                viewProps.put("proof", proofDto);
-                                return "const viewProps = " + Utils.toJson(viewProps);
-                            }
-                    );
-                    return html;
-                },
+                html -> html
+                        .replaceAll(
+                                "const viewComponent =.*(?:[\\r\\n])",
+                                "const viewComponent = MetamathAssertionView"
+                        )
+                        .replaceAll(
+                                "const viewProps =.*(?:[\\r\\n])",
+                                "const viewProps = " + Utils.toJson(assertionDto)
+                        ),
                 destFile
         );
     }

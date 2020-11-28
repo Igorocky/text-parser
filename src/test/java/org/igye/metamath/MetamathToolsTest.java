@@ -108,7 +108,7 @@ public class MetamathToolsTest {
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/demo0.mm"));
 
         //when
-        final ProofDto proofDto = MetamathTools.visualizeProof(database.getStatement("th1"));
+        final AssertionDto proofDto = MetamathTools.visualizeAssertion(database.getStatement("th1"));
 
 //        Utils.saveDtoToFile(
 //                proofDto,
@@ -125,7 +125,7 @@ public class MetamathToolsTest {
         expectedVarTypes.put("t","term");
         assertEquals(expectedVarTypes,proofDto.getVarTypes());
 
-        final StackNodeDto dto = proofDto.getNodes().get(0);
+        final StackNodeDto dto = proofDto.getProof().get(0);
         assertEquals(4, dto.getArgs().size());
 
         assertEquals("mp", dto.getLabel());

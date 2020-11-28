@@ -1,9 +1,8 @@
 "use strict";
 
-const MetamathProof = ({type, name, description, assertion, proof}) => {
+const MetamathAssertionView = ({type, name, description, varTypes, assertion, proof}) => {
 
     const s = {
-        PROOF: 'PROOF',
         NODES_TO_SHOW: 'NODES_TO_SHOW',
         NODES_TO_SHOW_MAP: 'NODES_TO_SHOW_MAP',
         HIDE_TYPES: 'HIDE_TYPES',
@@ -27,16 +26,15 @@ const MetamathProof = ({type, name, description, assertion, proof}) => {
         if (hideTypes) {
             const requiredNodeIds = [
                 1,
-                ...proof.nodes.flatMap(node =>
+                ...proof.flatMap(node =>
                     hasNoValue(node.args)?[]:node.args.filter((id,idx) => idx >= node.numOfTypes)
                 )
             ]
-            nodesToShow = proof.nodes.filter(({id}) => requiredNodeIds.includes(id))
+            nodesToShow = proof.filter(({id}) => requiredNodeIds.includes(id))
         } else {
-            nodesToShow = proof.nodes
+            nodesToShow = proof
         }
         return createObj({
-            [s.PROOF]: proof,
             [s.NODES_TO_SHOW]: nodesToShow,
             [s.NODES_TO_SHOW_MAP]: createNodesMap(nodesToShow),
             [s.HIDE_TYPES]: hideTypes,
@@ -44,7 +42,6 @@ const MetamathProof = ({type, name, description, assertion, proof}) => {
     }
 
     const typeColors = {wff:'blue',term:'black',setvar:'red',['class']:'magenta'}
-    const varTypes = state[s.PROOF].varTypes
     const varColors = Object.getOwnPropertyNames(varTypes)
         .map(varName => [varName,typeColors[varTypes[varName]]??'gold'])
         .reduce((acc,[varName,color]) => ({...acc, [varName]:color}), {})
