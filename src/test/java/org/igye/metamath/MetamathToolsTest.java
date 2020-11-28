@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -166,4 +167,13 @@ public class MetamathToolsTest {
         return Duration.between(start, end).getSeconds() + "s";
     }
 
+
+    @Test
+    public void createRelPathToSaveTo_replacesDots() {
+        //when
+        final List<String> relPath = MetamathTools.createRelPathToSaveTo("pm2.27");
+
+        //then
+        assertEquals(Arrays.asList("pm", "2-dot-", "27", "pm2-dot-27.html"), relPath);
+    }
 }

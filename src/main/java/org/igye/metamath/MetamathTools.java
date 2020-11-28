@@ -463,7 +463,7 @@ public class MetamathTools {
         }
     }
 
-    private static List<String> createRelPathToSaveTo(String label) {
+    protected static List<String> createRelPathToSaveTo(String label) {
         if (label.indexOf(DOT_REPLACEMENT) >= 0) {
             throw new MetamathException("label.indexOf(DOT_REPLACEMENT) >= 0");
         }

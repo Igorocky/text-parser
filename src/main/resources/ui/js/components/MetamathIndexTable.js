@@ -7,18 +7,18 @@ const MetamathIndexTable = React.memo(({idsToShowStr, idsToShow, allElems}) => {
     console.log("rerender MetamathIndexTable")
 
     function createUrlOfAssertion(label) {
-        return 'data/' + getRelPath({label}).join('/') + '/' + replaceDots(label) + '.html'
+        return 'data/' + getRelPath({label}).map(replaceDots).join('/') + '/' + replaceDots(label) + '.html'
     }
 
     return RE.table({style: {borderCollapse: 'collapse', tableLayout: 'fixed', width: '100%'}},
         RE.tbody({style: {borderCollapse: 'collapse'}},
             RE.tr({style: {}},
-                RE.th({key: 'idx', style: {width: '5%'}},),
-                RE.th({key: 'type', style: {width: '10%'}}, "Type"),
-                RE.th({key: 'lable', style: {width: '10%'}}, "Label"),
-                RE.th({key: 'expr', style: {width: '65%'}}, "Expression"),
+                RE.td({key: 'idx', style: {...tableStyle, width: '5%', fontWeight:'bold'}},),
+                RE.td({key: 'type', style: {...tableStyle, width: '10%', fontWeight:'bold'}}, "Type"),
+                RE.td({key: 'lable', style: {...tableStyle, width: '10%', fontWeight:'bold'}}, "Label"),
+                RE.td({key: 'expr', style: {...tableStyle, width: '65%', fontWeight:'bold'}}, "Expression"),
             ),
-            allElems.filter((e, i) => idsToShow.includes(i)).map(indexElem => RE.tr(
+            allElems.filter(e => idsToShow.includes(e.id)).map(indexElem => RE.tr(
                 {
                     key: `row-${indexElem.id}`,
                     className: "index-row"
@@ -44,7 +44,12 @@ const MetamathIndexTable = React.memo(({idsToShowStr, idsToShow, allElems}) => {
                         },
                     indexElem.label
                 ),
-                RE.td({style: {...tableStyle, overflow: 'auto'}}, indexElem.expression.join(' ')),
+                RE.td(
+                    {
+                        style: {...tableStyle, overflow: 'auto', fontFamily: 'courier', fontSize: '15px'}
+                    },
+                    indexElem.expression.join(' ')
+                ),
             ))
         )
     )
