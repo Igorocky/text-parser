@@ -145,3 +145,25 @@ function disableScrollOnMouseDown(event) {
         event.preventDefault()
     }
 }
+
+function replaceDots(str) {
+    return str.replaceAll('.','-dot-')
+}
+
+function getRelPath({label}) {
+    if (label.length >= 6) {
+        return [label.substring(0,2), label.substring(2,4), label.substring(4,6)]
+    } else if (label.length >= 4) {
+        return [label.substring(0,2), label.substring(2,4)]
+    } else if (label.length >= 2) {
+        return [label.substring(0,2)]
+    } else {
+        return [label]
+    }
+}
+
+function getRelPathToAssertion({thisLabel, otherLabel}) {
+    const thisRelPath = getRelPath({label:thisLabel}).map(replaceDots)
+    const otherRelPath = [...getRelPath({label:otherLabel}).map(replaceDots), replaceDots(otherLabel) + '.html']
+    return ints(1,thisRelPath.length).map(i => "..").join('/') + '/' + otherRelPath.join('/')
+}

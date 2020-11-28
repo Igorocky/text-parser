@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MetamathTools {
+
+    private static final String DOT_REPLACEMENT = "-dot-";
 
     public static void generateProofExplorer(List<ListStatement> assertions, String pathToDirToSaveTo) {
         File dirToSaveTo = new File(pathToDirToSaveTo);
@@ -44,10 +47,12 @@ public class MetamathTools {
         copyUiFileToDir("/ui/js/components/ConstProofNode.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/RuleProofNode.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/MetamathAssertionView.js", dirToSaveTo);
+        File dataDir = new File(dirToSaveTo, "data");
         for (ListStatement assertion : assertions) {
             createAssertionHtmlFile(
                     MetamathTools.visualizeAssertion(assertion),
-                    new File(dirToSaveTo,assertion.getLabel()+".html")
+                    dataDir,
+                    createRelPathToSaveTo(assertion.getLabel())
             );
         }
     }
@@ -134,14 +139,6 @@ public class MetamathTools {
         }
 
         return assertionDto.build();
-    }
-
-    private static Map<String,String> extractVarTypes(MetamathContext context, Stream<String> symbols) {
-        final HashMap<String, String> varTypes = new HashMap<>();
-        symbols.map(context::getType)
-                .filter(Objects::nonNull)
-                .forEach(var -> varTypes.put(var.getSymbols().get(1), var.getSymbols().get(0)));
-        return varTypes;
     }
 
     public static StackNode verifyProof(ListStatement theorem) {
@@ -373,13 +370,21 @@ public class MetamathTools {
         FileUtils.writeStringToFile(destFile, modifier.apply(content), StandardCharsets.UTF_8);
     }
 
-    private static void createAssertionHtmlFile(AssertionDto assertionDto, File destFile) {
+    private static void createAssertionHtmlFile(AssertionDto assertionDto, File dataDir, List<String> relPath) {
         copyFromClasspath(
                 "/ui/index.html",
-                html -> html
-                        .replace("'$ComponentName'", "MetamathAssertionView")
-                        .replace("'$viewProps'", Utils.toJson(Utils.toJson(assertionDto))),
-                destFile
+                html -> {
+                    final String relPathPrefix = relPath.stream()
+                            .map(p -> "..")
+                            .collect(Collectors.joining("/"))
+                            + "/";
+                    return html
+                            .replace("href=\"", "href=\"" + relPathPrefix)
+                            .replace("src=\"", "src=\"" + relPathPrefix)
+                            .replace("'$ComponentName'", "MetamathAssertionView")
+                            .replace("'$viewProps'", Utils.toJson(Utils.toJson(assertionDto)));
+                },
+                new File(dataDir, StringUtils.join(relPath, '/'))
         );
     }
 
@@ -389,4 +394,66 @@ public class MetamathTools {
                 : type.name();
     }
 
+    public static void main(String[] args) {
+        if (1 == 1) throw new MetamathException("");
+        if (1 != 1) {
+            Map<String, List<String>> files = new HashMap<>();
+            final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
+            final List<ListStatement> allAssertions = database.getAllAssertions();
+            System.out.println("Len = 1: " + allAssertions.stream().filter(a -> a.getLabel().length() == 1).count());
+            allAssertions.stream().filter(a -> a.getLabel().length() == 1).forEach(a -> System.out.println("- " + a.getLabel()));
+            for (ListStatement assertion : allAssertions) {
+                final String relPath = Utils.toJson(getRelPath(assertion.getLabel()));
+                files.computeIfAbsent(relPath, p -> new ArrayList<>()).add(assertion.getLabel() + ".html");
+
+            }
+            files.entrySet().stream()
+                    .filter(e -> e.getValue().size() > 50)
+                    .sorted(Comparator.comparing(Map.Entry::getKey))
+                    .forEach(e -> {
+                        System.out.println(e.getKey() + " = " + e.getValue().size());
+                    });
+        }
+    }
+
+    private static List<String> getRelPath(String label) {
+        label = StringUtils.trim(label);
+        if (StringUtils.isBlank(label)) {
+            throw new MetamathException("StringUtils.isBlank(label)");
+        }
+        if (label.length() >= 6) {
+            return Arrays.asList(label.substring(0,2), label.substring(2,4), label.substring(4,6));
+        } else if (label.length() >= 4) {
+            return Arrays.asList(label.substring(0,2), label.substring(2,4));
+        } else if (label.length() >= 2) {
+            return Arrays.asList(label.substring(0,2));
+        } else {
+            return Collections.singletonList(label);
+        }
+    }
+
+    private static List<String> createRelPathToSaveTo(String label) {
+        if (label.indexOf(DOT_REPLACEMENT) >= 0) {
+            throw new MetamathException("label.indexOf(DOT_REPLACEMENT) >= 0");
+        }
+        final ArrayList<String> result = new ArrayList<>(
+                getRelPath(label).stream()
+                        .map(MetamathTools::replaceDots)
+                        .collect(Collectors.toList())
+        );
+        result.add(replaceDots(label) + ".html");
+        return result;
+    }
+
+    private static String replaceDots(String str) {
+        return str.replace(".", DOT_REPLACEMENT);
+    }
+
+    private static Map<String,String> extractVarTypes(MetamathContext context, Stream<String> symbols) {
+        final HashMap<String, String> varTypes = new HashMap<>();
+        symbols.map(context::getType)
+                .filter(Objects::nonNull)
+                .forEach(var -> varTypes.put(var.getSymbols().get(1), var.getSymbols().get(0)));
+        return varTypes;
+    }
 }

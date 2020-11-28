@@ -68,7 +68,7 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
                             RE.td({style: {...tableStyle}}, node.id),
                             RE.td({style: {...tableStyle, overflow:'auto'}},
                                 hasValue(node.args)
-                                    ? re(RuleProofNode,{node, allNodes:state[s.NODES_TO_SHOW_MAP], varColors, hideTypes:state[s.HIDE_TYPES]})
+                                    ? re(RuleProofNode,{parentLabel:name, node, allNodes:state[s.NODES_TO_SHOW_MAP], varColors, hideTypes:state[s.HIDE_TYPES]})
                                     : re(ConstProofNode,{node})
                             ),
                         ))

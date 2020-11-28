@@ -1,6 +1,6 @@
 "use strict";
 
-const RuleProofNode = ({node,allNodes,varColors,hideTypes}) => {
+const RuleProofNode = ({parentLabel,node,allNodes,varColors,hideTypes}) => {
 
     function renderArgAndParam({key,ex,centerX,argIdx,arg,param,subs,swapSubs,subsColors,varColors}) {
         const argStr = arg.join(' ')
@@ -203,12 +203,17 @@ const RuleProofNode = ({node,allNodes,varColors,hideTypes}) => {
             ruleBoundaries.minX-(node.type.length+1+node.label.length+3)*charLength*labelFontSizeFactor,
             ruleMidY+charHeight*labelFontSizeFactor/2
         )
-        resultSvgElems.push(SVG.text({
+        resultSvgElems.push(SVG.text(
+            {
                 key:`label`,
                 x:labelBegin.x,
                 y:labelBegin.y,
                 fill:'black',
-                fontSize:(fontSize*labelFontSizeFactor)+'px', fontFamily},
+                fontSize:(fontSize*labelFontSizeFactor)+'px',
+                fontFamily,
+                style:{cursor: 'pointer'},
+                ...link({urlGetter: () => getRelPathToAssertion({thisLabel:parentLabel, otherLabel:node.label})})
+            },
             `${node.type} ${node.label}`
         ))
         resultBoundaries = resultBoundaries.addPoints(labelBegin)

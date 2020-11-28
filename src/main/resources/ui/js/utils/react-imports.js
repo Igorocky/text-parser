@@ -276,3 +276,22 @@ function useStateFromLocalStorageBoolean({key, defaultValue, nullable}) {
     })
 }
 
+
+function onMouseUpHandler({onLeftClick, onMiddleClick}) {
+    return event => {
+        if (event.nativeEvent.button == 0) {
+            onLeftClick()
+        } else if (event.nativeEvent.button == 1) {
+            onMiddleClick()
+        }
+    }
+}
+
+function link({url,urlGetter}) {
+    return {
+        onMouseUp: onMouseUpHandler({
+            onLeftClick:() => window.location.href = url??urlGetter(),
+            onMiddleClick: () => window.open(url??urlGetter())
+        })
+    }
+}

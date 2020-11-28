@@ -156,7 +156,7 @@ public class MetamathToolsTest {
         //when
         MetamathTools.generateProofExplorer(
                 database.getAllAssertions().stream()
-                        .limit(100)
+                        .limit(1000)
                         .collect(Collectors.toList()),
                 "D:\\programs\\java\\text-parser\\target\\proof-explorer"
         );
