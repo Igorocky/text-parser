@@ -22,8 +22,8 @@
 <body onmousedown="disableScrollOnMouseDown(event)" oncontextmenu="return false;">
 <div id="react-container"></div>
 <script>
-    const viewComponent = ComponentName
-    const viewProps = {}
+    const viewComponent = '$ComponentName'
+    const viewProps = JSON.parse('$viewProps')
     ReactDOM.render(
         re(viewComponent, viewProps),
         document.getElementById('react-container')

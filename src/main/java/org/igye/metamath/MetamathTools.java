@@ -8,7 +8,6 @@ import org.igye.common.Utils;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,14 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MetamathTools {
-
-    public static void main(String[] args) {
-        System.out.println(Instant.now().toString()
-                .replace("T","__")
-                .replace(':','_')
-                .replaceAll("\\.\\d\\d\\dZ","_Z")
-        );
-    }
 
     public static void generateProofExplorer(List<ListStatement> assertions, String pathToDirToSaveTo) {
         File dirToSaveTo = new File(pathToDirToSaveTo);
@@ -54,12 +45,10 @@ public class MetamathTools {
         copyUiFileToDir("/ui/js/components/RuleProofNode.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/MetamathAssertionView.js", dirToSaveTo);
         for (ListStatement assertion : assertions) {
-            if (assertion.getType() == ListStatementType.THEOREM) {
-                createAssertionHtmlFile(
-                        MetamathTools.visualizeAssertion(assertion),
-                        new File(dirToSaveTo,assertion.getLabel()+".html")
-                );
-            }
+            createAssertionHtmlFile(
+                    MetamathTools.visualizeAssertion(assertion),
+                    new File(dirToSaveTo,assertion.getLabel()+".html")
+            );
         }
     }
 
@@ -388,14 +377,8 @@ public class MetamathTools {
         copyFromClasspath(
                 "/ui/index.html",
                 html -> html
-                        .replaceAll(
-                                "const viewComponent =.*(?:[\\r\\n])",
-                                "const viewComponent = MetamathAssertionView"
-                        )
-                        .replaceAll(
-                                "const viewProps =.*(?:[\\r\\n])",
-                                "const viewProps = " + Utils.toJson(assertionDto)
-                        ),
+                        .replace("'$ComponentName'", "MetamathAssertionView")
+                        .replace("'$viewProps'", Utils.toJson(Utils.toJson(assertionDto))),
                 destFile
         );
     }

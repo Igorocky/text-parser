@@ -156,8 +156,7 @@ public class MetamathToolsTest {
         //when
         MetamathTools.generateProofExplorer(
                 database.getAllAssertions().stream()
-                        .filter(a -> a.getType() == ListStatementType.THEOREM)
-                        .limit(10)
+                        .limit(100)
                         .collect(Collectors.toList()),
                 "D:\\programs\\java\\text-parser\\target\\proof-explorer"
         );

@@ -19,11 +19,11 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
         const hideTypes = getParamValue(s.HIDE_TYPES, true)
 
         function createNodesMap(nodes) {
-            return nodes.reduce((acc, node) => ({...acc,[node.id]:node}),{})
+            return nodes?.reduce((acc, node) => ({...acc,[node.id]:node}),{})
         }
 
         let nodesToShow
-        if (hideTypes) {
+        if (proof && hideTypes) {
             const requiredNodeIds = [
                 1,
                 ...proof.flatMap(node =>
@@ -47,23 +47,35 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
         .reduce((acc,[varName,color]) => ({...acc, [varName]:color}), {})
 
     function renderProof() {
-        const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'10px'}
-        return RE.table({style:{borderCollapse: 'collapse', tableLayout: 'fixed', width:'100%'}},
-            RE.tbody({style:{borderCollapse: 'collapse'}},
-                RE.tr({style: {}},
-                    RE.th({key:'node-id', style:{width:'2%'}}),
-                    RE.th({key:'explanation', style:{width:'98%'}}),
+        if (proof) {
+            const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'10px'}
+            return RE.Fragment({},
+                RE.Container.row.left.center({},{},
+                    RE.Button(
+                        {
+                            onClick: () => setState(prevState => createNewState({prevState,params:{[s.HIDE_TYPES]:!prevState[s.HIDE_TYPES]}}))
+                        },
+                        state[s.HIDE_TYPES] ? "Show types" : "Hide types"
+                    )
                 ),
-                state[s.NODES_TO_SHOW].map(node => RE.tr({key: `node-${node.id}`, id:node.id, style: {}},
-                    RE.td({style: {...tableStyle}}, node.id),
-                    RE.td({style: {...tableStyle, overflow:'auto'}},
-                        hasValue(node.args)
-                            ? re(RuleProofNode,{node, allNodes:state[s.NODES_TO_SHOW_MAP], varColors, hideTypes:state[s.HIDE_TYPES]})
-                            : re(ConstProofNode,{node})
-                    ),
-                ))
+                RE.table({style:{borderCollapse: 'collapse', tableLayout: 'fixed', width:'100%'}},
+                    RE.tbody({style:{borderCollapse: 'collapse'}},
+                        RE.tr({style: {}},
+                            RE.th({key:'node-id', style:{width:'2%'}}),
+                            RE.th({key:'explanation', style:{width:'98%'}}),
+                        ),
+                        state[s.NODES_TO_SHOW].map(node => RE.tr({key: `node-${node.id}`, id:node.id, style: {}},
+                            RE.td({style: {...tableStyle}}, node.id),
+                            RE.td({style: {...tableStyle, overflow:'auto'}},
+                                hasValue(node.args)
+                                    ? re(RuleProofNode,{node, allNodes:state[s.NODES_TO_SHOW_MAP], varColors, hideTypes:state[s.HIDE_TYPES]})
+                                    : re(ConstProofNode,{node})
+                            ),
+                        ))
+                    )
+                )
             )
-        )
+        }
     }
 
     return RE.Container.col.top.left({},{style:{marginBottom:'20px'}},
@@ -73,14 +85,6 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
         ),
         RE.div({}, description),
         RE.div({}, re(Assertion,{...assertion,varColors})),
-        RE.Container.row.left.center({style:{marginBottom:'-20px'}},{},
-            RE.Button(
-                {
-                    onClick: () => setState(prevState => createNewState({prevState,params:{[s.HIDE_TYPES]:!prevState[s.HIDE_TYPES]}}))
-                },
-                state[s.HIDE_TYPES] ? "Show types" : "Hide types"
-            )
-        ),
         renderProof()
     )
 }

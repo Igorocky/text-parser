@@ -37,7 +37,8 @@ const Assertion = ({params,retVal,varColors}) => {
         return {svgElems: resultSvgElems, boundaries: resultBoundaries}
     }
 
-    const {svgElems, boundaries} = renderAssertion({ex:SVG_EX})
+    let {svgElems, boundaries} = renderAssertion({ex:SVG_EX})
+    boundaries = boundaries.addAbsoluteMargin(charHeight)
 
     return RE.svg(
         {
