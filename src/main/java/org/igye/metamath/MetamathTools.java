@@ -43,6 +43,7 @@ public class MetamathTools {
         copyUiFileToDir("/ui/js/utils/data-functions.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/utils/svg-functions.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/utils/rendering-functions.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/components/Pagination.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/Assertion.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/ConstProofNode.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/RuleProofNode.js", dirToSaveTo);

@@ -91,7 +91,9 @@ const RE = {
     Modal: reFactory(MaterialUI.Modal),
     MenuItem: reFactory(MaterialUI.MenuItem),
     InputLabel: reFactory(MaterialUI.InputLabel),
+    Icon: reFactory(MaterialUI.Icon),
     Paper: reFactory(MaterialUI.Paper),
+    Pagination: reFactory(MaterialUI.Pagination),
     RadioGroup: reFactory(MaterialUI.RadioGroup),
     Radio : reFactory(MaterialUI.Radio),
     Slider: reFactory(MaterialUI.Slider),
@@ -277,7 +279,7 @@ function useStateFromLocalStorageBoolean({key, defaultValue, nullable}) {
 }
 
 
-function onMouseUpHandler({onLeftClick, onMiddleClick}) {
+function onMouseHandler({onLeftClick, onMiddleClick}) {
     return event => {
         if (event.nativeEvent.button == 0) {
             onLeftClick()
@@ -289,7 +291,7 @@ function onMouseUpHandler({onLeftClick, onMiddleClick}) {
 
 function link({url,urlGetter}) {
     return {
-        onMouseUp: onMouseUpHandler({
+        onMouseDown: onMouseHandler({
             onLeftClick:() => window.location.href = url??urlGetter(),
             onMiddleClick: () => window.open(url??urlGetter())
         })
