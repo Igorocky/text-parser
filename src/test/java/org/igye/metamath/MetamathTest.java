@@ -147,6 +147,19 @@ public class MetamathTest {
         assertEquals(asList("|-", "t", "=", "t"), dto.getExpr());
     }
 
+    @Ignore
+    @Test
+    public void generateProofExplorer_shouldGenerateProofExplorerFiles() {
+        //given
+        final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/set-reduced.mm"));
+
+        //when
+        Metamath.generateProofExplorer(
+                database.getAllAssertions().stream().limit(10).collect(Collectors.toList()),
+                "D:\\programs\\java\\text-parser\\target\\proof-explorer"
+        );
+    }
+
     private String getDurationStr(Instant start, Instant end) {
         return Duration.between(start, end).getSeconds() + "s";
     }

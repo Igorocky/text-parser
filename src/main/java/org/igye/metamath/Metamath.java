@@ -1,8 +1,16 @@
 package org.igye.metamath;
 
+import lombok.SneakyThrows;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.igye.common.Utils;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,28 +21,48 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Metamath {
 
+    private static final Pattern COMPONENT_NAME_PATTERN = Pattern.compile("const viewComponent = ComponentName");
+    private static final Pattern VIEW_PROPS_PATTERN = Pattern.compile("const viewProps = \\{\\}");
 
-    public static String stringify(ListStatement statement) {
-        return StringUtils.join(statement.getSymbols(), ' ');
+    public static void main(String[] args) {
+        System.out.println(Instant.now().toString()
+                .replace("T","__")
+                .replace(':','_')
+                .replaceAll("\\.\\d\\d\\dZ","_Z")
+        );
     }
 
-    public static String stringify(Collection<ListStatement> statements) {
-        return "["
-                + statements.stream().map(Metamath::stringify).collect(Collectors.joining(", "))
-                + "]";
-    }
-
-    public static String stringify(Frame frame) {
-        return "["
-                + stringify(frame.getTypes())
-                + ", " + stringify(frame.getHypotheses())
-                + ", " + stringify(frame.getAssertion())
-                + "]";
+    public static void generateProofExplorer(List<ListStatement> assertions, String pathToDirToSaveTo) {
+        File dirToSaveTo = new File(pathToDirToSaveTo);
+        if (dirToSaveTo.exists()) {
+            throw new MetamathException("The directory already exists: " + dirToSaveTo.getAbsolutePath());
+        }
+        dirToSaveTo.mkdirs();
+        copyUiFileToDir("/ui/css/styles.css", dirToSaveTo);
+        copyUiFileToDir("/ui/js/lib/react.production-16.8.6.min.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/lib/react-dom.production-16.8.6.min.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/lib/material-ui.production-4.11.0.min.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/utils/react-imports.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/utils/data-functions.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/utils/svg-functions.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/components/ConstProofNode.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/components/RuleProofNode.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/components/MetamathProof.js", dirToSaveTo);
+        for (ListStatement assertion : assertions) {
+            if (assertion.getType() == ListStatementType.THEOREM) {
+                createProofHtmlFile(
+                        Metamath.visualizeProof(assertion),
+                        new File(dirToSaveTo,assertion.getLabel()+".html")
+                );
+            }
+        }
     }
 
     public static ProofDto visualizeProof(ListStatement theorem) {
@@ -97,29 +125,6 @@ public class Metamath {
                 .build();
     }
 
-    private static void iterateNodes(StackNode node, Consumer<StackNode> nodeConsumer) {
-        Set<StackNode> processed = new HashSet<>();
-        Stack<StackNode> toProcess = new Stack<>();
-        toProcess.push(node);
-        while (!toProcess.isEmpty()) {
-            final StackNode curNode = toProcess.pop();
-            if (!processed.contains(curNode)) {
-                nodeConsumer.accept(curNode);
-                processed.add(curNode);
-                if (curNode instanceof RuleStackNode) {
-                    toProcess.addAll(((RuleStackNode) curNode).getArgs());
-                }
-            }
-        }
-    }
-
-    private static Map<StackNode,Integer> generateIds(StackNode root) {
-        final int[] id = {0};
-        final HashMap<StackNode, Integer> ids = new HashMap<>();
-        iterateNodes(root, node -> ids.put(node, id[0]++));
-        return ids;
-    }
-
     public static StackNode verifyProof(ListStatement theorem) {
         List<StackNode> stack = new ArrayList<>();
         if (theorem.getProof() != null) {
@@ -168,6 +173,24 @@ public class Metamath {
         }
 
         return result;
+    }
+
+    public static String stringify(ListStatement statement) {
+        return StringUtils.join(statement.getSymbols(), ' ');
+    }
+
+    public static String stringify(Collection<ListStatement> statements) {
+        return "["
+                + statements.stream().map(Metamath::stringify).collect(Collectors.joining(", "))
+                + "]";
+    }
+
+    public static String stringify(Frame frame) {
+        return "["
+                + stringify(frame.getTypes())
+                + ", " + stringify(frame.getHypotheses())
+                + ", " + stringify(frame.getAssertion())
+                + "]";
     }
 
     protected static Statement determinePrevStatement(Statement statement) {
@@ -273,11 +296,83 @@ public class Metamath {
     }
 
     private static <T> List<T> tail(List<T> list) {
+        return tail(list, 1);
+    }
+
+    private static <T> List<T> tail(List<T> list, int elemsToSkip) {
         final ArrayList<T> tail = new ArrayList<>();
-        for (int i = 1; i < list.size(); i++) {
+        for (int i = elemsToSkip; i < list.size(); i++) {
             tail.add(list.get(i));
         }
         return tail;
+    }
+
+    private static void iterateNodes(StackNode node, Consumer<StackNode> nodeConsumer) {
+        Set<StackNode> processed = new HashSet<>();
+        Stack<StackNode> toProcess = new Stack<>();
+        toProcess.push(node);
+        while (!toProcess.isEmpty()) {
+            final StackNode curNode = toProcess.pop();
+            if (!processed.contains(curNode)) {
+                nodeConsumer.accept(curNode);
+                processed.add(curNode);
+                if (curNode instanceof RuleStackNode) {
+                    toProcess.addAll(((RuleStackNode) curNode).getArgs());
+                }
+            }
+        }
+    }
+
+    private static Map<StackNode,Integer> generateIds(StackNode root) {
+        final int[] id = {1};
+        final HashMap<StackNode, Integer> ids = new HashMap<>();
+        iterateNodes(root, node -> ids.put(node, id[0]++));
+        return ids;
+    }
+
+    private static void copyUiFileToDir(String fileInClassPath, File dir) {
+        copyFromClasspathToDir(1, fileInClassPath, dir);
+    }
+
+    private static void copyFromClasspathToDir(int numOfDirsToSkip, String fileInClassPath, File dir) {
+        copyFromClasspathToDir(numOfDirsToSkip, fileInClassPath, dir, Function.identity());
+    }
+
+    @SneakyThrows
+    private static void copyFromClasspathToDir(int numOfDirsToSkip, String fileInClassPath, File dir, Function<String,String> modifier) {
+        String content = IOUtils.resourceToString(fileInClassPath, StandardCharsets.UTF_8);
+        final File destFile = new File(
+                dir,
+                StringUtils.join(tail(Arrays.asList(fileInClassPath.split("/|\\\\")), numOfDirsToSkip+1),'/')
+        );
+        FileUtils.writeStringToFile(destFile, modifier.apply(content), StandardCharsets.UTF_8);
+    }
+
+    @SneakyThrows
+    private static void copyFromClasspath(String fileInClassPath, Function<String,String> modifier, File destFile) {
+        String content = IOUtils.resourceToString(fileInClassPath, StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(destFile, modifier.apply(content), StandardCharsets.UTF_8);
+    }
+
+    private static void createProofHtmlFile(ProofDto proofDto, File destFile) {
+        copyFromClasspath(
+                "/ui/index.html",
+                html -> {
+                    html = Utils.replace(
+                            html,
+                            COMPONENT_NAME_PATTERN,
+                            matcher -> "const viewComponent = MetamathProof"
+                    );
+                    html = Utils.replace(
+                            html,
+                            VIEW_PROPS_PATTERN,
+                            matcher -> "const viewProps = "
+                                    + Utils.toJson(Collections.singletonMap("proofDto", proofDto))
+                    );
+                    return html;
+                },
+                destFile
+        );
     }
 
 }
