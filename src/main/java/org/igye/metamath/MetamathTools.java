@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.igye.common.DebugTimer;
 import org.igye.common.Utils;
 import org.igye.textparser.PositionInText;
@@ -80,7 +81,12 @@ public class MetamathTools {
                 while (assertion != null) {
                     ListStatement finalAssertion = assertion;
                     AssertionDto dto = DebugTimer.call("visualizeAssertion", () -> visualizeAssertion(finalAssertion));
-                    DebugTimer.run("createAssertionHtmlFile", () -> createAssertionHtmlFile(dto, dataDir, createRelPathToSaveTo(dto.getName())));
+                    try {
+                        DebugTimer.run("createAssertionHtmlFile", () -> createAssertionHtmlFile(dto, dataDir, createRelPathToSaveTo(dto.getName())));
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                    }
                     indexElems.put(assertion.getBegin(), createIndexElemDto(dto));
                     assertion = queue.poll();
                     int filesWritten = filesWrittenAtomic.incrementAndGet();
@@ -453,7 +459,8 @@ public class MetamathTools {
         createHtmlFile(
                 relPathPrefix,
                 "MetamathAssertionView",
-                assertionDto,
+                compress(assertionDto),
+//                assertionDto,
                 new File(dataDir, StringUtils.join(relPath, '/'))
         );
     }
@@ -526,5 +533,112 @@ public class MetamathTools {
                         Map.Entry::getKey,
                         entry -> entry.getValue().getSymbols().get(0)
                 ));
+    }
+
+    private static CompressedAssertionDto compress(AssertionDto dto) {
+        Pair<List<String>, Map<String, Integer>> strings = buildStrMap(dto);
+        Map<String, Integer> strMap = strings.getRight();
+        return CompressedAssertionDto.builder()
+                .s(strings.getLeft())
+                .t(dto.getType())
+                .n(dto.getName())
+                .d(dto.getDescription())
+                .v(
+                        dto.getVarTypes().entrySet().stream()
+                                .collect(Collectors.toMap(
+                                        entry -> strMap.get(entry.getKey()),
+                                        entry -> strMap.get(entry.getValue())
+                                ))
+                )
+                .a(compress(dto.getAssertion(), strMap))
+                .p(dto.getProof()==null?null:dto.getProof().stream().map(p -> compress(p, strMap)).collect(Collectors.toList()))
+                .build();
+    }
+
+    private static Pair<List<String>, Map<String, Integer>> buildStrMap(AssertionDto dto) {
+        Map<String, Integer> counts = new HashMap<>();
+        for (Map.Entry<String, String> entry : dto.getVarTypes().entrySet()) {
+            updateCounts(counts, entry.getKey());
+            updateCounts(counts, entry.getValue());
+        }
+        updateCounts(counts, dto.getAssertion());
+        if (dto.getProof() != null) {
+            for (StackNodeDto proof : dto.getProof()) {
+                updateCounts(counts, proof);
+            }
+        }
+        final Comparator<Map.Entry<String, Integer>> comparator = Comparator.comparing(Map.Entry::getValue);
+        final List<String> strings = counts.entrySet().stream()
+                .sorted(comparator.reversed())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        Map<String, Integer> strMap = new HashMap<>();
+        for (int i = 0; i < strings.size(); i++) {
+            strMap.put(strings.get(i),i);
+        }
+        return Pair.of(strings, strMap);
+    }
+
+    private static void updateCounts(Map<String, Integer> counts, StackNodeDto dto) {
+        updateCounts(counts, dto.getType());
+        updateCounts(counts, dto.getLabel());
+        if (dto.getParams() != null) {
+            for (List<String> param : dto.getParams()) {
+                for (String str : param) {
+                    updateCounts(counts, str);
+                }
+            }
+        }
+        if (dto.getRetVal() != null) {
+            for (String str : dto.getRetVal()) {
+                updateCounts(counts, str);
+            }
+        }
+        if (dto.getSubstitution() != null) {
+            for (Map.Entry<String, List<String>> entry : dto.getSubstitution().entrySet()) {
+                updateCounts(counts, entry.getKey());
+                for (String str : entry.getValue()) {
+                    updateCounts(counts, str);
+                }
+            }
+        }
+        if (dto.getExpr() != null) {
+            for (String str : dto.getExpr()) {
+                updateCounts(counts, str);
+            }
+        }
+    }
+
+    private static void updateCounts(Map<String, Integer> counts, String str) {
+        final Integer cnt = counts.getOrDefault(str, 0);
+        counts.put(str, cnt+1);
+    }
+
+    private static CompressedStackNodeDto compress(StackNodeDto dto, Map<String, Integer> strMap) {
+        return CompressedStackNodeDto.builder()
+                .i(dto.getId())
+                .a(dto.getArgs())
+                .t(strMap.get(dto.getType()))
+                .l(strMap.get(dto.getLabel()))
+                .p(
+                        dto.getParams()==null?null:dto.getParams().stream()
+                                .map(param -> compress(param, strMap))
+                                .collect(Collectors.toList())
+                )
+                .r(compress(dto.getRetVal(), strMap))
+                .n(dto.getNumOfTypes())
+                .s(
+                        dto.getSubstitution()==null?null:dto.getSubstitution().entrySet().stream()
+                                .collect(Collectors.toMap(
+                                        entry -> strMap.get(entry.getKey()),
+                                        entry -> compress(entry.getValue(),strMap)
+                                ))
+                )
+                .e(compress(dto.getExpr(), strMap))
+                .build();
+    }
+
+    private static List<Integer> compress(List<String> list, Map<String, Integer> strMap) {
+        return list==null?null:list.stream().map(strMap::get).collect(Collectors.toList());
     }
 }

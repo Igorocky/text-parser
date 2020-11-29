@@ -1,5 +1,6 @@
 package org.igye.metamath;
 
+import org.igye.common.DebugTimer;
 import org.igye.common.Utils;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -154,7 +155,7 @@ public class MetamathToolsTest {
         //given
         System.out.println("Loading metamath database...");
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/set-reduced.mm"));
-//        final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
+//        final MetamathDatabase database = DebugTimer.call("Loading metamath database", () -> MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm"));
 
         //when
         MetamathTools.generateProofExplorer(
