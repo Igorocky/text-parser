@@ -352,12 +352,13 @@ public class MetamathParsers {
                 frame.getHypotheses().stream().flatMap(hyp -> hyp.getSymbols().stream()),
                 frame.getAssertion().getSymbols().stream()
         ).collect(Collectors.toSet());
+        final SymbolsInfo symbolsInfo = context.getSymbolsInfo();
         for (String sym : allSymbols) {
-            if (context.getConstant(sym) != null) {
+            if (symbolsInfo.getConstants().contains(sym)) {
                 continue;
             }
-            if (context.getVariable(sym) != null) {
-                final ListStatement type = context.getType(sym);
+            ListStatement type = symbolsInfo.getVarTypes().get(sym);
+            if (type != null) {
                 if (type == null) {
                     throw new ParserException("Cannot determine type of variable: '"
                             + sym + "' at " + assertion.getBegin());

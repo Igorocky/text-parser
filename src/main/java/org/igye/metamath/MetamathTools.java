@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.igye.common.DebugTimer;
 import org.igye.common.Utils;
 import org.igye.textparser.PositionInText;
 
@@ -21,7 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
@@ -78,8 +78,9 @@ public class MetamathTools {
             executorService.submit(() -> {
                 ListStatement assertion = queue.poll();
                 while (assertion != null) {
-                    AssertionDto dto = visualizeAssertion(assertion);
-                    createAssertionHtmlFile(dto, dataDir, createRelPathToSaveTo(dto.getName()));
+                    ListStatement finalAssertion = assertion;
+                    AssertionDto dto = DebugTimer.call("visualizeAssertion", () -> visualizeAssertion(finalAssertion));
+                    DebugTimer.run("createAssertionHtmlFile", () -> createAssertionHtmlFile(dto, dataDir, createRelPathToSaveTo(dto.getName())));
                     indexElems.put(assertion.getBegin(), createIndexElemDto(dto));
                     assertion = queue.poll();
                     int filesWritten = filesWrittenAtomic.incrementAndGet();
@@ -103,6 +104,7 @@ public class MetamathTools {
                 new File(dirToSaveTo, "index.html")
         );
         System.out.println("Completed in " + Duration.between(start, Instant.now()).getSeconds() + "s.");
+        System.out.println(DebugTimer.getStats());
     }
 
     private static IndexDto buildIndex(Collection<IndexElemDto> indexElems) {
@@ -147,18 +149,18 @@ public class MetamathTools {
 
         final HashMap<String, String> varTypes = new HashMap<>();
         assertionDto.varTypes(varTypes);
-        varTypes.putAll(extractVarTypes(
+        varTypes.putAll(DebugTimer.call("extractVarTypes-1", () -> extractVarTypes(
                 assertion.getFrame().getContext(),
                 Stream.concat(
                         assertion.getFrame().getHypotheses().stream().flatMap(h -> h.getSymbols().stream()),
                         assertion.getFrame().getAssertion().getSymbols().stream()
-                )
-        ));
+                ).collect(Collectors.toSet())
+        )));
 
         if (assertion.getType() == ListStatementType.THEOREM) {
             final ArrayList<StackNodeDto> nodes = new ArrayList<>();
-            final StackNode proof = verifyProof(assertion);
-            iterateNodes(proof, node -> {
+            final StackNode proof = DebugTimer.call("verifyProof", () -> verifyProof(assertion));
+            DebugTimer.run("iterateNodes", () -> iterateNodes(proof, node -> {
                 if (node instanceof RuleStackNode) {
                     final RuleStackNode ruleNode = (RuleStackNode) node;
                     final Frame frame = ruleNode.getAssertion().getFrame();
@@ -193,11 +195,11 @@ public class MetamathTools {
                                     .build()
                     );
                 }
-            });
+            }));
             Collections.sort(nodes, Comparator.comparing(StackNodeDto::getId));
             assertionDto.proof(nodes);
 
-            varTypes.putAll(extractVarTypes(
+            varTypes.putAll(DebugTimer.call("extractVarTypes-2", () -> extractVarTypes(
                     assertion.getFrame().getContext(),
                     nodes.stream()
                             .flatMap(node -> Stream.concat(
@@ -206,8 +208,8 @@ public class MetamathTools {
                                             node.getRetVal()==null?Stream.empty():node.getRetVal().stream()
                                     ),
                                     node.getExpr().stream()
-                            ))
-            ));
+                            )).collect(Collectors.toSet())
+            )));
         }
 
         return assertionDto.build();
@@ -517,11 +519,12 @@ public class MetamathTools {
         return str.replace(".", DOT_REPLACEMENT);
     }
 
-    private static Map<String,String> extractVarTypes(MetamathContext context, Stream<String> symbols) {
-        final HashMap<String, String> varTypes = new HashMap<>();
-        symbols.map(context::getType)
-                .filter(Objects::nonNull)
-                .forEach(var -> varTypes.put(var.getSymbols().get(1), var.getSymbols().get(0)));
-        return varTypes;
+    private static Map<String,String> extractVarTypes(MetamathContext context, Set<String> symbols) {
+        return context.getSymbolsInfo().getVarTypes().entrySet().stream()
+                .filter(entry -> symbols.contains(entry.getKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().getSymbols().get(0)
+                ));
     }
 }

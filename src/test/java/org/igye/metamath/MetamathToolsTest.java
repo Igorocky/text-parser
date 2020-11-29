@@ -126,7 +126,7 @@ public class MetamathToolsTest {
         expectedVarTypes.put("t","term");
         assertEquals(expectedVarTypes,proofDto.getVarTypes());
 
-        final StackNodeDto dto = proofDto.getProof().get(0);
+        final StackNodeDto dto = proofDto.getProof().get(proofDto.getProof().size()-1);
         assertEquals(4, dto.getArgs().size());
 
         assertEquals("mp", dto.getLabel());
@@ -159,6 +159,7 @@ public class MetamathToolsTest {
         //when
         MetamathTools.generateProofExplorer(
                 database.getAllAssertions().stream()
+//                        .limit(10_000)
                         .collect(Collectors.toList()),
                 "D:\\programs\\java\\text-parser\\target\\proof-explorer"
         );

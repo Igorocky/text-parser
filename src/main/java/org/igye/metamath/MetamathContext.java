@@ -4,18 +4,13 @@ import org.igye.textparser.ParserException;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 public class MetamathContext {
     private MetamathContext parent;
     private ListStatement listStatement;
-    private Map<String,ListStatement> constants = new HashMap<>();
-    private Map<String,ListStatement> variables = new HashMap<>();
-    private Map<String,ListStatement> types = new HashMap<>();
     private List<ListStatement> hypotheses = null;
+    private SymbolsInfo symbolsInfo;
 
     public MetamathContext() {
 
@@ -64,52 +59,32 @@ public class MetamathContext {
         }
     }
 
-    public ListStatement getConstant(String symbol) {
-        return getStatement(
-                symbol, constants, ListStatementType.CONSTANT, metamathContext -> metamathContext.getConstant(symbol)
-        );
+    public SymbolsInfo getSymbolsInfo() {
+        if (symbolsInfo == null) {
+            symbolsInfo = new SymbolsInfo();
+            collectSymbolsInfo(symbolsInfo);
+        }
+        return symbolsInfo;
     }
 
-    public ListStatement getVariable(String symbol) {
-        return getStatement(
-                symbol, variables, ListStatementType.VARIABLE, metamathContext -> metamathContext.getVariable(symbol)
-        );
-    }
-
-    public ListStatement getType(String varName) {
-        return getStatement(
-                varName, types, ListStatementType.FLOATING, metamathContext -> metamathContext.getType(varName)
-        );
-    }
-
-    private ListStatement getStatement(
-            String symbol,
-            Map<String,ListStatement> cache,
-            ListStatementType type,
-            Function<MetamathContext,ListStatement> getter) {
-        if (cache.containsKey(symbol)) {
-            return cache.get(symbol);
-        } else {
-            if (
-                    listStatement != null && listStatement.getType() == type
-                    && (
-                            type == ListStatementType.FLOATING && symbol.equals(listStatement.getSymbols().get(1))
-                                    || type != ListStatementType.FLOATING && listStatement.getSymbols().contains(symbol)
-                    )
-            ) {
-                cache.put(symbol, listStatement);
-                return listStatement;
-            } else if (parent != null) {
-                final ListStatement parentConst = getter.apply(parent);
-                if (parentConst != null) {
-                    cache.put(symbol, parentConst);
-                    return parentConst;
-                } else {
-                    return null;
+    private void collectSymbolsInfo(SymbolsInfo symbolsInfo) {
+        if (listStatement != null) {
+            final List<String> symbols = listStatement.getSymbols();
+            if (listStatement.getType() == ListStatementType.CONSTANT) {
+                if (symbols.stream().anyMatch(symbolsInfo.getConstants()::contains)) {
+                    throw new MetamathException("A constant was redefined.");
                 }
-            } else {
-                return null;
+                symbolsInfo.getConstants().addAll(symbols);
+            } else if (listStatement.getType() == ListStatementType.FLOATING) {
+                if (symbolsInfo.getVarTypes().containsKey(symbols.get(1))) {
+                    throw new MetamathException("A variable type was redefined.");
+                }
+                symbolsInfo.getVarTypes().put(symbols.get(1), listStatement);
             }
         }
+        if (parent != null) {
+            parent.collectSymbolsInfo(symbolsInfo);
+        }
     }
+
 }
