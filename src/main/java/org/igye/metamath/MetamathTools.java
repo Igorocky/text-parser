@@ -150,15 +150,14 @@ public class MetamathTools {
         if (assertion.getType() == ListStatementType.THEOREM) {
             final ArrayList<StackNodeDto> nodes = new ArrayList<>();
             final StackNode proof = verifyProof(assertion);
-            Map<StackNode, Integer> ids = generateIds(proof);
             iterateNodes(proof, node -> {
                 if (node instanceof RuleStackNode) {
                     final RuleStackNode ruleNode = (RuleStackNode) node;
                     final Frame frame = ruleNode.getAssertion().getFrame();
                     nodes.add(
                             StackNodeDto.builder()
-                                    .id(ids.get(node))
-                                    .args(ruleNode.getArgs().stream().map(ids::get).collect(Collectors.toList()))
+                                    .id(node.getId())
+                                    .args(ruleNode.getArgs().stream().map(StackNode::getId).collect(Collectors.toList()))
                                     .type(ruleNode.getAssertion().getType().getShortName().toUpperCase())
                                     .label(ruleNode.getAssertion().getLabel())
                                     .params(
@@ -179,7 +178,7 @@ public class MetamathTools {
                     final ConstStackNode constNode = (ConstStackNode) node;
                     nodes.add(
                             StackNodeDto.builder()
-                                    .id(ids.get(node))
+                                    .id(node.getId())
                                     .type(constNode.getStatement().getType().getShortName().toUpperCase())
                                     .label(constNode.getStatement().getLabel())
                                     .expr(constNode.getExpr())
@@ -187,6 +186,7 @@ public class MetamathTools {
                     );
                 }
             });
+            Collections.sort(nodes, Comparator.comparing(StackNodeDto::getId));
             assertionDto.proof(nodes);
 
             varTypes.putAll(extractVarTypes(
@@ -206,7 +206,7 @@ public class MetamathTools {
     }
 
     public static StackNode verifyProof(ListStatement theorem) {
-        List<StackNode> stack = new ArrayList<>();
+        ProofStack stack = new ProofStack();
         if (theorem.getProof() != null) {
             final Map<String, ListStatement> requiredStatements =
                     theorem.findActiveStatements(new HashSet<>(theorem.getProof()));
@@ -281,7 +281,7 @@ public class MetamathTools {
         }
     }
 
-    private static void evalCompressed(List<StackNode> stack, ListStatement theorem) {
+    private static void evalCompressed(ProofStack stack, ListStatement theorem) {
         final List<String> steps = MetamathParsers.splitEncodedProof(theorem.getCompressedProof().getEncodedProof());
         List<Object> args = new ArrayList<>();
         args.addAll(theorem.getFrame().getTypes());
@@ -307,7 +307,7 @@ public class MetamathTools {
         }
     }
 
-    private static void eval(List<StackNode> stack, List<ListStatement> statements) {
+    private static void eval(ProofStack stack, List<ListStatement> statements) {
         for (ListStatement statement : statements) {
             if (statement.getType() == ListStatementType.FLOATING
                     || statement.getType() == ListStatementType.ESSENTIAL) {
@@ -318,18 +318,14 @@ public class MetamathTools {
         }
     }
 
-    private static void apply(List<StackNode> stack, ListStatement statement) {
+    private static void apply(ProofStack stack, ListStatement statement) {
         final Frame frame = statement.getFrame();
         if (stack.size() < frame.getArity()) {
             throw new MetamathException("stack.size() < frame.getTypes().size() + frame.getHypothesis().size()");
         }
         final Map<String, List<String>> substitution = determineSubstitution(stack, frame);
         checkHypothesisMatch(stack, frame, substitution);
-        final ArrayList<StackNode> args = new ArrayList<>();
-        for (int i = 0; i < frame.getArity(); i++) {
-            args.add(stack.remove(stack.size()-1));
-        }
-        Collections.reverse(args);
+        final List<StackNode> args = stack.removeLast(frame.getArity());
         stack.add(
                 RuleStackNode.builder()
                         .args(args)
@@ -340,7 +336,7 @@ public class MetamathTools {
         );
     }
 
-    private static Map<String,List<String>> determineSubstitution(List<StackNode> stack, Frame frame) {
+    private static Map<String,List<String>> determineSubstitution(ProofStack stack, Frame frame) {
         final HashMap<String, List<String>> substitution = new HashMap<>();
         final int stackBaseIdx = stack.size() - frame.getArity();
         for (int i = 0; i < frame.getTypes().size(); i++) {
@@ -354,7 +350,7 @@ public class MetamathTools {
         return substitution;
     }
 
-    private static void checkHypothesisMatch(List<StackNode> stack, Frame frame, Map<String, List<String>> substitution) {
+    private static void checkHypothesisMatch(ProofStack stack, Frame frame, Map<String, List<String>> substitution) {
         final int stackBaseIdx = stack.size() - frame.getHypotheses().size();
         for (int i = 0; i < frame.getHypotheses().size(); i++) {
             if (!applySubstitution(frame.getHypotheses().get(i).getSymbols(), substitution).equals(stack.get(stackBaseIdx + i).getExpr())) {
@@ -387,10 +383,10 @@ public class MetamathTools {
         return tail;
     }
 
-    private static void iterateNodes(StackNode node, Consumer<StackNode> nodeConsumer) {
+    private static void iterateNodes(StackNode root, Consumer<StackNode> nodeConsumer) {
         Set<StackNode> processed = new HashSet<>();
         Stack<StackNode> toProcess = new Stack<>();
-        toProcess.push(node);
+        toProcess.push(root);
         while (!toProcess.isEmpty()) {
             final StackNode curNode = toProcess.pop();
             if (!processed.contains(curNode)) {
@@ -401,13 +397,6 @@ public class MetamathTools {
                 }
             }
         }
-    }
-
-    private static Map<StackNode,Integer> generateIds(StackNode root) {
-        final int[] id = {1};
-        final HashMap<StackNode, Integer> ids = new HashMap<>();
-        iterateNodes(root, node -> ids.put(node, id[0]++));
-        return ids;
     }
 
     private static void copyUiFileToDir(String fileInClassPath, File dir) {

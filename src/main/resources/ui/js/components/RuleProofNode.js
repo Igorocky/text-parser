@@ -47,15 +47,15 @@ const RuleProofNode = ({parentLabel,node,allNodes,varColors,hideTypes}) => {
                     },
                     argIdx
                 ):null,
-                ...(renderColoredExpr({key:`${key}-arg-text`,ex:argBottomLine.normalize(),expr:arg,colors:varColors}).svgElems),
-                ...(renderColoredExpr({key:`${key}-param-text`,ex:paramBottomLineEx.normalize(),expr:param,colors:varColors}).svgElems),
                 ...determineSubsIndexes({param:swapSubs?arg:param,subs,subsColors}).flatMap((idxMapping,idx) => renderMapping({
                     key:`${key}-mapping-${idx}`,
                     argEx: swapSubs?paramBottomLineEx:argBottomLineEx,
                     paramEx: swapSubs?argBottomLineEx:paramBottomLineEx,
                     idxMapping,
                     swapSubs
-                }))
+                })),
+                ...(renderColoredExpr({key:`${key}-arg-text`,ex:argBottomLine.normalize(),expr:arg,colors:varColors}).svgElems),
+                ...(renderColoredExpr({key:`${key}-param-text`,ex:paramBottomLineEx.normalize(),expr:param,colors:varColors}).svgElems)
             ],
             boundaries: mergeSvgBoundaries(argBoundaries,paramBoundaries)
                 .addPoints(argIdxTextStart.withY(oldY => oldY-charHeight*2))
