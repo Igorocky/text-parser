@@ -74,6 +74,8 @@ const RE = {
     th: reFactory('th'),
     tr: reFactory('tr'),
     td: reFactory('td'),
+    ul: reFactory('ul'),
+    li: reFactory('li'),
     AppBar: reFactory(MaterialUI.AppBar),
     Button: reFactory(MaterialUI.Button),
     ButtonGroup: reFactory(MaterialUI.ButtonGroup),

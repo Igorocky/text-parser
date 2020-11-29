@@ -15,7 +15,7 @@ const Pagination = ({numOfPages,curPage,onChange}) => {
         RE.Button({onClick: () => onChange(numOfPages), disabled: curPage == numOfPages},
             '>>'
         ),
-        ints(1,numOfPages).filter(p => curPage-3 <= p && p <= curPage+3).map(p => RE.Button(
+        ints(Math.max(1,curPage-3),Math.min(numOfPages,curPage+3)).map(p => RE.Button(
             {
                 onClick: () => p==curPage?null:onChange(p)
             },

@@ -25,7 +25,7 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
         let nodesToShow
         if (proof && hideTypes) {
             const requiredNodeIds = [
-                1,
+                proof.length,
                 ...proof.flatMap(node =>
                     hasNoValue(node.args)?[]:node.args.filter((id,idx) => idx >= node.numOfTypes)
                 )
@@ -41,10 +41,7 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
         })
     }
 
-    const typeColors = {wff:'blue',term:'black',setvar:'red',['class']:'magenta'}
-    const varColors = Object.getOwnPropertyNames(varTypes)
-        .map(varName => [varName,typeColors[varTypes[varName]]??'gold'])
-        .reduce((acc,[varName,color]) => ({...acc, [varName]:color}), {})
+    const varColors = createVarColors({varTypes})
 
     function renderProof() {
         if (proof) {
@@ -69,7 +66,7 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
                             RE.td({style: {...tableStyle, overflow:'auto'}},
                                 hasValue(node.args)
                                     ? re(RuleProofNode,{parentLabel:name, node, allNodes:state[s.NODES_TO_SHOW_MAP], varColors, hideTypes:state[s.HIDE_TYPES]})
-                                    : re(ConstProofNode,{node})
+                                    : re(ConstProofNode,{node, varColors})
                             ),
                         ))
                     )

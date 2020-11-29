@@ -18,39 +18,47 @@ const MetamathIndexTable = React.memo(({idsToShowStr, idsToShow, allElems}) => {
                 RE.td({key: 'lable', style: {...tableStyle, width: '10%', fontWeight:'bold'}}, "Label"),
                 RE.td({key: 'expr', style: {...tableStyle, width: '65%', fontWeight:'bold'}}, "Expression"),
             ),
-            allElems.filter(e => idsToShow.includes(e.id)).map(indexElem => RE.tr(
-                {
-                    key: `row-${indexElem.id}`,
-                    className: "index-row"
-                },
-                RE.td(
+            allElems.filter(e => idsToShow.includes(e.id)).map(indexElem => {
+                const varColors = createVarColors({varTypes:indexElem.varTypes})
+                return RE.tr(
                     {
-                        style: {...tableStyle, cursor: 'pointer'},
-                        ...link({urlGetter: () => createUrlOfAssertion(indexElem.label)})
+                        key: `row-${indexElem.id}`,
+                        className: "index-row"
                     },
-                    indexElem.id + 1
-                ),
-                RE.td(
-                    {
-                        style: {...tableStyle, cursor: 'pointer'},
-                        ...link({urlGetter: () => createUrlOfAssertion(indexElem.label)})
+                    RE.td(
+                        {
+                            style: {...tableStyle, cursor: 'pointer'},
+                            ...link({urlGetter: () => createUrlOfAssertion(indexElem.label)})
                         },
-                    indexElem.type
-                ),
-                RE.td(
-                    {
-                        style: {...tableStyle, cursor: 'pointer'},
-                        ...link({urlGetter: () => createUrlOfAssertion(indexElem.label)})
+                        indexElem.id + 1
+                    ),
+                    RE.td(
+                        {
+                            style: {...tableStyle, cursor: 'pointer'},
+                            ...link({urlGetter: () => createUrlOfAssertion(indexElem.label)})
                         },
-                    indexElem.label
-                ),
-                RE.td(
-                    {
-                        style: {...tableStyle, overflow: 'auto', fontFamily: 'courier', fontSize: '15px'}
-                    },
-                    indexElem.expression.join(' ')
-                ),
-            ))
+                        indexElem.type
+                    ),
+                    RE.td(
+                        {
+                            style: {...tableStyle, cursor: 'pointer'},
+                            ...link({urlGetter: () => createUrlOfAssertion(indexElem.label)})
+                        },
+                        indexElem.label
+                    ),
+                    RE.td(
+                        {
+                            style: {...tableStyle, overflow: 'auto', fontFamily: 'courier', fontSize: '15px'}
+                        },
+                        indexElem.hypotheses.length?RE.ul({},
+                            indexElem.hypotheses.map((hyp,idx) => RE.li({key:idx},
+                                applyColors({expr:hyp,varColors})
+                            ))
+                        ):null,
+                        applyColors({expr:indexElem.expression,varColors})
+                    ),
+                )
+            })
         )
     )
 }, (o, n) => o.idsToShowStr === n.idsToShowStr)

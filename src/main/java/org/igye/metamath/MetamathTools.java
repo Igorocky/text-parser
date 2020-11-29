@@ -5,6 +5,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.common.Utils;
+import org.igye.textparser.PositionInText;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -25,6 +26,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -71,24 +73,22 @@ public class MetamathTools {
         File dataDir = new File(dirToSaveTo, "data");
         AtomicInteger filesWrittenAtomic = new AtomicInteger();
         AtomicReference<Instant> lastWritingTime = new AtomicReference<>(Instant.now());
-        final BigDecimal millisInMinute = new BigDecimal(60_000);
-        final int numOfDtosToLog = 100;
+        final Map<PositionInText,IndexElemDto> indexElems = new ConcurrentSkipListMap<>();
         for (int i = 0; i < numOfThreads; i++) {
             executorService.submit(() -> {
                 ListStatement assertion = queue.poll();
                 while (assertion != null) {
                     AssertionDto dto = visualizeAssertion(assertion);
                     createAssertionHtmlFile(dto, dataDir, createRelPathToSaveTo(dto.getName()));
+                    indexElems.put(assertion.getBegin(), createIndexElemDto(dto));
                     assertion = queue.poll();
                     int filesWritten = filesWrittenAtomic.incrementAndGet();
-                    if (queue.size() % numOfDtosToLog == 0 || true) {
-                        final double pct = (filesWritten * 1.0 / assertions.size()) * 100;
-                        System.out.println("Writing DTOs - "
-                                + new BigDecimal(pct).setScale(1, BigDecimal.ROUND_HALF_UP) + "%" +
-                                " (" + filesWritten + " of " + assertions.size() + "). "
-                        );
-                        lastWritingTime.set(Instant.now());
-                    }
+                    final double pct = (filesWritten * 1.0 / assertions.size()) * 100;
+                    System.out.println("Writing DTOs - "
+                            + new BigDecimal(pct).setScale(1, BigDecimal.ROUND_HALF_UP) + "%" +
+                            " (" + filesWritten + " of " + assertions.size() + "). "
+                    );
+                    lastWritingTime.set(Instant.now());
                 }
             });
         }
@@ -96,28 +96,36 @@ public class MetamathTools {
         executorService.shutdown();
         executorService.awaitTermination(1, TimeUnit.DAYS);
 
-        System.out.println("Building index...");
-        final IndexDto index = buildIndex(assertions);
         System.out.println("Writing index...");
-        createHtmlFile("","MetamathIndexView", index, new File(dirToSaveTo, "index.html"));
+        createHtmlFile("",
+                "MetamathIndexView",
+                buildIndex(indexElems.values()),
+                new File(dirToSaveTo, "index.html")
+        );
         System.out.println("Completed in " + Duration.between(start, Instant.now()).getSeconds() + "s.");
     }
 
-    private static IndexDto buildIndex(List<ListStatement> assertions) {
+    private static IndexDto buildIndex(Collection<IndexElemDto> indexElems) {
         final int[] id = {0};
         return IndexDto.builder()
                 .elems(
-                        assertions.stream()
-                                .map(assertion ->
-                                        IndexElemDto.builder()
-                                                .id(id[0]++)
-                                                .type(getTypeStr(assertion.getType()))
-                                                .label(assertion.getLabel())
-                                                .expression(assertion.getSymbols())
-                                                .build()
-                                )
+                        indexElems.stream()
+                                .map(elem -> {
+                                    elem.setId(id[0]++);
+                                    return elem;
+                                })
                                 .collect(Collectors.toList())
                 )
+                .build();
+    }
+
+    private static IndexElemDto createIndexElemDto(AssertionDto assertionDto) {
+        return IndexElemDto.builder()
+                .type(assertionDto.getType())
+                .label(assertionDto.getName())
+                .hypotheses(tail(assertionDto.getAssertion().getParams(), assertionDto.getAssertion().getNumOfTypes()))
+                .expression(assertionDto.getAssertion().getRetVal())
+                .varTypes(assertionDto.getVarTypes())
                 .build();
     }
 

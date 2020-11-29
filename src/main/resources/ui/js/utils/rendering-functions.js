@@ -8,6 +8,21 @@ const fontSizePx = fontSize+'px'
 const charLength = fontSize*0.6
 const charHeight = charLength*0.85
 const subsAvailableColors = ['green', 'orange', 'cyan', 'pink', 'brown', 'lawngreen', 'olive', 'blue', 'red', 'magenta']
+const typeColors = {wff:'blue',term:'black',setvar:'red',['class']:'magenta'}
+
+function createVarColors({varTypes}) {
+    return Object.getOwnPropertyNames(varTypes)
+        .map(varName => [varName,typeColors[varTypes[varName]]??'gold'])
+        .reduce((acc,[varName,color]) => ({...acc, [varName]:color}), {})
+}
+
+function applyColors({expr,varColors}) {
+    return RE.Fragment({},
+        expr
+            .map(str => varColors[str]?RE.span({style:{color:varColors[str], fontWeight:'bold'}}, str):str)
+            .flatMap(e => [e, ' '])
+    )
+}
 
 function renderColoredExpr({key,ex,expr,colors}) {
     const svgElems = []
