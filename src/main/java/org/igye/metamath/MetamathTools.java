@@ -7,7 +7,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.igye.common.Utils;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,8 +21,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,7 +39,10 @@ public class MetamathTools {
 
     private static final String DOT_REPLACEMENT = "-dot-";
 
+    @SneakyThrows
     public static void generateProofExplorer(List<ListStatement> assertions, String pathToDirToSaveTo) {
+        final Instant start = Instant.now();
+        System.out.println("Writing common files...");
         File dirToSaveTo = new File(pathToDirToSaveTo);
         if (dirToSaveTo.exists()) {
             throw new MetamathException("The directory already exists: " + dirToSaveTo.getAbsolutePath());
@@ -51,30 +64,56 @@ public class MetamathTools {
         copyUiFileToDir("/ui/js/components/MetamathIndexTable.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/MetamathIndexView.js", dirToSaveTo);
 
-        final List<AssertionDto> assertionDtos = assertions.stream()
-                .map(MetamathTools::visualizeAssertion)
-                .collect(Collectors.toList());
+        Queue<ListStatement> queue = new ConcurrentLinkedQueue<>(assertions);
 
+        final int numOfThreads = 4;
+        final ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
         File dataDir = new File(dirToSaveTo, "data");
-        for (AssertionDto assertionDto : assertionDtos) {
-            createAssertionHtmlFile(assertionDto, dataDir, createRelPathToSaveTo(assertionDto.getName()));
+        AtomicInteger filesWrittenAtomic = new AtomicInteger();
+        AtomicReference<Instant> lastWritingTime = new AtomicReference<>(Instant.now());
+        final BigDecimal millisInMinute = new BigDecimal(60_000);
+        final int numOfDtosToLog = 100;
+        for (int i = 0; i < numOfThreads; i++) {
+            executorService.submit(() -> {
+                ListStatement assertion = queue.poll();
+                while (assertion != null) {
+                    AssertionDto dto = visualizeAssertion(assertion);
+                    createAssertionHtmlFile(dto, dataDir, createRelPathToSaveTo(dto.getName()));
+                    assertion = queue.poll();
+                    int filesWritten = filesWrittenAtomic.incrementAndGet();
+                    if (queue.size() % numOfDtosToLog == 0 || true) {
+                        final double pct = (filesWritten * 1.0 / assertions.size()) * 100;
+                        System.out.println("Writing DTOs - "
+                                + new BigDecimal(pct).setScale(1, BigDecimal.ROUND_HALF_UP) + "%" +
+                                " (" + filesWritten + " of " + assertions.size() + "). "
+                        );
+                        lastWritingTime.set(Instant.now());
+                    }
+                }
+            });
         }
 
-        final IndexDto index = buildIndex(assertionDtos);
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.DAYS);
+
+        System.out.println("Building index...");
+        final IndexDto index = buildIndex(assertions);
+        System.out.println("Writing index...");
         createHtmlFile("","MetamathIndexView", index, new File(dirToSaveTo, "index.html"));
+        System.out.println("Completed in " + Duration.between(start, Instant.now()).getSeconds() + "s.");
     }
 
-    private static IndexDto buildIndex(List<AssertionDto> assertionDtos) {
+    private static IndexDto buildIndex(List<ListStatement> assertions) {
         final int[] id = {0};
         return IndexDto.builder()
                 .elems(
-                        assertionDtos.stream()
-                                .map(assertionDto ->
+                        assertions.stream()
+                                .map(assertion ->
                                         IndexElemDto.builder()
                                                 .id(id[0]++)
-                                                .type(assertionDto.getType())
-                                                .label(assertionDto.getName())
-                                                .expression(assertionDto.getAssertion().getRetVal())
+                                                .type(getTypeStr(assertion.getType()))
+                                                .label(assertion.getLabel())
+                                                .expression(assertion.getSymbols())
                                                 .build()
                                 )
                                 .collect(Collectors.toList())

@@ -152,12 +152,13 @@ public class MetamathToolsTest {
     @Test
     public void generateProofExplorer_shouldGenerateProofExplorerFiles() {
         //given
+        System.out.println("Loading metamath database...");
         final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/set-reduced.mm"));
+//        final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
 
         //when
         MetamathTools.generateProofExplorer(
                 database.getAllAssertions().stream()
-                        .limit(1000)
                         .collect(Collectors.toList()),
                 "D:\\programs\\java\\text-parser\\target\\proof-explorer"
         );
