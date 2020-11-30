@@ -61,29 +61,41 @@ public class MetamathContext {
 
     public SymbolsInfo getSymbolsInfo() {
         if (symbolsInfo == null) {
-            symbolsInfo = new SymbolsInfo();
-            collectSymbolsInfo(symbolsInfo);
+            SymbolsInfo symbolsInfoTmp = new SymbolsInfo();
+            collectSymbolsInfo(symbolsInfoTmp);
+            symbolsInfo = symbolsInfoTmp;
         }
         return symbolsInfo;
     }
 
     private void collectSymbolsInfo(SymbolsInfo symbolsInfo) {
-        if (listStatement != null) {
-            final List<String> symbols = listStatement.getSymbols();
-            if (listStatement.getType() == ListStatementType.CONSTANT) {
-                if (symbols.stream().anyMatch(symbolsInfo.getConstants()::contains)) {
-                    throw new MetamathException("A constant was redefined.");
-                }
-                symbolsInfo.getConstants().addAll(symbols);
-            } else if (listStatement.getType() == ListStatementType.FLOATING) {
-                if (symbolsInfo.getVarTypes().containsKey(symbols.get(1))) {
-                    throw new MetamathException("A variable type was redefined.");
-                }
-                symbolsInfo.getVarTypes().put(symbols.get(1), listStatement);
+        if (this.symbolsInfo != null) {
+            if (this.symbolsInfo.getConstants().stream().anyMatch(symbolsInfo.getConstants()::contains)) {
+                throw new MetamathException("A constant was redefined.");
             }
-        }
-        if (parent != null) {
-            parent.collectSymbolsInfo(symbolsInfo);
+            if (this.symbolsInfo.getVarTypes().keySet().stream().anyMatch(symbolsInfo.getVarTypes()::containsKey)) {
+                throw new MetamathException("A variable type was redefined.");
+            }
+            symbolsInfo.getConstants().addAll(this.symbolsInfo.getConstants());
+            symbolsInfo.getVarTypes().putAll(this.symbolsInfo.getVarTypes());
+        } else {
+            if (listStatement != null) {
+                final List<String> symbols = listStatement.getSymbols();
+                if (listStatement.getType() == ListStatementType.CONSTANT) {
+                    if (symbols.stream().anyMatch(symbolsInfo.getConstants()::contains)) {
+                        throw new MetamathException("A constant was redefined.");
+                    }
+                    symbolsInfo.getConstants().addAll(symbols);
+                } else if (listStatement.getType() == ListStatementType.FLOATING) {
+                    if (symbolsInfo.getVarTypes().containsKey(symbols.get(1))) {
+                        throw new MetamathException("A variable type was redefined.");
+                    }
+                    symbolsInfo.getVarTypes().put(symbols.get(1), listStatement);
+                }
+            }
+            if (parent != null) {
+                parent.collectSymbolsInfo(symbolsInfo);
+            }
         }
     }
 
