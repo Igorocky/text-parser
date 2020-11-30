@@ -440,13 +440,22 @@ public class MetamathTools {
     }
 
     private static void createHtmlFile(String relPathPrefix, String viewComponentName, Object viewProps, File file) {
+        final String viewPropsStr = Utils.toJson(Utils.toJson(viewProps));
+        final String decompressionFunctionName =
+                viewProps instanceof CompressedAssertionDto ? "decompressAssertionDto"
+                        : "";
         copyFromClasspath(
                 "/ui/index.html",
-                html -> html
-                        .replace("href=\"", "href=\"" + relPathPrefix)
-                        .replace("src=\"", "src=\"" + relPathPrefix)
-                        .replace("'$ComponentName'", viewComponentName)
-                        .replace("'$viewProps'", Utils.toJson(Utils.toJson(viewProps))),
+                html -> {
+                    return html
+                            .replace("href=\"", "href=\"" + relPathPrefix)
+                            .replace("src=\"", "src=\"" + relPathPrefix)
+                            .replace("'$ComponentName'", viewComponentName)
+                            .replace(
+                                    "JSON.parse('$viewProps')",
+                                    decompressionFunctionName + "(JSON.parse(" + viewPropsStr + "))"
+                            );
+                },
                 file
         );
     }
@@ -460,7 +469,6 @@ public class MetamathTools {
                 relPathPrefix,
                 "MetamathAssertionView",
                 compress(assertionDto),
-//                assertionDto,
                 new File(dataDir, StringUtils.join(relPath, '/'))
         );
     }

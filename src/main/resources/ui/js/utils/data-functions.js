@@ -167,3 +167,34 @@ function getRelPathToAssertion({thisLabel, otherLabel}) {
     const otherRelPath = [...getRelPath({label:otherLabel}).map(replaceDots), replaceDots(otherLabel) + '.html']
     return ints(1,thisRelPath.length).map(i => "..").join('/') + '/' + otherRelPath.join('/')
 }
+
+function decompressAssertionDto(cDto) {
+    return {
+        type: cDto.t,
+        name: cDto.n,
+        description: cDto.d,
+        varTypes: Object.entries(cDto.v).reduce((acc,[k,v]) => ({...acc,[cDto.s[k]]:cDto.s[v]}), {}),
+        assertion: decompressStackNodeDto(cDto.a, cDto.s),
+        proof: cDto.p?.map(n => decompressStackNodeDto(n, cDto.s))
+    }
+}
+
+function decompressStackNodeDto(cDto, strings) {
+    return {
+        id: cDto.i,
+        args: cDto.a,
+        type: strings[cDto.t],
+        label: strings[cDto.l],
+        params: cDto.p?.map(param => decompressListOfStrings(param, strings)),
+        numOfTypes: cDto.n,
+        retVal: decompressListOfStrings(cDto.r, strings),
+        substitution: hasNoValue(cDto.s)
+            ?undefined
+            :Object.entries(cDto.s).reduce((acc,[k,v]) => ({...acc,[strings[k]]:decompressListOfStrings(v,strings)}), {}),
+        expr: decompressListOfStrings(cDto.e, strings)
+    }
+}
+
+function decompressListOfStrings(listOfInts, strings) {
+    return hasNoValue(listOfInts) ? listOfInts : listOfInts.map(i => strings[i])
+}
