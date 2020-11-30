@@ -45,7 +45,8 @@ public class MetamathTools {
     private static final String DOT_REPLACEMENT = "-dot-";
 
     @SneakyThrows
-    public static void generateProofExplorer(List<ListStatement> assertions, String pathToDirToSaveTo) {
+    public static void generateProofExplorer(
+            List<ListStatement> assertions, int numOfThreads, String pathToDirToSaveTo) {
         final Instant start = Instant.now();
         System.out.println("Writing common files...");
         File dirToSaveTo = new File(pathToDirToSaveTo);
@@ -71,7 +72,6 @@ public class MetamathTools {
 
         Queue<ListStatement> queue = new ConcurrentLinkedQueue<>(assertions);
 
-        final int numOfThreads = 4;
         final ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
         File dataDir = new File(dirToSaveTo, "data");
         AtomicInteger filesWrittenAtomic = new AtomicInteger();
@@ -111,8 +111,6 @@ public class MetamathTools {
                 compress(buildIndex(indexElems.values())),
                 new File(dirToSaveTo, "index.html")
         );
-        System.out.println("Completed in " + Duration.between(start, Instant.now()).getSeconds() + "s.");
-        System.out.println(DebugTimer.getStats());
     }
 
     private static IndexDto buildIndex(Collection<IndexElemDto> indexElems) {
