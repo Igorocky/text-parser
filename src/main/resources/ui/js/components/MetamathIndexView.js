@@ -5,6 +5,7 @@ const MetamathIndexView = ({elems}) => {
     const s = {
         PAGE_NUMBER: 'PAGE_NUMBER',
         NUMBER_OF_PAGES: 'NUMBER_OF_PAGES',
+        POSSIBLE_TYPES: 'POSSIBLE_TYPES',
         TYPE_FILTER: 'TYPE_FILTER',
         LABEL_FILTER: 'LABEL_FILTER',
         IDS_TO_SHOW: 'IDS_TO_SHOW',
@@ -47,6 +48,7 @@ const MetamathIndexView = ({elems}) => {
         return createObj({
             [s.PAGE_NUMBER]: pageNumber,
             [s.NUMBER_OF_PAGES]: numOfPages,
+            [s.POSSIBLE_TYPES]: ['', ...new Set(elems.map(e => e.type))],
             [s.TYPE_FILTER]: typeFilter,
             [s.LABEL_FILTER]: labelFilter,
             [s.IDS_TO_SHOW]: idsToShow,
@@ -87,8 +89,8 @@ const MetamathIndexView = ({elems}) => {
                         },
                         style: {width: 150}
                     },
-                    ['', ...new Set(elems.map(e => e.type))].map(t =>
-                        RE.MenuItem({key: 'assertionType'+t, value: t}, t!==''?t:'All')
+                    state[s.POSSIBLE_TYPES].map(t =>
+                        RE.MenuItem({key: 'assertionType'+t, value: t}, t!==''?decompressAssertionType(t):'All')
                     )
                 )
             ),

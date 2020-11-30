@@ -78,7 +78,7 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
     return RE.Container.col.top.left({},{style:{marginBottom:'20px'}},
         RE.Container.row.center.center({},{style:{fontSize:'18px', fontWeight:'700', marginRight:'10px'}},
             RE.span({},type),
-            RE.span({style:{color:'rgb(0, 102, 51)'}},name),
+            RE.a({href:`http://us.metamath.org/mpeuni/${name}.html`, style:{color:'rgb(0, 102, 51)', textDecoration:'none'}},name),
         ),
         RE.div({}, description),
         RE.div({}, re(Assertion,{...assertion,varColors})),

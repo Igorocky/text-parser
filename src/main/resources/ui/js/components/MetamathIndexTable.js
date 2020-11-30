@@ -4,8 +4,6 @@ const MetamathIndexTable = React.memo(({idsToShowStr, idsToShow, allElems}) => {
 
     const tableStyle = {borderCollapse: 'collapse', border: '0px solid black', fontSize: '15px', padding: '10px'}
 
-    console.log("rerender MetamathIndexTable")
-
     function createUrlOfAssertion(label) {
         return 'data/' + getRelPath({label}).map(replaceDots).join('/') + '/' + replaceDots(label) + '.html'
     }
@@ -20,30 +18,22 @@ const MetamathIndexTable = React.memo(({idsToShowStr, idsToShow, allElems}) => {
             ),
             allElems.filter(e => idsToShow.includes(e.id)).map(indexElem => {
                 const varColors = createVarColors({varTypes:indexElem.varTypes})
+                const urlGetter = () => createUrlOfAssertion(indexElem.label);
                 return RE.tr(
                     {
                         key: `row-${indexElem.id}`,
                         className: "index-row"
                     },
                     RE.td(
-                        {
-                            style: {...tableStyle, cursor: 'pointer'},
-                            ...link({urlGetter: () => createUrlOfAssertion(indexElem.label)})
-                        },
+                        {style: {...tableStyle, cursor: 'pointer'}, ...link({urlGetter})},
                         indexElem.id + 1
                     ),
                     RE.td(
-                        {
-                            style: {...tableStyle, cursor: 'pointer'},
-                            ...link({urlGetter: () => createUrlOfAssertion(indexElem.label)})
-                        },
-                        indexElem.type
+                        {style: {...tableStyle, cursor: 'pointer'}, ...link({urlGetter})},
+                        decompressAssertionType(indexElem.type)
                     ),
                     RE.td(
-                        {
-                            style: {...tableStyle, cursor: 'pointer'},
-                            ...link({urlGetter: () => createUrlOfAssertion(indexElem.label)})
-                        },
+                        {style: {...tableStyle, cursor: 'pointer'}, ...link({urlGetter})},
                         indexElem.label
                     ),
                     RE.td(

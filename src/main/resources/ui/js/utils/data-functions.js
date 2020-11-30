@@ -173,7 +173,7 @@ function decompressAssertionDto(cDto) {
         type: cDto.t,
         name: cDto.n,
         description: cDto.d,
-        varTypes: Object.entries(cDto.v).reduce((acc,[k,v]) => ({...acc,[cDto.s[k]]:cDto.s[v]}), {}),
+        varTypes: decompressVarTypes(cDto.v,cDto.s),
         assertion: decompressStackNodeDto(cDto.a, cDto.s),
         proof: cDto.p?.map(n => decompressStackNodeDto(n, cDto.s))
     }
@@ -195,6 +195,31 @@ function decompressStackNodeDto(cDto, strings) {
     }
 }
 
+function decompressIndexDto(cDto) {
+    return {
+        elems: cDto.elems.map(e => decompressIndexElemDto(e, cDto.strings))
+    }
+}
+
+function decompressIndexElemDto(cDto, strings) {
+    return {
+        id: cDto.i,
+        type: strings[cDto.t],
+        label: cDto.l,
+        hypotheses: cDto.h?.map(hyp => decompressListOfStrings(hyp, strings)),
+        expression: decompressListOfStrings(cDto.e, strings),
+        varTypes: decompressVarTypes(cDto.v,strings),
+    }
+}
+
+function decompressAssertionType(assertionType) {
+    return assertionType==='T'?'Theorem':assertionType==='A'?'Axiom':assertionType
+}
+
 function decompressListOfStrings(listOfInts, strings) {
     return hasNoValue(listOfInts) ? listOfInts : listOfInts.map(i => strings[i])
+}
+
+function decompressVarTypes(compressedVarTypes, strings) {
+    return Object.entries(compressedVarTypes).reduce((acc,[k,v]) => ({...acc,[strings[k]]:strings[v]}), {})
 }
