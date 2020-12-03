@@ -13,28 +13,24 @@ const MetamathIndexTable = React.memo(({idsToShowStr, idsToShow, allElems}) => {
             RE.tr({style: {}},
                 RE.td({key: 'idx', style: {...tableStyle, width: '5%', fontWeight:'bold'}},),
                 RE.td({key: 'type', style: {...tableStyle, width: '10%', fontWeight:'bold'}}, "Type"),
-                RE.td({key: 'lable', style: {...tableStyle, width: '10%', fontWeight:'bold'}}, "Label"),
+                RE.td({key: 'label', style: {...tableStyle, width: '10%', fontWeight:'bold'}}, "Label"),
                 RE.td({key: 'expr', style: {...tableStyle, width: '65%', fontWeight:'bold'}}, "Expression"),
             ),
             allElems.filter(e => idsToShow.includes(e.id)).map(indexElem => {
                 const varColors = createVarColors({varTypes:indexElem.varTypes})
-                const urlGetter = () => createUrlOfAssertion(indexElem.label);
                 return RE.tr(
-                    {
-                        key: `row-${indexElem.id}`,
-                        className: "index-row"
-                    },
+                    {key: `row-${indexElem.id}`, className: "index-row"},
                     RE.td(
-                        {style: {...tableStyle, cursor: 'pointer'}, ...link({urlGetter})},
+                        {style: {...tableStyle}},
                         indexElem.id + 1
                     ),
                     RE.td(
-                        {style: {...tableStyle, cursor: 'pointer'}, ...link({urlGetter})},
+                        {style: {...tableStyle}},
                         decompressAssertionType(indexElem.type)
                     ),
                     RE.td(
-                        {style: {...tableStyle, cursor: 'pointer'}, ...link({urlGetter})},
-                        indexElem.label
+                        {style: {...tableStyle}},
+                        RE.a({href:createUrlOfAssertion(indexElem.label)},indexElem.label),
                     ),
                     RE.td(
                         {

@@ -2,8 +2,6 @@ package org.igye.metamath;
 
 import org.igye.common.DebugTimer;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.stream.Collectors;
 
 public class ProofExplorerGenerator {
@@ -12,26 +10,25 @@ public class ProofExplorerGenerator {
 
     private static final int numOfThreads = 4;
 
-    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer";
+    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer-reduced";
+//    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer";
 
     public static void main(String[] args) {
-        final Instant start = Instant.now();
+        DebugTimer.run("Generate proof explorer", () -> {
+            System.out.println("Loading metamath database...");
+            final MetamathDatabase database = DebugTimer.call(
+                    "Loading metamath database",
+                    () -> MetamathParsers.load(pathToMmDatabase)
+            );
 
-        System.out.println("Loading metamath database...");
-        final MetamathDatabase database = DebugTimer.call(
-                "Loading metamath database",
-                () -> MetamathParsers.load(pathToMmDatabase)
-        );
-
-        MetamathTools.generateProofExplorer(
-                database.getAllAssertions().stream()
-//                        .limit(10_000)
-                        .collect(Collectors.toList()),
-                numOfThreads,
-                pathToProofExplorerDirectory
-        );
-
-        System.out.println("Completed in " + Duration.between(start, Instant.now()).getSeconds() + "s.");
+            MetamathTools.generateProofExplorer(
+                    database.getAllAssertions().stream()
+//                        .limit(1000)
+                            .collect(Collectors.toList()),
+                    numOfThreads,
+                    pathToProofExplorerDirectory
+            );
+        });
         System.out.println(DebugTimer.getStats());
     }
 }

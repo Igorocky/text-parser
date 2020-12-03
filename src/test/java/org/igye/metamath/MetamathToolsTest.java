@@ -1,6 +1,5 @@
 package org.igye.metamath;
 
-import org.igye.common.DebugTimer;
 import org.igye.common.Utils;
 import org.junit.Assert;
 import org.junit.Ignore;
