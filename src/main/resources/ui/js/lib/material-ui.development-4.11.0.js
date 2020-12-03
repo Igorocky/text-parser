@@ -1,7 +1,7 @@
 /** @license Material-UI v4.11.0
  *
  * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * material-ui-LICENSE file in the root directory of this source tree.
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('react'), require('react-dom')) :
