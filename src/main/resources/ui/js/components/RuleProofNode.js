@@ -198,33 +198,6 @@ const RuleProofNode = ({parentLabel,node,allNodes,varColors,hideTypes}) => {
             resultBoundaries = resultBoundaries.addPoints(new Point(argBoundaries.minX, ruleMidY-charHeight))
         }
 
-        const labelFontSizeFactor = 1.5
-        const labelBegin = new Point(
-            ruleBoundaries.minX-(node.type.length+1+node.label.length+3)*charLength*labelFontSizeFactor,
-            ruleMidY+charHeight*labelFontSizeFactor/2
-        )
-        resultSvgElems.push(
-            RE.a(
-                {
-                    href: getRelPathToAssertion({thisLabel: parentLabel, otherLabel: node.label}),
-                    style: {color: 'rgb(0, 102, 51)', textDecoration: 'none'}
-                },
-                SVG.text(
-                    {
-                        key: `label`,
-                        x: labelBegin.x,
-                        y: labelBegin.y,
-                        fill: 'black',
-                        fontSize: (fontSize * labelFontSizeFactor) + 'px',
-                        fontFamily,
-                        style: {cursor: 'pointer'},
-                    },
-                    `${node.type} ${node.label}`
-                )
-            )
-        )
-        resultBoundaries = resultBoundaries.addPoints(labelBegin)
-
         return {svgElems: resultSvgElems, boundaries: resultBoundaries}
     }
 

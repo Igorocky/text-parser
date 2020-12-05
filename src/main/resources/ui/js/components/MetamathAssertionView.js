@@ -78,7 +78,7 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
                                 RE.td({style: {...tableStyle}},
                                     (node.type === 'P' || node.type === 'A')
                                         ? RE.a({href:createUrlOfAssertion(node.label)},node.label)
-                                        : node.label
+                                        : ((node.type === 'E' ? 'E ' : '') + node.label)
                                 ),
                                 RE.td({style: {...tableStyle/*, overflow:'auto'*/}},
                                     hasValue(node.args)
