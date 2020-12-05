@@ -168,6 +168,10 @@ function getRelPathToAssertion({thisLabel, otherLabel}) {
     return ints(1,thisRelPath.length).map(i => "..").join('/') + '/' + otherRelPath.join('/')
 }
 
+function createUrlOfAssertion(label) {
+    return 'data/' + getRelPath({label}).map(replaceDots).join('/') + '/' + replaceDots(label) + '.html'
+}
+
 function decompressAssertionDto(cDto) {
     return {
         type: cDto.t,

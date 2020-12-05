@@ -4,10 +4,6 @@ const MetamathIndexTable = React.memo(({idsToShowStr, idsToShow, allElems}) => {
 
     const tableStyle = {borderCollapse: 'collapse', border: '0px solid black', fontSize: '15px', padding: '10px'}
 
-    function createUrlOfAssertion(label) {
-        return 'data/' + getRelPath({label}).map(replaceDots).join('/') + '/' + replaceDots(label) + '.html'
-    }
-
     return RE.table({style: {borderCollapse: 'collapse', tableLayout: 'fixed', width: '100%'}},
         RE.tbody({style: {borderCollapse: 'collapse'}},
             RE.tr({style: {}},

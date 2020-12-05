@@ -45,7 +45,8 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
 
     function renderProof() {
         if (proof) {
-            const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'10px'}
+            const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'5px'}
+            const hideTypes = state[s.HIDE_TYPES]
             return RE.Fragment({},
                 RE.Container.row.left.center({},{},
                     RE.Button(
@@ -55,20 +56,37 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
                         state[s.HIDE_TYPES] ? "Show types" : "Hide types"
                     )
                 ),
-                RE.table({style:{borderCollapse: 'collapse', tableLayout: 'fixed', width:'100%'}},
+                RE.table({style:{borderCollapse: 'collapse'/*, tableLayout: 'fixed', width:'100%'*/}},
                     RE.tbody({style:{borderCollapse: 'collapse'}},
                         RE.tr({style: {}},
-                            RE.th({key:'node-id', style:{width:'2%'}}),
-                            RE.th({key:'explanation', style:{width:'98%'}}),
+                            RE.th({key:'node-id', style:{...tableStyle,/*width:'2%'*/}}, 'Step'),
+                            RE.th({key:'explanation', style:{...tableStyle,/*width:'98%'*/}}, 'Hyp'),
+                            RE.th({key:'explanation', style:{...tableStyle,/*width:'98%'*/}}, 'Ref'),
+                            RE.th({key:'explanation', style:{...tableStyle,/*width:'98%'*/}}, 'Expression'),
                         ),
-                        state[s.NODES_TO_SHOW].map(node => RE.tr({key: `node-${node.id}`, id:node.id, style: {}},
-                            RE.td({style: {...tableStyle}}, node.id),
-                            RE.td({style: {...tableStyle, overflow:'auto'}},
-                                hasValue(node.args)
-                                    ? re(RuleProofNode,{parentLabel:name, node, allNodes:state[s.NODES_TO_SHOW_MAP], varColors, hideTypes:state[s.HIDE_TYPES]})
-                                    : re(ConstProofNode,{node, varColors})
-                            ),
-                        ))
+                        state[s.NODES_TO_SHOW].map(node => {
+                            const hyp = hideTypes ? node.args?.filter((a,i) => node.numOfTypes <= i) : node.args
+                            const maxHypIdx = hyp?.length - 1
+                            return RE.tr({key: `node-${node.id}`, id: node.id, style: {}},
+                                RE.td({style: {...tableStyle}}, node.id),
+                                RE.td({style: {...tableStyle}},
+                                    hyp?.map((h,i) => RE.Fragment({},
+                                        RE.a({href:`#${h}`},h),
+                                        i < maxHypIdx ? ', ' : ''
+                                    ))
+                                ),
+                                RE.td({style: {...tableStyle}},
+                                    (node.type === 'P' || node.type === 'A')
+                                        ? RE.a({href:createUrlOfAssertion(node.label)},node.label)
+                                        : node.label
+                                ),
+                                RE.td({style: {...tableStyle/*, overflow:'auto'*/}},
+                                    hasValue(node.args)
+                                        ? re(RuleProofNode, {parentLabel: name, node, allNodes: state[s.NODES_TO_SHOW_MAP], varColors, hideTypes})
+                                        : re(ConstProofNode, {node, varColors})
+                                ),
+                            )
+                        })
                     )
                 )
             )
