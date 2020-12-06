@@ -39,13 +39,13 @@ function MetamathAssertionView({type, name, description, varTypes, assertion, pr
 
         const expandedNodes = getParamValue(s.EXPANDED_NODES,null)
 
-        const stepNumbers = nodesToShow.reduce((acc, {id}, i) => ({...acc, [id]:i+1}), {})
+        const stepNumbers = nodesToShow?.reduce((acc, {id}, i) => ({...acc, [id]:i+1}), {})
 
         return createObj({
             [s.NODES_TO_SHOW]: nodesToShow,
             [s.NODES_TO_SHOW_MAP]: createNodesMap(nodesToShow),
             [s.HIDE_TYPES]: hideTypes,
-            [s.EXPANDED_NODES]: hasValue(expandedNodes)?expandedNodes:proof.map(() => false),
+            [s.EXPANDED_NODES]: hasValue(expandedNodes)?expandedNodes:proof?.map(() => false),
             [s.STEP_NUMBERS]: stepNumbers,
         })
     }
