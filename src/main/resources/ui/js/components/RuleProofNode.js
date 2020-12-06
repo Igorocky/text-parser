@@ -1,6 +1,6 @@
 "use strict";
 
-const RuleProofNode = ({node,allNodes,varColors,hideTypes,stepNumbers}) => {
+function RuleProofNode({node,allNodes,varColors,hideTypes,stepNumbers}) {
 
     function renderArgAndParam({key,ex,centerX,argIdx,arg,param,subs,swapSubs,subsColors,varColors}) {
         const argStr = arg.join(' ')

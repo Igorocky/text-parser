@@ -1,6 +1,6 @@
 "use strict";
 
-const MetamathIndexView = ({elems}) => {
+function MetamathIndexView({elems}) {
 
     const s = {
         PAGE_NUMBER: 'PAGE_NUMBER',

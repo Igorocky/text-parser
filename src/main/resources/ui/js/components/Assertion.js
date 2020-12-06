@@ -1,6 +1,6 @@
 "use strict";
 
-const Assertion = ({params,retVal,varColors}) => {
+function Assertion ({params,retVal,varColors}) {
 
     function renderAssertion({ex}) {
         const resultSvgElems = []

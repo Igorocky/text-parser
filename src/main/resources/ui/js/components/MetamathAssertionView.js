@@ -1,6 +1,6 @@
 "use strict";
 
-const MetamathAssertionView = ({type, name, description, varTypes, assertion, proof}) => {
+function MetamathAssertionView({type, name, description, varTypes, assertion, proof}) {
 
     const s = {
         NODES_TO_SHOW: 'NODES_TO_SHOW',

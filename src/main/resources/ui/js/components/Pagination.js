@@ -1,6 +1,6 @@
 "use strict";
 
-const Pagination = ({numOfPages,curPage,onChange}) => {
+function Pagination({numOfPages,curPage,onChange}) {
 
     return RE.ButtonGroup({variant:'contained', size:'small'},
         RE.Button({onClick: () => onChange(1), disabled: curPage == 1},

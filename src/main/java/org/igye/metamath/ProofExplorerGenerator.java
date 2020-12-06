@@ -10,8 +10,8 @@ public class ProofExplorerGenerator {
 
     private static final int numOfThreads = 4;
 
-    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer-reduced";
-//    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer";
+    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer";
+//    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer-full";
 
     public static void main(String[] args) {
         DebugTimer.run("Generate proof explorer", () -> {

@@ -62,6 +62,7 @@ public class MetamathTools {
         copyUiFileToDir("/ui/js/utils/data-functions.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/utils/svg-functions.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/utils/rendering-functions.js", dirToSaveTo);
+        copyUiFileToDir("/ui/js/utils/all-imports.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/Pagination.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/Assertion.js", dirToSaveTo);
         copyUiFileToDir("/ui/js/components/ConstProofNode.js", dirToSaveTo);
@@ -444,19 +445,18 @@ public class MetamathTools {
         final String decompressionFunctionName =
                 viewProps instanceof CompressedAssertionDto ? "decompressAssertionDto"
                 : viewProps instanceof CompressedIndexDto ? "decompressIndexDto"
-                : "";
+                : null;
+        if (decompressionFunctionName == null) {
+            throw new MetamathException("decompressionFunctionName == null");
+        }
         copyFromClasspath(
                 "/ui/index.html",
-                html -> {
-                    return html
-                            .replace("href=\"", "href=\"" + relPathPrefix)
-                            .replace("src=\"", "src=\"" + relPathPrefix)
-                            .replace("'$ComponentName'", viewComponentName)
-                            .replace(
-                                    "JSON.parse('$viewProps')",
-                                    decompressionFunctionName + "(JSON.parse(" + viewPropsStr + "))"
-                            );
-                },
+                html -> html
+                        .replace("$pathPrefix", relPathPrefix)
+                        .replace("$componentName", viewComponentName)
+                        .replace("$decompressionFunction", decompressionFunctionName)
+                        .replace("'$viewProps'", viewPropsStr)
+                        .replace("src=\"", "src=\"" + relPathPrefix),
                 file
         );
     }
