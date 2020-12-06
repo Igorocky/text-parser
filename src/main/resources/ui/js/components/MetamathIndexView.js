@@ -11,6 +11,7 @@ const MetamathIndexView = ({elems}) => {
         SYMBOL_FILTER: 'SYMBOL_FILTER',
         IDS_TO_SHOW: 'IDS_TO_SHOW',
         FILTERED_ELEMS: 'FILTERED_ELEMS',
+        MATCHED_INDEXES: 'MATCHED_INDEXES',
     }
     const itemsPerPage = 20
 
@@ -29,18 +30,25 @@ const MetamathIndexView = ({elems}) => {
         const symbolFilter = getParamValue(s.SYMBOL_FILTER,'').trim()
         const symbolsToSearch = symbolFilter.split(/\s+/).filter(s => s.length)
 
-        const filteredElems = elems.filter(elem =>
-            (!labelFilter || elem.label.toLowerCase().indexOf(labelFilter) >= 0)
-            && (symbolsToSearch.length==0 || assertionMatchSymbols({assertion:elem, symbols:symbolsToSearch}))
-            && (typeFilter == '' || elem.type == typeFilter)
-        )
+        const filteredElems = elems.filter(elem => {
+            if (symbolsToSearch.length) {
+                elem.matchedIndexes = assertionMatchSymbols({assertion: elem, symbols: symbolsToSearch})
+            } else {
+                elem.matchedIndexes = null
+            }
+            return (!labelFilter || elem.label.toLowerCase().indexOf(labelFilter) >= 0)
+                && (symbolsToSearch.length == 0 || elem.matchedIndexes.find(ii => ii.length == symbolsToSearch.length))
+                && (typeFilter == '' || elem.type == typeFilter)
+        })
         const numOfPages = Math.ceil(filteredElems.length/itemsPerPage)
 
         const pageNumber = Math.max(
             1,
             Math.min(
                 numOfPages,
-                (prevState?.[s.TYPE_FILTER]!=typeFilter || prevState?.[s.LABEL_FILTER]!=labelFilter)
+                (prevState?.[s.TYPE_FILTER]!=typeFilter
+                    || prevState?.[s.LABEL_FILTER]!=labelFilter
+                    || prevState?.[s.SYMBOL_FILTER]!=symbolFilter)
                     ? 1
                     : getParamValue(s.PAGE_NUMBER,1)
             )
@@ -63,24 +71,26 @@ const MetamathIndexView = ({elems}) => {
     }
 
     function exprMatchSymbols({expr,symbols}) {
+        const result = []
         let si = 0
         for (let ei = 0; ei < expr.length && si < symbols.length; ei++) {
             if (expr[ei] === symbols[si]) {
                 si++
+                result.push(ei)
             }
         }
-        return si === symbols.length
+        return result.length == symbols.length ? result : []
     }
 
     function assertionMatchSymbols({assertion,symbols}) {
+        const result = []
         if (assertion.hypotheses?.length) {
             for (let i = 0; i < assertion.hypotheses.length; i++) {
-                if (exprMatchSymbols({expr:assertion.hypotheses[i],symbols})) {
-                    return true
-                }
+                result.push(exprMatchSymbols({expr:assertion.hypotheses[i],symbols}))
             }
         }
-        return exprMatchSymbols({expr:assertion.expression,symbols})
+        result.push(exprMatchSymbols({expr:assertion.expression,symbols}))
+        return result
     }
 
     function renderTable() {

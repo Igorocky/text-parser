@@ -16,12 +16,25 @@ function createVarColors({varTypes}) {
         .reduce((acc,[varName,color]) => ({...acc, [varName]:color}), {})
 }
 
-function applyColors({expr,varColors}) {
-    return RE.Fragment({},
-        expr
-            .map(str => varColors[str]?RE.span({style:{color:varColors[str], fontWeight:'bold'}}, str):str)
-            .flatMap(e => [e, ' '])
-    )
+function applyColors({expr,varColors,highlightIndexes}) {
+    return expr
+        .map((str,idx) => {
+            if (varColors[str] || highlightIndexes?.includes(idx)) {
+                return RE.span(
+                    {
+                        style: {
+                            color: varColors[str]??'black',
+                            fontWeight: 'bold',
+                            backgroundColor: highlightIndexes?.includes(idx)?'yellow':null
+                        }
+                    },
+                    str
+                )
+            } else {
+                return str
+            }
+        })
+        .flatMap(e => [e, ' '])
 }
 
 function renderColoredExpr({key,ex,expr,colors}) {
