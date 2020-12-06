@@ -7,6 +7,7 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
         NODES_TO_SHOW_MAP: 'NODES_TO_SHOW_MAP',
         HIDE_TYPES: 'HIDE_TYPES',
         EXPANDED_NODES: 'EXPANDED_NODES',
+        STEP_NUMBERS: 'STEP_NUMBERS',
     }
 
     const [state, setState] = useState(() => createNewState({}))
@@ -38,11 +39,14 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
 
         const expandedNodes = getParamValue(s.EXPANDED_NODES,null)
 
+        const stepNumbers = nodesToShow.reduce((acc, {id}, i) => ({...acc, [id]:i+1}), {})
+
         return createObj({
             [s.NODES_TO_SHOW]: nodesToShow,
             [s.NODES_TO_SHOW_MAP]: createNodesMap(nodesToShow),
             [s.HIDE_TYPES]: hideTypes,
-            [s.EXPANDED_NODES]: hasValue(expandedNodes)?expandedNodes:proof.map(n => false),
+            [s.EXPANDED_NODES]: hasValue(expandedNodes)?expandedNodes:proof.map(() => false),
+            [s.STEP_NUMBERS]: stepNumbers,
         })
     }
 
@@ -58,7 +62,17 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
     }
 
     function renderNodeExpression({node, varColors, hideTypes}) {
-        const expandButtonStyle = {marginRight: '3px', color: 'lightgrey', border: '1px solid', padding: '1px 2px 0px 2px', fontFamily:'courier', fontSize:'10px'}
+        const expandButtonStyle = {
+            color: 'lightgrey',
+            border: '1px solid',
+            marginRight: '3px',
+            paddingTop: '1px',
+            paddingRight: '3px',
+            paddingBottom: '0px',
+            paddingLeft: '2px',
+            fontFamily:'courier',
+            fontSize:'10px'
+        }
         if (hasNoValue(node.args)) {
             return RE.Fragment({},
                 RE.a({style:{...expandButtonStyle, opacity:0}},'+'),
@@ -74,7 +88,13 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
                             },
                         '-'
                     ),
-                    re(RuleProofNode, {node, allNodes: state[s.NODES_TO_SHOW_MAP], varColors, hideTypes})
+                    re(RuleProofNode, {
+                        node,
+                        allNodes: state[s.NODES_TO_SHOW_MAP],
+                        varColors,
+                        hideTypes,
+                        stepNumbers: state[s.STEP_NUMBERS]
+                    })
                 )
             } else {
                 return RE.Fragment({},
@@ -95,6 +115,7 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
         if (proof) {
             const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'5px'}
             const hideTypes = state[s.HIDE_TYPES]
+            const stepNumbers = state[s.STEP_NUMBERS]
             return RE.Fragment({},
                 RE.Container.row.left.center({},{},
                     RE.Button(
@@ -115,11 +136,11 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
                         state[s.NODES_TO_SHOW].map(node => {
                             const hyp = hideTypes ? node.args?.filter((a,i) => node.numOfTypes <= i) : node.args
                             const maxHypIdx = hyp?.length - 1
-                            return RE.tr({key: `node-${node.id}`, id: node.id, style: {}},
-                                RE.td({style: {...tableStyle}}, node.id),
+                            return RE.tr({key: `node-${node.id}`, id: node.id, style: {}, className: 'proof-row'},
+                                RE.td({style: {...tableStyle}}, stepNumbers[node.id]),
                                 RE.td({style: {...tableStyle}},
                                     hyp?.map((h,i) => RE.Fragment({},
-                                        RE.a({href:`#${h}`},h),
+                                        RE.a({href:`#${h}`},stepNumbers[h]),
                                         i < maxHypIdx ? ', ' : ''
                                     ))
                                 ),

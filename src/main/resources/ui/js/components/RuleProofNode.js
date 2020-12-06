@@ -1,6 +1,6 @@
 "use strict";
 
-const RuleProofNode = ({node,allNodes,varColors,hideTypes}) => {
+const RuleProofNode = ({node,allNodes,varColors,hideTypes,stepNumbers}) => {
 
     function renderArgAndParam({key,ex,centerX,argIdx,arg,param,subs,swapSubs,subsColors,varColors}) {
         const argStr = arg.join(' ')
@@ -45,7 +45,7 @@ const RuleProofNode = ({node,allNodes,varColors,hideTypes}) => {
                             location.hash = "#" + argIdx
                         }
                     },
-                    argIdx
+                    stepNumbers[argIdx]
                 ):null,
                 ...determineSubsIndexes({param:swapSubs?arg:param,subs,subsColors}).flatMap((idxMapping,idx) => renderMapping({
                     key:`${key}-mapping-${idx}`,
