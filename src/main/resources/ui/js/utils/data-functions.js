@@ -189,29 +189,38 @@ function decompressStackNodeDto(cDto, strings) {
         args: cDto.a,
         type: strings[cDto.t],
         label: strings[cDto.l],
-        params: cDto.p?.map(param => decompressListOfStrings(param, strings)),
+        params: cDto.p?.map(param => listOfIntsToListOfStrings(param, strings)),
         numOfTypes: cDto.n,
-        retVal: decompressListOfStrings(cDto.r, strings),
+        retVal: listOfIntsToListOfStrings(cDto.r, strings),
         substitution: hasNoValue(cDto.s)
             ?undefined
-            :Object.entries(cDto.s).reduce((acc,[k,v]) => ({...acc,[strings[k]]:decompressListOfStrings(v,strings)}), {}),
-        expr: decompressListOfStrings(cDto.e, strings)
+            :Object.entries(cDto.s).reduce((acc,[k,v]) => ({...acc,[strings[k]]:listOfIntsToListOfStrings(v,strings)}), {}),
+        expr: listOfIntsToListOfStrings(cDto.e, strings)
     }
 }
 
 function decompressIndexDto(cDto) {
     return {
-        elems: cDto.elems.map(e => decompressIndexElemDto(e, cDto.strings))
+        elems: cDto.elems.map(e => decompressIndexElemDto(e, cDto.strings.split(' ')))
     }
 }
 
-function decompressIndexElemDto(cDto, strings) {
+function decompressIndexElemDto(dtoStr, strings) {
+    const attrsStr = dtoStr.split('¦')
+    const cDto = {
+        i: parseInt(attrsStr[0]),
+        t: parseInt(attrsStr[1]),
+        l: attrsStr[2],
+        h: attrsStr[3].split(' ').map(decompressListOfInts),
+        e: decompressListOfInts(attrsStr[4]),
+        v: decompressMapOfInts(attrsStr[5]),
+    }
     return {
         id: cDto.i,
         type: strings[cDto.t],
         label: cDto.l,
-        hypotheses: cDto.h?.map(hyp => decompressListOfStrings(hyp, strings)),
-        expression: decompressListOfStrings(cDto.e, strings),
+        hypotheses: cDto.h?.map(hyp => listOfIntsToListOfStrings(hyp, strings)),
+        expression: listOfIntsToListOfStrings(cDto.e, strings),
         varTypes: decompressVarTypes(cDto.v,strings),
     }
 }
@@ -220,10 +229,43 @@ function decompressAssertionType(assertionType) {
     return assertionType==='T'?'Theorem':assertionType==='A'?'Axiom':assertionType
 }
 
-function decompressListOfStrings(listOfInts, strings) {
+function listOfIntsToListOfStrings(listOfInts, strings) {
     return hasNoValue(listOfInts) ? listOfInts : listOfInts.map(i => strings[i])
 }
 
 function decompressVarTypes(compressedVarTypes, strings) {
     return Object.entries(compressedVarTypes).reduce((acc,[k,v]) => ({...acc,[strings[k]]:strings[v]}), {})
+}
+
+function decompressMapOfInts(str) {
+    const integers = decompressListOfInts(str)
+    const numOfPairs = integers.length/2
+    if (numOfPairs*2 != integers.length) {
+        throw new Error('numOfPairs*2 != integers.length')
+    }
+    const result = {}
+    for (let i = 0; i < numOfPairs; i++) {
+        const idx = i*2
+        result[integers[idx]] = integers[idx+1]
+    }
+    return result
+}
+
+function decompressListOfInts(str) {
+    return str.split(/(?<=[#-P])/).map(strToInt)
+}
+
+function strToInt(str) {
+    let result = 0
+    let base = 1
+    for (let i = str.length-1; i >= 0; i--) {
+        result += base*charToInt(str,i)
+        base *= 46
+    }
+    return result
+}
+
+function charToInt(str, idx) {
+    const charCode = str.charCodeAt(idx);
+    return charCode >= 81 ? charCode - 81 : charCode - 35
 }

@@ -5,21 +5,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-import java.util.Map;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CompressedStackNodeDto {
+public class CompressedStackNodeDto2 {
     private Integer i;
-    private List<Integer> a;
+    private String a;
     private Integer t;
     private Integer l;
-    private List<List<Integer>> p;
+    private String p;
     private Integer n;
-    private List<Integer> r;
-    private Map<Integer,List<Integer>> s;
-    private List<Integer> e;
+    private String r;
+    private String s;
+    private String e;
 }

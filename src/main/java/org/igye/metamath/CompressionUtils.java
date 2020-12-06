@@ -1,7 +1,9 @@
 package org.igye.metamath;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -81,7 +83,18 @@ public class CompressionUtils {
         return buildStrMap(counts);
     }
 
-    public static CompressedIndexDto compress(IndexDto dto) {
+    public static CompressedIndexDto2 compress(IndexDto dto) {
+        return compress(compress1(dto));
+    }
+
+    private static CompressedIndexDto2 compress(CompressedIndexDto dto) {
+        return CompressedIndexDto2.builder()
+                .strings(StringUtils.join(dto.getStrings(), " "))
+                .elems(dto.getElems().stream().map(CompressionUtils::compress).collect(Collectors.toList()))
+                .build();
+    }
+
+    private static CompressedIndexDto compress1(IndexDto dto) {
         final Pair<List<String>, Map<String, Integer>> strings = buildStrMap(dto);
         Map<String, Integer> strMap = strings.getRight();
         return CompressedIndexDto.builder()
@@ -99,6 +112,60 @@ public class CompressionUtils {
                 .e(compress(dto.getExpression(),strMap))
                 .v(compress(dto.getVarTypes(),strMap))
                 .build();
+    }
+
+    private static String compress(CompressedIndexElemDto dto) {
+        List<String> res = new ArrayList<>();
+        res.add(dto.getI().toString());
+        res.add(dto.getT().toString());
+        res.add(dto.getL());
+        res.add(dto.getH().stream().map(CompressionUtils::compressListOfIntsToStr).collect(Collectors.joining(" ")));
+        res.add(compressListOfIntsToStr(dto.getE()));
+        res.add(compressMapOfIntsToStr(dto.getV()));
+        return compressListOfStrings(res);
+    }
+
+    protected static String intToStr(int i) {
+        StringBuilder sb = new StringBuilder();
+        if (i == 0) {
+            return "#";
+        } else {
+            int base = 46;
+            while (i > 0) {
+                sb.append((char) ((i % base) + (base == 46 ? 35 : 81)));
+                i /= base;
+                base *= base;
+            }
+            return sb.reverse().toString();
+        }
+    }
+
+    protected static String compressListOfStrings(List<String> strings) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < strings.size(); i++) {
+            if (i != 0) {
+                sb.append((char)166);
+            }
+            sb.append(strings.get(i));
+        }
+        return sb.toString();
+    }
+
+    private static String compressListOfIntsToStr(List<Integer> ints) {
+        StringBuilder sb = new StringBuilder();
+        for (Integer i : ints) {
+            sb.append(intToStr(i));
+        }
+        return sb.toString();
+    }
+
+    private static String compressMapOfIntsToStr(Map<Integer,Integer> map) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+            sb.append(intToStr(entry.getKey()));
+            sb.append(intToStr(entry.getValue()));
+        }
+        return sb.toString();
     }
 
     private static List<Integer> compress(List<String> list, Map<String, Integer> strMap) {
@@ -156,8 +223,9 @@ public class CompressionUtils {
     }
 
     private static void updateCounts(Map<String, Integer> counts, String str) {
-        final Integer cnt = counts.getOrDefault(str, 0);
-        counts.put(str, cnt+1);
+        if (str != null) {
+            counts.put(str, counts.getOrDefault(str, 0) + 1);
+        }
     }
 
     private static Pair<List<String>, Map<String, Integer>> buildStrMap(Map<String, Integer> counts) {

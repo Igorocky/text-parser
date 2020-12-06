@@ -13,8 +13,8 @@ import java.util.Map;
 @NoArgsConstructor
 @Builder
 public class CompressedIndexElemDto {
-    private int i;
-    private int t;
+    private Integer i;
+    private Integer t;
     private String l;
     private List<List<Integer>> h;
     private List<Integer> e;

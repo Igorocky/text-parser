@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.igye.common.DebugTimer;
 import org.igye.common.Utils;
 import org.igye.textparser.PositionInText;
@@ -12,7 +11,6 @@ import org.igye.textparser.PositionInText;
 import java.io.File;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,21 +74,22 @@ public class MetamathTools {
         final ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
         File dataDir = new File(dirToSaveTo, "data");
         AtomicInteger filesWrittenAtomic = new AtomicInteger();
-        AtomicReference<Instant> lastWritingTime = new AtomicReference<>(Instant.now());
         final Map<PositionInText,IndexElemDto> indexElems = new ConcurrentSkipListMap<>();
+        AtomicReference<Exception> errorOccurred = new AtomicReference<>(null);
         for (int i = 0; i < numOfThreads; i++) {
             executorService.submit(() -> {
                 ListStatement assertion = queue.poll();
-                while (assertion != null) {
-                    ListStatement finalAssertion = assertion;
-                    AssertionDto dto = DebugTimer.call("visualizeAssertion", () -> visualizeAssertion(finalAssertion));
+                while (assertion != null && errorOccurred.get() == null) {
                     try {
+                        ListStatement finalAssertion = assertion;
+                        AssertionDto dto = DebugTimer.call("visualizeAssertion", () -> visualizeAssertion(finalAssertion));
                         DebugTimer.run("createAssertionHtmlFile", () -> createAssertionHtmlFile(dto, dataDir, createRelPathToSaveTo(dto.getName())));
+                        indexElems.put(assertion.getBegin(), createIndexElemDto(dto));
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                         e.printStackTrace();
+                        errorOccurred.set(e);
                     }
-                    indexElems.put(assertion.getBegin(), createIndexElemDto(dto));
                     assertion = queue.poll();
                     int filesWritten = filesWrittenAtomic.incrementAndGet();
                     final double pct = (filesWritten * 1.0 / assertions.size()) * 100;
@@ -98,13 +97,15 @@ public class MetamathTools {
                             + new BigDecimal(pct).setScale(1, BigDecimal.ROUND_HALF_UP) + "%" +
                             " (" + filesWritten + " of " + assertions.size() + "). "
                     );
-                    lastWritingTime.set(Instant.now());
                 }
             });
         }
 
         executorService.shutdown();
         executorService.awaitTermination(1, TimeUnit.DAYS);
+        if (errorOccurred.get() != null) {
+            throw errorOccurred.get();
+        }
 
         System.out.println("Writing index...");
         createHtmlFile("",
@@ -444,7 +445,7 @@ public class MetamathTools {
         final String viewPropsStr = Utils.toJson(Utils.toJson(viewProps));
         final String decompressionFunctionName =
                 viewProps instanceof CompressedAssertionDto ? "decompressAssertionDto"
-                : viewProps instanceof CompressedIndexDto ? "decompressIndexDto"
+                : viewProps instanceof CompressedIndexDto2 ? "decompressIndexDto"
                 : null;
         if (decompressionFunctionName == null) {
             throw new MetamathException("decompressionFunctionName == null");
