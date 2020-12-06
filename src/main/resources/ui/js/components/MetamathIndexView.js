@@ -8,6 +8,7 @@ const MetamathIndexView = ({elems}) => {
         POSSIBLE_TYPES: 'POSSIBLE_TYPES',
         TYPE_FILTER: 'TYPE_FILTER',
         LABEL_FILTER: 'LABEL_FILTER',
+        SYMBOL_FILTER: 'SYMBOL_FILTER',
         IDS_TO_SHOW: 'IDS_TO_SHOW',
         FILTERED_ELEMS: 'FILTERED_ELEMS',
     }
@@ -15,6 +16,7 @@ const MetamathIndexView = ({elems}) => {
 
     const [state, setState] = useState(() => createNewState({}))
     const [labelFilter, setLabelFilter] = useState('')
+    const [symbolFilter, setSymbolFilter] = useState('')
 
     function createNewState({prevState, params}) {
 
@@ -24,9 +26,12 @@ const MetamathIndexView = ({elems}) => {
 
         const typeFilter = getParamValue(s.TYPE_FILTER,'')
         const labelFilter = getParamValue(s.LABEL_FILTER,'').trim().toLowerCase()
+        const symbolFilter = getParamValue(s.SYMBOL_FILTER,'').trim()
+        const symbolsToSearch = symbolFilter.split(/\s+/).filter(s => s.length)
 
         const filteredElems = elems.filter(elem =>
             (!labelFilter || elem.label.toLowerCase().indexOf(labelFilter) >= 0)
+            && (symbolsToSearch.length==0 || assertionMatchSymbols({assertion:elem, symbols:symbolsToSearch}))
             && (typeFilter == '' || elem.type == typeFilter)
         )
         const numOfPages = Math.ceil(filteredElems.length/itemsPerPage)
@@ -51,9 +56,31 @@ const MetamathIndexView = ({elems}) => {
             [s.POSSIBLE_TYPES]: ['', ...new Set(elems.map(e => e.type))],
             [s.TYPE_FILTER]: typeFilter,
             [s.LABEL_FILTER]: labelFilter,
+            [s.SYMBOL_FILTER]: symbolFilter,
             [s.IDS_TO_SHOW]: idsToShow,
             [s.FILTERED_ELEMS]: filteredElems,
         })
+    }
+
+    function exprMatchSymbols({expr,symbols}) {
+        let si = 0
+        for (let ei = 0; ei < expr.length && si < symbols.length; ei++) {
+            if (expr[ei] === symbols[si]) {
+                si++
+            }
+        }
+        return si === symbols.length
+    }
+
+    function assertionMatchSymbols({assertion,symbols}) {
+        if (assertion.hypotheses?.length) {
+            for (let i = 0; i < assertion.hypotheses.length; i++) {
+                if (exprMatchSymbols({expr:assertion.hypotheses[i],symbols})) {
+                    return true
+                }
+            }
+        }
+        return exprMatchSymbols({expr:assertion.expression,symbols})
     }
 
     function renderTable() {
@@ -104,6 +131,18 @@ const MetamathIndexView = ({elems}) => {
                         : null,
                     onChange: event => setLabelFilter(event.target.value),
                     value: labelFilter
+                }
+            ),
+            RE.TextField(
+                {
+                    variant: 'outlined', label: 'Symbols',
+                    style: {width: 300},
+                    size: 'small',
+                    onKeyDown: event => event.nativeEvent.keyCode == 13
+                        ? setState(prevState => createNewState({prevState, params:{[s.SYMBOL_FILTER]:symbolFilter}}))
+                        : null,
+                    onChange: event => setSymbolFilter(event.target.value),
+                    value: symbolFilter
                 }
             ),
             renderPagination()
