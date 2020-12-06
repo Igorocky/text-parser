@@ -6,6 +6,7 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
         NODES_TO_SHOW: 'NODES_TO_SHOW',
         NODES_TO_SHOW_MAP: 'NODES_TO_SHOW_MAP',
         HIDE_TYPES: 'HIDE_TYPES',
+        EXPANDED_NODES: 'EXPANDED_NODES',
     }
 
     const [state, setState] = useState(() => createNewState({}))
@@ -34,14 +35,61 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
         } else {
             nodesToShow = proof
         }
+
+        const expandedNodes = getParamValue(s.EXPANDED_NODES,null)
+
         return createObj({
             [s.NODES_TO_SHOW]: nodesToShow,
             [s.NODES_TO_SHOW_MAP]: createNodesMap(nodesToShow),
             [s.HIDE_TYPES]: hideTypes,
+            [s.EXPANDED_NODES]: hasValue(expandedNodes)?expandedNodes:proof.map(n => false),
         })
     }
 
     const varColors = createVarColors({varTypes})
+
+    function createExpandHandler(node) {
+        return () => setState(
+            prevState => createNewState({
+                prevState,
+                params: {[s.EXPANDED_NODES]:modifyAtIdx(prevState[s.EXPANDED_NODES],node.id-1,e=>!e)}
+            })
+        )
+    }
+
+    function renderNodeExpression({node, varColors, hideTypes}) {
+        const expandButtonStyle = {marginRight: '3px', color: 'lightgrey', border: '1px solid', padding: '1px 2px 0px 2px', fontFamily:'courier', fontSize:'10px'}
+        if (hasNoValue(node.args)) {
+            return RE.Fragment({},
+                RE.a({style:{...expandButtonStyle, opacity:0}},'+'),
+                re(ConstProofNode, {node, varColors})
+            )
+        } else {
+            if (state[s.EXPANDED_NODES][node.id-1]) {
+                return RE.Fragment({},
+                    RE.a(
+                        {
+                            style:{...expandButtonStyle, cursor:'pointer'},
+                            onClick: createExpandHandler(node)
+                            },
+                        '-'
+                    ),
+                    re(RuleProofNode, {node, allNodes: state[s.NODES_TO_SHOW_MAP], varColors, hideTypes})
+                )
+            } else {
+                return RE.Fragment({},
+                    RE.a(
+                        {
+                            style:{...expandButtonStyle, cursor:'pointer'},
+                            onClick: createExpandHandler(node)
+                            },
+                        '+'
+                    ),
+                    re(ConstProofNode, {node, varColors})
+                )
+            }
+        }
+    }
 
     function renderProof() {
         if (proof) {
@@ -81,9 +129,7 @@ const MetamathAssertionView = ({type, name, description, varTypes, assertion, pr
                                         : ((node.type === 'E' ? 'E ' : '') + node.label)
                                 ),
                                 RE.td({style: {...tableStyle/*, overflow:'auto'*/}},
-                                    hasValue(node.args)
-                                        ? re(RuleProofNode, {parentLabel: name, node, allNodes: state[s.NODES_TO_SHOW_MAP], varColors, hideTypes})
-                                        : re(ConstProofNode, {node, varColors})
+                                    renderNodeExpression({node, varColors, hideTypes})
                                 ),
                             )
                         })
