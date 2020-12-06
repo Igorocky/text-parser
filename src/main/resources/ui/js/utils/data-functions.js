@@ -162,12 +162,6 @@ function getRelPath({label}) {
     }
 }
 
-function getRelPathToAssertion({thisLabel, otherLabel}) {
-    const thisRelPath = getRelPath({label:thisLabel}).map(replaceDots)
-    const otherRelPath = [...getRelPath({label:otherLabel}).map(replaceDots), replaceDots(otherLabel) + '.html']
-    return ints(1,thisRelPath.length).map(i => "..").join('/') + '/' + otherRelPath.join('/')
-}
-
 function createUrlOfAssertion(label) {
     return pathPrefix + 'data/' + getRelPath({label}).map(replaceDots).join('/') + '/' + replaceDots(label) + '.html'
 }
@@ -212,7 +206,7 @@ function decompressIndexElemDto(dtoStr, strings) {
         i: parseInt(attrsStr[0]),
         t: parseInt(attrsStr[1]),
         l: attrsStr[2],
-        h: attrsStr[3].split(' ').map(decompressListOfInts),
+        h: (attrsStr[3]==='')?[]:attrsStr[3].split(' ').map(decompressListOfInts),
         e: decompressListOfInts(attrsStr[4]),
         v: decompressMapOfInts(attrsStr[5]),
     }
