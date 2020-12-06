@@ -292,8 +292,10 @@ public class MetamathTools {
     protected static Statement determinePrevStatement(Statement statement) {
         if (statement.getPrevStatement() != null) {
             return statement.getPrevStatement();
+        } else if (statement.getCurrBlock() == null) {
+            return null;
         } else {
-            return statement.getCurrBlock() != null ? statement.getCurrBlock().getPrevStatement() : null;
+            return determinePrevStatement(statement.getCurrBlock());
         }
     }
 

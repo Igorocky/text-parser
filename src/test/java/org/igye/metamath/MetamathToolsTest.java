@@ -95,6 +95,10 @@ public class MetamathToolsTest {
         final Instant verifyingStart = Instant.now();
         System.out.println(verifyingStart + " verifying");
         //when
+//        for (int i = 29645; i < allTheorems.size(); i++) {
+//            System.out.println(i);
+//            MetamathTools.verifyProof(allTheorems.get(i));
+//        }
         allTheorems.forEach(MetamathTools::verifyProof);
         final Instant verifyingEnd = Instant.now();
         System.out.println(verifyingEnd + " verification completed in " + getDurationStr(verifyingStart, verifyingEnd));
