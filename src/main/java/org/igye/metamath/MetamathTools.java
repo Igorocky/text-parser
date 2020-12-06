@@ -133,8 +133,8 @@ public class MetamathTools {
         return IndexElemDto.builder()
                 .type(assertionDto.getType().substring(0,1))
                 .label(assertionDto.getName())
-                .hypotheses(tail(assertionDto.getAssertion().getParams(), assertionDto.getAssertion().getNumOfTypes()))
-                .expression(assertionDto.getAssertion().getRetVal())
+                .hypotheses(assertionDto.getParams())
+                .expression(assertionDto.getRetVal())
                 .varTypes(assertionDto.getVarTypes())
                 .build();
     }
@@ -144,15 +144,13 @@ public class MetamathTools {
         assertionDto.type(getTypeStr(assertion.getType()));
         assertionDto.name(assertion.getLabel());
         assertionDto.description(assertion.getDescription());
-        assertionDto.assertion(
-                StackNodeDto.builder()
-                        .params(
-                                assertion.getFrame().getHypotheses().stream()
-                                        .map(ListStatement::getSymbols)
-                                        .collect(Collectors.toList())
-                        )
-                        .retVal(assertion.getFrame().getAssertion().getSymbols())
-                        .build()
+        assertionDto.params(
+                assertion.getFrame().getHypotheses().stream()
+                        .map(ListStatement::getSymbols)
+                        .collect(Collectors.toList())
+        );
+        assertionDto.retVal(
+                assertion.getFrame().getAssertion().getSymbols()
         );
 
         final HashMap<String, String> varTypes = new HashMap<>();

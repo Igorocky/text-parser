@@ -17,6 +17,7 @@ public class CompressedAssertionDto2 {
     private String n;
     private String d;
     private String v;
-    private CompressedStackNodeDto2 a;
-    private List<CompressedStackNodeDto2> p;
+    private String pa;
+    private String r;
+    private List<String> p;
 }

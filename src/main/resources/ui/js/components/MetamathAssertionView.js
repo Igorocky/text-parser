@@ -1,6 +1,6 @@
 "use strict";
 
-function MetamathAssertionView({type, name, description, varTypes, assertion, proof}) {
+function MetamathAssertionView({type, name, description, varTypes, params, retVal, proof}) {
 
     const s = {
         NODES_TO_SHOW: 'NODES_TO_SHOW',
@@ -166,7 +166,7 @@ function MetamathAssertionView({type, name, description, varTypes, assertion, pr
             RE.a({href:`http://us.metamath.org/mpeuni/${name}.html`, style:{color:'rgb(0, 102, 51)', textDecoration:'none'}},name),
         ),
         RE.div({}, description),
-        RE.div({}, re(Assertion,{...assertion,varColors})),
+        RE.div({}, re(Assertion,{params,retVal,varColors})),
         renderProof()
     )
 }

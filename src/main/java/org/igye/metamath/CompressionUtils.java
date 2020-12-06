@@ -23,7 +23,8 @@ public class CompressionUtils {
                 .n(dto.getName())
                 .d(dto.getDescription())
                 .v(compress(dto.getVarTypes(), strMap))
-                .a(compress(dto.getAssertion(), strMap))
+                .pa(compress2(dto.getParams(), strMap))
+                .r(compress(dto.getRetVal(), strMap))
                 .p(dto.getProof()==null?null:dto.getProof().stream().map(p -> compress(p, strMap)).collect(Collectors.toList()))
                 .build();
     }
@@ -34,7 +35,8 @@ public class CompressionUtils {
             updateCounts(counts, entry.getKey());
             updateCounts(counts, entry.getValue());
         }
-        updateCounts(counts, dto.getAssertion());
+        updateCounts2(counts, dto.getParams());
+        updateCounts(counts, dto.getRetVal());
         if (dto.getProof() != null) {
             for (StackNodeDto proof : dto.getProof()) {
                 updateCounts(counts, proof);

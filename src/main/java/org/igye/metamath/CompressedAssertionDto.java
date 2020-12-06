@@ -18,6 +18,7 @@ public class CompressedAssertionDto {
     private String n;
     private String d;
     private Map<Integer,Integer> v;
-    private CompressedStackNodeDto a;
+    private List<List<Integer>> pa;
+    private List<Integer> r;
     private List<CompressedStackNodeDto> p;
 }

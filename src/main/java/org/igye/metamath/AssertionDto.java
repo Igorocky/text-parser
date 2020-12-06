@@ -17,6 +17,7 @@ public class AssertionDto {
     private String name;
     private String description;
     private Map<String,String> varTypes;
-    private StackNodeDto assertion;
+    private List<List<String>> params;
+    private List<String> retVal;
     private List<StackNodeDto> proof;
 }

@@ -178,7 +178,8 @@ function decompressAssertionDto(cDto) {
         name: cDto.n,
         description: cDto.d,
         varTypes: decompressVarTypes(cDto.v,cDto.s),
-        assertion: decompressStackNodeDto(cDto.a, cDto.s),
+        params: cDto.pa?.map(param => listOfIntsToListOfStrings(param, cDto.s)),
+        retVal: listOfIntsToListOfStrings(cDto.r, cDto.s),
         proof: cDto.p?.map(n => decompressStackNodeDto(n, cDto.s))
     }
 }
