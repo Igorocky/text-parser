@@ -13,8 +13,24 @@ import java.util.stream.Collectors;
 public class CompressionUtils {
     private static final Comparator<Map.Entry<String, Integer>> COMPARATOR = Comparator.comparing(Map.Entry::getValue);
 
+    public static CompressedAssertionDto2 compress(AssertionDto assertionDto) {
+        return compress(compress1(assertionDto));
+    }
 
-    public static CompressedAssertionDto compress(AssertionDto dto) {
+    private static CompressedAssertionDto2 compress(CompressedAssertionDto dto) {
+        return CompressedAssertionDto2.builder()
+                .s(StringUtils.join(dto.getS(), " "))
+                .t(dto.getT())
+                .n(dto.getN())
+                .d(dto.getD())
+                .v(compressMapOfIntsToStr(dto.getV()))
+                .pa(compressListOfListOfInts(dto.getPa()))
+                .r(compressListOfIntsToStr(dto.getR()))
+                .p(dto.getP() == null ? null : dto.getP().stream().map(CompressionUtils::compress).collect(Collectors.toList()))
+                .build();
+    }
+
+    private static CompressedAssertionDto compress1(AssertionDto dto) {
         Pair<List<String>, Map<String, Integer>> strings = buildStrMap(dto);
         Map<String, Integer> strMap = strings.getRight();
         return CompressedAssertionDto.builder()
@@ -74,6 +90,20 @@ public class CompressionUtils {
                 .build();
     }
 
+    private static String compress(CompressedStackNodeDto dto) {
+        final ArrayList<String> result = new ArrayList<>();
+        result.add(dto.getI().toString());
+        result.add(dto.getA() == null ? "" : compressListOfIntsToStr(dto.getA()));
+        result.add(dto.getT().toString());
+        result.add(dto.getL().toString());
+        result.add(dto.getP() == null ? "" : compressListOfListOfInts(dto.getP()));
+        result.add(dto.getN().toString());
+        result.add(dto.getR() == null ? "" : compressListOfIntsToStr(dto.getR()));
+        result.add(dto.getS() == null ? "" : compressMapOfIntListToStr(dto.getS()));
+        result.add(compressListOfIntsToStr(dto.getE()));
+        return compressListOfStrings(result);
+    }
+
     private static Pair<List<String>, Map<String, Integer>> buildStrMap(IndexDto dto) {
         Map<String, Integer> counts = new HashMap<>();
         for (IndexElemDto indexElemDto : dto.getElems()) {
@@ -121,10 +151,14 @@ public class CompressionUtils {
         res.add(dto.getI().toString());
         res.add(dto.getT().toString());
         res.add(dto.getL());
-        res.add(dto.getH().stream().map(CompressionUtils::compressListOfIntsToStr).collect(Collectors.joining(" ")));
+        res.add(compressListOfListOfInts(dto.getH()));
         res.add(compressListOfIntsToStr(dto.getE()));
         res.add(compressMapOfIntsToStr(dto.getV()));
         return compressListOfStrings(res);
+    }
+
+    private static String compressListOfListOfInts(List<List<Integer>> list) {
+        return list.stream().map(CompressionUtils::compressListOfIntsToStr).collect(Collectors.joining(" "));
     }
 
     protected static String intToStr(int i) {
@@ -168,6 +202,17 @@ public class CompressionUtils {
             sb.append(intToStr(entry.getValue()));
         }
         return sb.toString();
+    }
+
+    private static String compressMapOfIntListToStr(Map<Integer,List<Integer>> map) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Integer,List<Integer>> entry : map.entrySet()) {
+            sb.append(intToStr(entry.getKey()));
+            sb.append(" ");
+            sb.append(compressListOfIntsToStr(entry.getValue()));
+            sb.append(" ");
+        }
+        return sb.toString().trim();
     }
 
     private static List<Integer> compress(List<String> list, Map<String, Integer> strMap) {

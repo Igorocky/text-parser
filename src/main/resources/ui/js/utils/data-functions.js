@@ -167,18 +167,31 @@ function createUrlOfAssertion(label) {
 }
 
 function decompressAssertionDto(cDto) {
+    const strings = cDto.s.split(' ')
     return {
         type: cDto.t,
         name: cDto.n,
         description: cDto.d,
-        varTypes: decompressVarTypes(cDto.v,cDto.s),
-        params: cDto.pa?.map(param => listOfIntsToListOfStrings(param, cDto.s)),
-        retVal: listOfIntsToListOfStrings(cDto.r, cDto.s),
-        proof: cDto.p?.map(n => decompressStackNodeDto(n, cDto.s))
+        varTypes: decompressVarTypes(decompressMapOfInts(cDto.v),strings),
+        params: (cDto.pa==='')?[]:cDto.pa?.split(' ')?.map(param => listOfIntsToListOfStrings(decompressListOfInts(param), strings)),
+        retVal: listOfIntsToListOfStrings(decompressListOfInts(cDto.r), strings),
+        proof: cDto.p?.map(n => decompressStackNodeDto(n, strings))
     }
 }
 
-function decompressStackNodeDto(cDto, strings) {
+function decompressStackNodeDto(dtoStr, strings) {
+    const attrsStr = dtoStr.split('¦')
+    const cDto = {
+        i: parseInt(attrsStr[0]),
+        a: decompressListOfInts(attrsStr[1]),
+        t: parseInt(attrsStr[2]),
+        l: parseInt(attrsStr[3]),
+        p: (attrsStr[4]==='')?[]:attrsStr[4].split(' ').map(decompressListOfInts),
+        n: parseInt(attrsStr[5]),
+        r: decompressListOfInts(attrsStr[6]),
+        s: decompressMapOfIntToList(attrsStr[7]),
+        e: decompressListOfInts(attrsStr[8]),
+    }
     return {
         id: cDto.i,
         args: cDto.a,
@@ -232,9 +245,27 @@ function decompressVarTypes(compressedVarTypes, strings) {
     return Object.entries(compressedVarTypes).reduce((acc,[k,v]) => ({...acc,[strings[k]]:strings[v]}), {})
 }
 
+function decompressMapOfIntToList(str) {
+    if (str === '') {
+        return {}
+    } else {
+        const keyAndValues = str.split(' ')
+        const numOfPairs = Math.floor(keyAndValues.length/2)
+        if (numOfPairs*2 != keyAndValues.length) {
+            throw new Error('numOfPairs*2 != keyAndValues.length')
+        }
+        const result = {}
+        for (let i = 0; i < numOfPairs; i++) {
+            const idx = i*2
+            result[strToInt(keyAndValues[idx])] = decompressListOfInts(keyAndValues[idx+1])
+        }
+        return result
+    }
+}
+
 function decompressMapOfInts(str) {
     const integers = decompressListOfInts(str)
-    const numOfPairs = integers.length/2
+    const numOfPairs = Math.floor(integers.length/2)
     if (numOfPairs*2 != integers.length) {
         throw new Error('numOfPairs*2 != integers.length')
     }
@@ -247,7 +278,11 @@ function decompressMapOfInts(str) {
 }
 
 function decompressListOfInts(str) {
-    return str.split(/(?<=[#-P])/).map(strToInt)
+    if (str === '') {
+        return null
+    } else {
+        return str.split(/(?<=[#-P])/).map(strToInt)
+    }
 }
 
 function strToInt(str) {

@@ -442,7 +442,7 @@ public class MetamathTools {
     private static void createHtmlFile(String relPathPrefix, String viewComponentName, Object viewProps, File file) {
         final String viewPropsStr = Utils.toJson(Utils.toJson(viewProps));
         final String decompressionFunctionName =
-                viewProps instanceof CompressedAssertionDto ? "decompressAssertionDto"
+                viewProps instanceof CompressedAssertionDto2 ? "decompressAssertionDto"
                 : viewProps instanceof CompressedIndexDto2 ? "decompressIndexDto"
                 : null;
         if (decompressionFunctionName == null) {
