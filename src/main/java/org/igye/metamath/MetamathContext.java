@@ -61,14 +61,18 @@ public class MetamathContext {
 
     public SymbolsInfo getSymbolsInfo() {
         if (symbolsInfo == null) {
-            SymbolsInfo symbolsInfoTmp = new SymbolsInfo();
-            collectSymbolsInfo(symbolsInfoTmp);
-            symbolsInfo = symbolsInfoTmp;
+            synchronized (this) {
+                if (symbolsInfo == null) {
+                    SymbolsInfo symbolsInfoTmp = new SymbolsInfo();
+                    collectSymbolsInfo(symbolsInfoTmp);
+                    symbolsInfo = symbolsInfoTmp;
+                }
+            }
         }
         return symbolsInfo;
     }
 
-    private void collectSymbolsInfo(SymbolsInfo symbolsInfo) {
+    private synchronized void collectSymbolsInfo(SymbolsInfo symbolsInfo) {
         if (this.symbolsInfo != null) {
             if (this.symbolsInfo.getConstants().stream().anyMatch(symbolsInfo.getConstants()::contains)) {
                 throw new MetamathException("A constant was redefined.");
