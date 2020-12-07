@@ -70,6 +70,17 @@ function MetamathIndexView({elems}) {
         })
     }
 
+    function applyFilters({newTypeFilter}) {
+        setState(prevState => createNewState({
+            prevState,
+            params:{
+                [s.TYPE_FILTER]:newTypeFilter,
+                [s.LABEL_FILTER]:labelFilter,
+                [s.SYMBOL_FILTER]:symbolFilter,
+            }
+        }))
+    }
+
     function exprMatchSymbols({expr,symbols}) {
         const result = []
         let si = 0
@@ -121,7 +132,7 @@ function MetamathIndexView({elems}) {
                         onChange: event => {
                             const newTypeFilter = event.target.value
                             if (state[s.TYPE_FILTER] !== newTypeFilter) {
-                                setState(prevState => createNewState({prevState, params:{[s.TYPE_FILTER]:newTypeFilter}}))
+                                applyFilters({newTypeFilter})
                             }
                         },
                         style: {width: 150}
@@ -137,7 +148,7 @@ function MetamathIndexView({elems}) {
                     style: {width: 300},
                     size: 'small',
                     onKeyDown: event => event.nativeEvent.keyCode == 13
-                        ? setState(prevState => createNewState({prevState, params:{[s.LABEL_FILTER]:labelFilter}}))
+                        ? applyFilters({})
                         : null,
                     onChange: event => setLabelFilter(event.target.value),
                     value: labelFilter
@@ -149,7 +160,7 @@ function MetamathIndexView({elems}) {
                     style: {width: 300},
                     size: 'small',
                     onKeyDown: event => event.nativeEvent.keyCode == 13
-                        ? setState(prevState => createNewState({prevState, params:{[s.SYMBOL_FILTER]:symbolFilter}}))
+                        ? applyFilters({})
                         : null,
                     onChange: event => setSymbolFilter(event.target.value),
                     value: symbolFilter
