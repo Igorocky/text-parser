@@ -168,9 +168,8 @@ public class CompressionUtils {
         } else {
             int base = 46;
             while (i > 0) {
-                sb.append((char) ((i % base) + (base == 46 ? 35 : 81)));
+                sb.append((char) ((i % base) + (sb.length() == 0 ? 35 : 81)));
                 i /= base;
-                base *= base;
             }
             return sb.reverse().toString();
         }
