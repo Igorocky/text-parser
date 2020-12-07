@@ -7,7 +7,7 @@ const fontSize = (SCALE*2)
 const fontSizePx = fontSize+'px'
 const charLength = fontSize*0.6
 const charHeight = charLength*0.85
-const subsAvailableColors = ['green', 'orange', 'cyan', 'pink', 'brown', 'lawngreen', 'olive', 'blue', 'red', 'magenta']
+const subsAvailableColors = ['green', 'orange', '#03a9f4', 'pink', 'brown', 'lawngreen', 'olive', 'blue', 'red', 'magenta']
 const typeColors = {wff:'blue',term:'black',setvar:'red',['class']:'magenta'}
 
 function createVarColors({varTypes}) {
