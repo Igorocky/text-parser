@@ -264,17 +264,21 @@ function decompressMapOfIntToList(str) {
 }
 
 function decompressMapOfInts(str) {
-    const integers = decompressListOfInts(str)
-    const numOfPairs = Math.floor(integers.length/2)
-    if (numOfPairs*2 != integers.length) {
-        throw new Error('numOfPairs*2 != integers.length')
+    if (str === '') {
+        return {}
+    } else {
+        const integers = decompressListOfInts(str)
+        const numOfPairs = Math.floor(integers.length/2)
+        if (numOfPairs*2 != integers.length) {
+            throw new Error('numOfPairs*2 != integers.length')
+        }
+        const result = {}
+        for (let i = 0; i < numOfPairs; i++) {
+            const idx = i*2
+            result[integers[idx]] = integers[idx+1]
+        }
+        return result
     }
-    const result = {}
-    for (let i = 0; i < numOfPairs; i++) {
-        const idx = i*2
-        result[integers[idx]] = integers[idx+1]
-    }
-    return result
 }
 
 function decompressListOfInts(str) {
