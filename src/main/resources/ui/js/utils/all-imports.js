@@ -22,10 +22,10 @@ function includeScripts({pathPrefix, scripts, onLoad}) {
 }
 
 includeStyle({
-    pathPrefix,
+    pathPrefix: version + pathPrefix,
     path: 'css/styles.css',
     onLoad: () => includeScripts({
-        pathPrefix,
+        pathPrefix: version + pathPrefix,
         scripts: [
             'js/lib/react.production-16.8.6.min.js',
             'js/lib/react-dom.production-16.8.6.min.js',

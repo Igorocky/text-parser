@@ -10,6 +10,8 @@ public class ProofExplorerGenerator {
 
     private static final int numOfThreads = 4;
 
+    private static final String version = "v2";
+
     private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer";
 //    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer-full";
 
@@ -25,6 +27,7 @@ public class ProofExplorerGenerator {
                     database.getAllAssertions().stream()
 //                        .limit(1000)
                             .collect(Collectors.toList()),
+                    version,
                     numOfThreads,
                     pathToProofExplorerDirectory
             );

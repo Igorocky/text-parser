@@ -44,35 +44,36 @@ public class MetamathTools {
 
     @SneakyThrows
     public static void generateProofExplorer(
-            List<ListStatement> assertions, int numOfThreads, String pathToDirToSaveTo) {
+            List<ListStatement> assertions, String version, int numOfThreads, String pathToDirToSaveTo) {
         final Instant start = Instant.now();
         System.out.println("Writing common files...");
         File dirToSaveTo = new File(pathToDirToSaveTo);
         if (dirToSaveTo.exists()) {
             throw new MetamathException("The directory already exists: " + dirToSaveTo.getAbsolutePath());
         }
-        dirToSaveTo.mkdirs();
-        copyUiFileToDir("/ui/css/styles.css", dirToSaveTo);
-        copyUiFileToDir("/ui/js/lib/react.production-16.8.6.min.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/lib/react-dom.production-16.8.6.min.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/lib/material-ui.production-4.11.0.min.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/utils/react-imports.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/utils/data-functions.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/utils/svg-functions.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/utils/rendering-functions.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/utils/all-imports.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/components/Pagination.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/components/Assertion.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/components/ConstProofNode.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/components/RuleProofNode.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/components/MetamathAssertionView.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/components/MetamathIndexTable.js", dirToSaveTo);
-        copyUiFileToDir("/ui/js/components/MetamathIndexView.js", dirToSaveTo);
+        final File versionDir = new File(dirToSaveTo, version);
+        versionDir.mkdirs();
+        copyUiFileToDir("/ui/css/styles.css", versionDir);
+        copyUiFileToDir("/ui/js/lib/react.production-16.8.6.min.js", versionDir);
+        copyUiFileToDir("/ui/js/lib/react-dom.production-16.8.6.min.js", versionDir);
+        copyUiFileToDir("/ui/js/lib/material-ui.production-4.11.0.min.js", versionDir);
+        copyUiFileToDir("/ui/js/utils/react-imports.js", versionDir);
+        copyUiFileToDir("/ui/js/utils/data-functions.js", versionDir);
+        copyUiFileToDir("/ui/js/utils/svg-functions.js", versionDir);
+        copyUiFileToDir("/ui/js/utils/rendering-functions.js", versionDir);
+        copyUiFileToDir("/ui/js/utils/all-imports.js", versionDir);
+        copyUiFileToDir("/ui/js/components/Pagination.js", versionDir);
+        copyUiFileToDir("/ui/js/components/Assertion.js", versionDir);
+        copyUiFileToDir("/ui/js/components/ConstProofNode.js", versionDir);
+        copyUiFileToDir("/ui/js/components/RuleProofNode.js", versionDir);
+        copyUiFileToDir("/ui/js/components/MetamathAssertionView.js", versionDir);
+        copyUiFileToDir("/ui/js/components/MetamathIndexTable.js", versionDir);
+        copyUiFileToDir("/ui/js/components/MetamathIndexView.js", versionDir);
 
         Queue<ListStatement> queue = new ConcurrentLinkedQueue<>(assertions);
 
         final ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
-        File dataDir = new File(dirToSaveTo, "data");
+        File dataDir = new File(versionDir, "data");
         AtomicInteger filesWrittenAtomic = new AtomicInteger();
         final Map<PositionInText,IndexElemDto> indexElems = new ConcurrentSkipListMap<>();
         AtomicReference<Exception> errorOccurred = new AtomicReference<>(null);
@@ -108,7 +109,9 @@ public class MetamathTools {
         }
 
         System.out.println("Writing index...");
-        createHtmlFile("",
+        createHtmlFile(
+                version,
+                "",
                 "MetamathIndexView",
                 compress(buildIndex(indexElems.values())),
                 new File(dirToSaveTo, "index.html")
@@ -441,7 +444,8 @@ public class MetamathTools {
         FileUtils.writeStringToFile(destFile, modifier.apply(content), StandardCharsets.UTF_8);
     }
 
-    private static void createHtmlFile(String relPathPrefix, String viewComponentName, Object viewProps, File file) {
+    private static void createHtmlFile(
+            String version, String relPathPrefix, String viewComponentName, Object viewProps, File file) {
         final String viewPropsStr = Utils.toJson(Utils.toJson(viewProps));
         final String decompressionFunctionName =
                 viewProps instanceof CompressedAssertionDto2 ? "decompressAssertionDto"
@@ -450,14 +454,16 @@ public class MetamathTools {
         if (decompressionFunctionName == null) {
             throw new MetamathException("decompressionFunctionName == null");
         }
+        final String versionPath = version == null ? "" : (version + "/");
         copyFromClasspath(
                 "/ui/index.html",
                 html -> html
+                        .replace("$version", versionPath)
                         .replace("$pathPrefix", relPathPrefix)
                         .replace("$componentName", viewComponentName)
                         .replace("$decompressionFunction", decompressionFunctionName)
                         .replace("'$viewProps'", viewPropsStr)
-                        .replace("src=\"", "src=\"" + relPathPrefix),
+                        .replace("src=\"", "src=\"" + (versionPath + relPathPrefix)),
                 file
         );
     }
@@ -468,6 +474,7 @@ public class MetamathTools {
                 .collect(Collectors.joining("/"))
                 + "/";
         createHtmlFile(
+                null,
                 relPathPrefix,
                 "MetamathAssertionView",
                 compress(assertionDto),
