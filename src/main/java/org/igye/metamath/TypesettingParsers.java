@@ -5,9 +5,30 @@ import org.igye.textparser.Parser;
 import org.igye.textparser.PositionInText;
 import org.igye.textparser.TokenStream;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.igye.textparser.Parsers.or;
 import static org.igye.textparser.TextParsers.charSeq;
+import static org.igye.textparser.TextParsers.list;
+import static org.igye.textparser.TextParsers.literal;
 
 public class TypesettingParsers {
+
+    protected static Parser<TokenStream<Character, PositionInText>, QuotedStringArg, PositionInText> quotedStringArg() {
+        return (Parser) list(
+                or(quotedString('\''), quotedString('"')),
+                literal("+")
+        )
+                .map((list, pos) -> QuotedStringArg.builder()
+                        .begin(((PositionInText) pos.getStart()))
+                        .end(((PositionInText) pos.getEnd()))
+                        .text(
+                                ((List<QuotedString>) list).stream().map(QuotedString::getText).collect(Collectors.joining())
+                        )
+                        .build()
+                );
+    }
 
     protected static Parser<TokenStream<Character, PositionInText>,QuotedString,PositionInText> quotedString(char quotationChar) {
         return charSeq(
@@ -124,9 +145,13 @@ public class TypesettingParsers {
                             return consumedLength;
                         }
                     } else {
-                        consumedLength++;
-                        content.append(ch);
-                        return -1;
+                        if (consumedLength == 0) {
+                            return 0;
+                        } else {
+                            consumedLength++;
+                            content.append(ch);
+                            return -1;
+                        }
                     }
                 }
             }

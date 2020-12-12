@@ -13,6 +13,23 @@ import static org.junit.Assert.assertTrue;
 
 public class TypesettingParsersTest {
     @Test
+    public void quotedStringArg_parses_correctly() {
+        //given
+        final Parser<TokenStream<Character, PositionInText>, QuotedStringArg, PositionInText> parser =
+                TypesettingParsers.quotedStringArg();
+        ParseResult<TokenStream<Character, PositionInText>, QuotedStringArg, PositionInText> parseResult;
+
+        //when/then
+        parseResult = parser.parse(tokenStreamFromString("\"ab\" + \"cd\" +\n 'ef'"));
+        assertTrue(parseResult.isSuccess());
+        assertEquals("abcdef", parseResult.get().getText());
+        assertEquals(0, parseResult.get().getBegin().getLine());
+        assertEquals(0, parseResult.get().getBegin().getCol());
+        assertEquals(1, parseResult.get().getEnd().getLine());
+        assertEquals(4, parseResult.get().getEnd().getCol());
+    }
+
+    @Test
     public void quotedString_parses_correctly() {
         //given
         final Parser<TokenStream<Character, PositionInText>, QuotedString, PositionInText> parser =
@@ -26,6 +43,11 @@ public class TypesettingParsersTest {
 
         //when/then
         parseResult = parser.parse(tokenStreamFromString("abc"));
+        assertTrue(parseResult.isFailure());
+        assertEquals('a', parseResult.getRemainingTokens().head().value().charValue());
+
+        //when/then
+        parseResult = parser.parse(tokenStreamFromString("abc'"));
         assertTrue(parseResult.isFailure());
         assertEquals('a', parseResult.getRemainingTokens().head().value().charValue());
 
@@ -57,6 +79,14 @@ public class TypesettingParsersTest {
         assertEquals("a", parseResult.get().getText());
         assertEquals(0, parseResult.get().getBegin().getCol());
         assertEquals(2, parseResult.get().getEnd().getCol());
+        assertTrue(parseResult.getRemainingTokens().isEmpty());
+
+        //when/then
+        parseResult = parser.parse(tokenStreamFromString("'ab'"));
+        assertTrue(parseResult.isSuccess());
+        assertEquals("ab", parseResult.get().getText());
+        assertEquals(0, parseResult.get().getBegin().getCol());
+        assertEquals(3, parseResult.get().getEnd().getCol());
         assertTrue(parseResult.getRemainingTokens().isEmpty());
 
         //when/then

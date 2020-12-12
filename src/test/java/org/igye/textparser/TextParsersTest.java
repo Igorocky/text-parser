@@ -4,20 +4,20 @@ import lombok.val;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.igye.metamath.TestUtils.tokenStreamFromString;
+import static org.igye.textparser.Parsers.and;
+import static org.igye.textparser.Parsers.opt;
 import static org.igye.textparser.Parsers.or;
-import static org.igye.textparser.TextParsers.inputStreamToTokenStream;
+import static org.igye.textparser.Parsers.rep;
 import static org.igye.textparser.TextParsers.integer;
 import static org.igye.textparser.TextParsers.list;
 import static org.igye.textparser.TextParsers.literal;
-import static org.igye.textparser.Parsers.and;
-import static org.igye.textparser.Parsers.opt;
-import static org.igye.textparser.Parsers.rep;
+import static org.igye.textparser.TextParsers.spacePadded;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -150,6 +150,20 @@ public class TextParsersTest {
     }
 
     @Test
+    public void list_shouldReturnCorrectBeginAndEndPositions_whenSeparatorIsSpecified() {
+        //given
+        val listParser = list(integer(), literal(","));
+
+        //when
+        final ParseResult<TokenStream, List, Object> parseResult = listParser.parse(tokenStreamFromString("  93, 5, 17 "));
+
+        //then
+        assertEquals(0, ((PositionInText) parseResult.getPositionRange().getStart()).getCol());
+        assertEquals(11, ((PositionInText) parseResult.getPositionRange().getEnd()).getCol());
+        assertTrue(parseResult.getRemainingTokens().isEmpty());
+    }
+
+    @Test
     public void list_shouldParseListsCorrectly_whenSeparatorIsNotSpecified() {
         //given
         val listParser = list(
@@ -195,7 +209,17 @@ public class TextParsersTest {
         assertEquals(Collections.emptyList(), listParser.parse(tokenStreamFromString("(  \n  )")).get().get(1));
     }
 
-    private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {
-        return inputStreamToTokenStream(new ByteArrayInputStream(str.getBytes()));
+    @Test
+    public void spacePadded_shouldReturnCorrectBeginAndEndPositions() {
+        //given
+        val parser = spacePadded(integer());
+
+        //when
+        final ParseResult<TokenStream, Object, PositionInText> parseResult = parser.parse(tokenStreamFromString("  93 "));
+
+        //then
+        assertEquals(Integer.valueOf(93), parseResult.get());
+        assertEquals(0, ((PositionInText) parseResult.getPositionRange().getStart()).getCol());
+        assertEquals(4, ((PositionInText) parseResult.getPositionRange().getEnd()).getCol());
     }
 }
