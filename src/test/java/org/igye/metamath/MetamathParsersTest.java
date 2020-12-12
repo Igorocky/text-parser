@@ -1,17 +1,14 @@
 package org.igye.metamath;
 
 import org.igye.common.Utils;
-import org.igye.textparser.PositionInText;
-import org.igye.textparser.TokenStream;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.igye.metamath.MetamathTools.stringify;
 import static org.igye.metamath.MetamathParsers.strToInt;
-import static org.igye.textparser.TextParsers.inputStreamToTokenStream;
+import static org.igye.metamath.MetamathTools.stringify;
+import static org.igye.metamath.TestUtils.tokenStreamFromString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -214,10 +211,6 @@ public class MetamathParsersTest {
 
         //then
         assertEquals(Arrays.asList("A", "B", "C", "Z", "UA", "C", "Z", "YYWA"), parts);
-    }
-
-    private TokenStream<Character, PositionInText> tokenStreamFromString(String str) {
-        return inputStreamToTokenStream(new ByteArrayInputStream(str.getBytes()));
     }
 
 }
