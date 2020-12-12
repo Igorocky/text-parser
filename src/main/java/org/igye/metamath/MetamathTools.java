@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
@@ -167,7 +168,7 @@ public class MetamathTools {
         )));
 
         if (assertion.getType() == ListStatementType.THEOREM) {
-            final ArrayList<StackNodeDto> nodes = new ArrayList<>();
+            final List<StackNodeDto> nodes = new ArrayList<>();
             final StackNode proof = DebugTimer.call("verifyProof", () -> verifyProof(assertion));
             DebugTimer.run("iterateNodes", () -> iterateNodes(proof, node -> {
                 if (node instanceof RuleStackNode) {
@@ -206,7 +207,8 @@ public class MetamathTools {
                 }
             }));
             Collections.sort(nodes, Comparator.comparing(StackNodeDto::getId));
-            assertionDto.proof(nodes);
+            List<StackNodeDto> uniqueSteps = DebugTimer.call("remove-duplicate-steps", () -> removeDuplicates(nodes));
+            assertionDto.proof(uniqueSteps);
 
             varTypes.putAll(DebugTimer.call("extractVarTypes-2", () -> extractVarTypes(
                     assertion.getFrame().getContext(),
@@ -300,6 +302,35 @@ public class MetamathTools {
         } else {
             return determinePrevStatement(statement.getCurrBlock());
         }
+    }
+
+    private static List<StackNodeDto> removeDuplicates(List<StackNodeDto> nodes) {
+        List<StackNodeDto> nodesToProcess = new ArrayList<>(nodes);
+        final List<StackNodeDto> result = new ArrayList<>();
+        Map<String,StackNodeDto> exprToNode = new HashMap<>();
+        Map<Integer,Integer> nodeIdRemap = new HashMap<>();
+        while (!nodesToProcess.isEmpty()) {
+            StackNodeDto node = nodesToProcess.remove(0);
+            if (nodeIdRemap.containsKey(node.getId())) {
+                throw new MetamathException("nodeIdRemap.containsKey(node.getId())");
+            }
+            String exprStr = StringUtils.join(node.getExpr(), " ");
+            StackNodeDto existingNode = exprToNode.get(exprStr);
+            if (existingNode == null) {
+                exprToNode.put(exprStr, node);
+                nodeIdRemap.put(node.getId(),node.getId());
+                result.add(node);
+                if (node.getArgs() != null) {
+                    node.setArgs(node.getArgs().stream().map(nodeIdRemap::get).collect(Collectors.toList()));
+                    if (node.getArgs().stream().anyMatch(Objects::isNull)) {
+                        throw new MetamathException("node.getArgs().stream().anyMatch(Objects::isNull)");
+                    }
+                }
+            } else {
+                nodeIdRemap.put(node.getId(),existingNode.getId());
+            }
+        }
+        return result;
     }
 
     private static void evalCompressed(ProofStack stack, ListStatement theorem) {

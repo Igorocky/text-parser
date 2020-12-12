@@ -18,6 +18,8 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
             return params?.[paramName]??prevState?.[paramName]??defaulValue
         }
 
+        proof.forEach((n,i) => n.idx=i)
+
         const hideTypes = getParamValue(s.HIDE_TYPES, true)
 
         function createNodesMap(nodes) {
@@ -27,7 +29,7 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
         let nodesToShow
         if (proof && hideTypes) {
             const requiredNodeIds = [
-                proof.length,
+                proof[proof.length-1].id,
                 ...proof.flatMap(node =>
                     hasNoValue(node.args)?[]:node.args.filter((id,idx) => idx >= node.numOfTypes)
                 )
@@ -56,7 +58,7 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
         return () => setState(
             prevState => createNewState({
                 prevState,
-                params: {[s.EXPANDED_NODES]:modifyAtIdx(prevState[s.EXPANDED_NODES],node.id-1,e=>!e)}
+                params: {[s.EXPANDED_NODES]:modifyAtIdx(prevState[s.EXPANDED_NODES],node.idx,e=>!e)}
             })
         )
     }
@@ -79,7 +81,7 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                 re(ConstProofNode, {node, varColors})
             )
         } else {
-            if (state[s.EXPANDED_NODES][node.id-1]) {
+            if (state[s.EXPANDED_NODES][node.idx]) {
                 return RE.Fragment({},
                     RE.a(
                         {
