@@ -41,6 +41,18 @@ public class TextParsers {
         return list(elemParser, null);
     }
 
+    public static <S extends TokenStream,P> Parser<S, List, P> nonEmptyList(Parser elemParser, Parser sepParser) {
+        Parser<TokenStream, List, Object> listParser = list(elemParser, sepParser);
+        return tokens -> {
+            final ParseResult<TokenStream, List, Object> parseResult = listParser.parse(tokens);
+            if (parseResult.get().isEmpty()) {
+                return ParseResult.failure("Non empty list was expected", tokens);
+            } else {
+                return (ParseResult<S, List, P>) parseResult;
+            }
+        };
+    }
+
     public static <S extends TokenStream,P> Parser<S, List, P> list(Parser elemParser, Parser sepParser) {
         Parser sep = spacePadded(sepParser == null ? success() : sepParser);
         Parser elem = spacePadded(elemParser);

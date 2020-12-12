@@ -1,6 +1,7 @@
-package org.igye.metamath;
+package org.igye.metamath.typesetting;
 
 import lombok.Data;
+import org.igye.metamath.Comment;
 import org.igye.textparser.Parser;
 import org.igye.textparser.PositionInText;
 import org.igye.textparser.TokenStream;
@@ -8,19 +9,49 @@ import org.igye.textparser.TokenStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.igye.textparser.Parsers.and;
 import static org.igye.textparser.Parsers.or;
+import static org.igye.textparser.Parsers.withName;
 import static org.igye.textparser.TextParsers.charSeq;
 import static org.igye.textparser.TextParsers.list;
 import static org.igye.textparser.TextParsers.literal;
+import static org.igye.textparser.TextParsers.nonEmptyList;
+import static org.igye.textparser.TextParsers.nonSpace;
+import static org.igye.textparser.TextParsers.spacePadded;
 
 public class TypesettingParsers {
 
-    protected static Parser<TokenStream<Character, PositionInText>, QuotedStringArg, PositionInText> quotedStringArg() {
-        return (Parser) list(
+    protected static Parser<TokenStream<Character, PositionInText>, TypesettingDefinition, PositionInText> typesettingDefinition() {
+        return and(
+                nonSpace(";"),
+                list(or(typesettingData(), typesettingKeyword())),
+                spacePadded(literal(";"))
+        )
+                .map((list, pos) -> TypesettingDefinition.builder()
+                        .begin(pos.getStart())
+                        .end(pos.getEnd())
+                        .type((String) list.get(0))
+                        .args((List<TypesettingArg>) list.get(1))
+                        .build()
+                );
+    }
+
+    protected static Parser<TokenStream<Character, PositionInText>, TypesettingKeyword, PositionInText> typesettingKeyword() {
+        return nonSpace(";")
+                .map((str, pos) -> TypesettingKeyword.builder()
+                        .begin(pos.getStart())
+                        .end(pos.getEnd())
+                        .text(str)
+                        .build()
+                );
+    }
+
+    protected static Parser<TokenStream<Character, PositionInText>, TypesettingData, PositionInText> typesettingData() {
+        return (Parser) withName("typesettingData", nonEmptyList(
                 or(quotedString('\''), quotedString('"')),
                 literal("+")
-        )
-                .map((list, pos) -> QuotedStringArg.builder()
+        ))
+                .map((list, pos) -> TypesettingData.builder()
                         .begin(((PositionInText) pos.getStart()))
                         .end(((PositionInText) pos.getEnd()))
                         .text(
@@ -46,7 +77,7 @@ public class TypesettingParsers {
         );
     }
 
-    private static Parser<TokenStream<Character, PositionInText>,Comment,PositionInText> typesettingComment() {
+    private static Parser<TokenStream<Character, PositionInText>, Comment,PositionInText> typesettingComment() {
         return charSeq(
                 "Metamath typesetting comment",
                 () -> new StringBuilder(),
@@ -89,13 +120,16 @@ public class TypesettingParsers {
         private char quotationChar;
         private StringBuilder content = new StringBuilder();
         private int consumedLength = 0;
-        private boolean prevCharWasQuotation;
+        private boolean prevCharWasQuotation = false;
 
         public QuotedStringCtx(char quotationChar) {
             this.quotationChar = quotationChar;
         }
 
         public int consume(char ch, boolean isLast) {
+            if (consumedLength == 0 && ch != quotationChar) {
+                return 0;
+            }
             if (isLast) {
                 if (ch == quotationChar) {
                     if (prevCharWasQuotation) {

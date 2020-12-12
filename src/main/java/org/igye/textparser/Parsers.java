@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -94,6 +93,20 @@ public class Parsers {
                 parser[0] = parserSupplier.get();
             }
             return parser[0].parse(tokenks);
+        };
+    }
+
+    public static <P, S extends TokenStream, R> Parser<S, R, P> withName(String parserName, Parser<S, R, P> parser) {
+        return tokens -> {
+            final ParseResult<S, R, P> parseResult = parser.parse(tokens);
+            if (parseResult.isSuccess()) {
+                return parseResult;
+            } else {
+                return ParseResult.failure(
+                        parserName + ": " + parseResult.getFailureReason(),
+                        parseResult.getRemainingTokens()
+                );
+            }
         };
     }
 

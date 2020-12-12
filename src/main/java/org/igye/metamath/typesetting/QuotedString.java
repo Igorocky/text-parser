@@ -1,4 +1,4 @@
-package org.igye.metamath;
+package org.igye.metamath.typesetting;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

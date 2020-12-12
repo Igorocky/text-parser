@@ -1,4 +1,4 @@
-package org.igye.metamath;
+package org.igye.metamath.typesetting;
 
 import org.igye.textparser.ParseResult;
 import org.igye.textparser.Parser;
@@ -12,15 +12,49 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TypesettingParsersTest {
+
+    @Test
+    public void typesettingDefinition_parses_correctly() {
+        //given
+        final Parser<TokenStream<Character, PositionInText>, TypesettingDefinition, PositionInText> parser =
+                TypesettingParsers.typesettingDefinition();
+        ParseResult<TokenStream<Character, PositionInText>, TypesettingDefinition, PositionInText> parseResult;
+
+        //when
+        parseResult = parser.parse(tokenStreamFromString("htmldef \"la\" as\n" +
+                "    \"<IMG SRC='_lambda.gif' WIDTH=9 HEIGHT=19 ALT=' la' TITLE='la'>\";\n" +
+                "  althtmldef \"la\" as\n" +
+                "    '<SPAN CLASS=wff STYLE=\"color:blue\">&#x1D706;</SPAN>';\n" +
+                "  latexdef \"la\" as \"\\lambda\";\n"));
+
+        //then
+        assertTrue(parseResult.isSuccess());
+        assertEquals("htmldef", parseResult.get().getType());
+        assertEquals(3, parseResult.get().getArgs().size());
+        assertEquals("la", ((TypesettingData) parseResult.get().getArgs().get(0)).getText());
+        assertEquals("as", ((TypesettingKeyword) parseResult.get().getArgs().get(1)).getText());
+        assertEquals(
+                "<IMG SRC='_lambda.gif' WIDTH=9 HEIGHT=19 ALT=' la' TITLE='la'>",
+                ((TypesettingData) parseResult.get().getArgs().get(2)).getText()
+        );
+        assertEquals(0, parseResult.get().getBegin().getLine());
+        assertEquals(0, parseResult.get().getBegin().getCol());
+        assertEquals(2, parseResult.get().getEnd().getLine());
+        assertEquals(1, parseResult.get().getEnd().getCol());
+        assertEquals('a', parseResult.getRemainingTokens().head().value().charValue());
+    }
+
     @Test
     public void quotedStringArg_parses_correctly() {
         //given
-        final Parser<TokenStream<Character, PositionInText>, QuotedStringArg, PositionInText> parser =
-                TypesettingParsers.quotedStringArg();
-        ParseResult<TokenStream<Character, PositionInText>, QuotedStringArg, PositionInText> parseResult;
+        final Parser<TokenStream<Character, PositionInText>, TypesettingData, PositionInText> parser =
+                TypesettingParsers.typesettingData();
+        ParseResult<TokenStream<Character, PositionInText>, TypesettingData, PositionInText> parseResult;
 
-        //when/then
+        //when
         parseResult = parser.parse(tokenStreamFromString("\"ab\" + \"cd\" +\n 'ef'"));
+
+        //then
         assertTrue(parseResult.isSuccess());
         assertEquals("abcdef", parseResult.get().getText());
         assertEquals(0, parseResult.get().getBegin().getLine());
