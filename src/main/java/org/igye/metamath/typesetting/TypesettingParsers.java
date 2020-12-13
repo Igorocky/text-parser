@@ -1,13 +1,20 @@
 package org.igye.metamath.typesetting;
 
 import lombok.Data;
+import org.apache.commons.lang3.tuple.Pair;
 import org.igye.metamath.Comment;
 import org.igye.metamath.NonComment;
 import org.igye.textparser.Parser;
+import org.igye.textparser.ParserUtils;
 import org.igye.textparser.PositionInText;
 import org.igye.textparser.TokenStream;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.igye.textparser.Parsers.and;
@@ -22,8 +29,31 @@ import static org.igye.textparser.TextParsers.spacePadded;
 
 public class TypesettingParsers {
 
-    public static List<TypesettingDefinition> parseTypesetting(String typesettingComment) {
-        return null;
+    public static Optional<List<TypesettingDefinition>> parseTypesetting(String commentText) {
+        final Matcher matcher = Pattern.compile("^\\s+\\$t\\s+(.+)$", Pattern.DOTALL).matcher(commentText);
+        if (matcher.matches()) {
+            final String typesettingText = matcher.group(1);
+            final Pair<ParserUtils.Preprocessed,List<Object>> parsed = ParserUtils.parse(
+                    new ByteArrayInputStream(typesettingText.getBytes(StandardCharsets.UTF_8)),
+                    ParserUtils.ParserConfig.builder()
+                            .preprocessParser(preprocessParser())
+                            .isCode(o -> o instanceof NonComment)
+                            .setPrecedingComment(null)
+                            .statementParser(list(typesettingDefinition()))
+                            .codeToPositionAndText(code -> Pair.of(((NonComment) code).getBegin(), ((NonComment) code).getText()))
+                            .build()
+            );
+            return Optional.of(
+                    parsed.getRight().stream()
+                            .flatMap(l -> ((List<TypesettingDefinition>)l).stream()).collect(Collectors.toList())
+            );
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    protected static Parser preprocessParser() {
+        return or(typesettingComment(), typesettingNonComment());
     }
 
     protected static Parser<TokenStream<Character, PositionInText>, TypesettingDefinition, PositionInText> typesettingDefinition() {

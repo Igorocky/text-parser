@@ -4,7 +4,6 @@ import org.igye.common.Utils;
 import org.igye.textparser.ParserUtils;
 import org.junit.Test;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -49,6 +48,17 @@ public class MetamathParsersTest {
                 "A theorem with invalid proof (two proof steps were swapped in comparison to the previous theorem)",
                 database.getStatement("th2").getDescription()
         );
+    }
+
+    @Test
+    public void load_shouldParseTypesetting() {
+        //when
+        final MetamathDatabase database = MetamathParsers.load(Utils.inputStreamFromClasspath("/demo0-with-typesetting.mm"));
+//        final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
+
+        //then
+        System.out.println("database.getTypesetting().size() = " + database.getTypesetting().size());
+        assertTrue(database.getTypesetting().size() > 10);
     }
 
     @Test

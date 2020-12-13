@@ -1,14 +1,18 @@
 package org.igye.metamath;
 
+import org.igye.metamath.typesetting.TypesettingDefinition;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class MetamathDatabase {
     private final List<Statement> allStatements;
+    private final List<TypesettingDefinition> typesetting;
 
-    public MetamathDatabase(List<Statement> allStatements) {
+    public MetamathDatabase(List<Statement> allStatements, List<TypesettingDefinition> typesetting) {
         this.allStatements = allStatements;
+        this.typesetting = typesetting;
     }
 
     public ListStatement getStatement(String label) {
@@ -32,5 +36,9 @@ public class MetamathDatabase {
             }
         }
         return result;
+    }
+
+    public List<TypesettingDefinition> getTypesetting() {
+        return typesetting;
     }
 }

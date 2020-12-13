@@ -45,6 +45,46 @@ public class TypesettingParsersTest {
     }
 
     @Test
+    public void typesettingDefinition_parses_correctly2() {
+        //given
+        final Parser<TokenStream<Character, PositionInText>, TypesettingDefinition, PositionInText> parser =
+                TypesettingParsers.typesettingDefinition();
+        ParseResult<TokenStream<Character, PositionInText>, TypesettingDefinition, PositionInText> parseResult;
+
+        //when
+        parseResult = parser.parse(tokenStreamFromString("htmlcss '<STYLE TYPE=\"text/css\">\\n' +\n" +
+                "    '<!--\\n' +\n" +
+                "    '  .setvar { color: red; }\\n' +\n" +
+                "    '  .wff { color: blue; }\\n' +\n" +
+                "    '  .class { color: #C3C; }\\n' +\n" +
+                "    '  .symvar { border-bottom:1px dotted;color:#C3C}\\n' +\n" +
+                "    '  .typecode { color: gray }\\n' +\n" +
+                "    '  .hidden { color: gray }\\n' +\n" +
+                "    '  @font-face {\\n' +\n" +
+                "    '    font-family: XITSMath-Regular;\\n' +\n" +
+                "    '    src: url(xits-math.woff);\\n' +\n" +
+                "    '  }\\n' +\n" +
+                "    '  .math { font-family: XITSMath-Regular }\\n' +\n" +
+                "    '-->\\n' +\n" +
+                "    '</STYLE>\\n' +\n" +
+                "    '<LINK href=\"mmset.css\" title=\"mmset\"\\n' +\n" +
+                "    '    rel=\"stylesheet\" type=\"text/css\">\\n' +\n" +
+                "    '<LINK href=\"mmsetalt.css\" title=\"mmsetalt\"\\n' +\n" +
+                "    '    rel=\"alternate stylesheet\" type=\"text/css\">';"));
+
+        //then
+        assertTrue(parseResult.isSuccess());
+        assertEquals("htmlcss", parseResult.get().getType());
+        assertEquals(1, parseResult.get().getArgs().size());
+        assertEquals("<STYLE TYPE=\"text/css\">\\n<!--\\n  .setvar { color: red; }\\n  .wff { color: blue; }\\n  .class { color: #C3C; }\\n  .symvar { border-bottom:1px dotted;color:#C3C}\\n  .typecode { color: gray }\\n  .hidden { color: gray }\\n  @font-face {\\n    font-family: XITSMath-Regular;\\n    src: url(xits-math.woff);\\n  }\\n  .math { font-family: XITSMath-Regular }\\n-->\\n</STYLE>\\n<LINK href=\"mmset.css\" title=\"mmset\"\\n    rel=\"stylesheet\" type=\"text/css\">\\n<LINK href=\"mmsetalt.css\" title=\"mmsetalt\"\\n    rel=\"alternate stylesheet\" type=\"text/css\">", ((TypesettingData) parseResult.get().getArgs().get(0)).getText());
+        assertEquals(0, parseResult.get().getBegin().getLine());
+        assertEquals(0, parseResult.get().getBegin().getCol());
+        assertEquals(18, parseResult.get().getEnd().getLine());
+        assertEquals(53, parseResult.get().getEnd().getCol());
+        assertTrue(parseResult.getRemainingTokens().isEmpty());
+    }
+
+    @Test
     public void quotedStringArg_parses_correctly() {
         //given
         final Parser<TokenStream<Character, PositionInText>, TypesettingData, PositionInText> parser =

@@ -3,6 +3,8 @@ package org.igye.metamath;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.igye.metamath.typesetting.TypesettingDefinition;
+import org.igye.metamath.typesetting.TypesettingParsers;
 import org.igye.textparser.Parser;
 import org.igye.textparser.ParserException;
 import org.igye.textparser.ParserUtils;
@@ -18,6 +20,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,7 +49,10 @@ public class MetamathParsers {
         Pair<Preprocessed, List<Statement>> parsed = parse(inputStream);
         final List<Statement> statements = parsed.getRight();
         defineFrames(statements);
-        final MetamathDatabase database = new MetamathDatabase(statements);
+        final MetamathDatabase database = new MetamathDatabase(
+                statements,
+                parseTypesetting(parsed.getLeft().getComments())
+        );
         appendDescriptions(database, parsed.getLeft().getCode());
         return database;
     }
@@ -359,6 +365,21 @@ public class MetamathParsers {
                 }
                 allAssertions.get(aIdx).setDescription(codePart.getPrecedingComment().getText().trim());
             }
+        }
+    }
+
+    private static List<TypesettingDefinition> parseTypesetting(List<Comment> comments) {
+        final List<List<TypesettingDefinition>> typesetting = comments.stream()
+                .map(c -> TypesettingParsers.parseTypesetting(c.getText()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+        if (typesetting.size() > 1) {
+            throw new MetamathException("typesetting.size() > 1");
+        } else if (typesetting.size() == 1) {
+            return typesetting.get(0);
+        } else {
+            return Collections.emptyList();
         }
     }
 }
