@@ -1,13 +1,27 @@
 package org.igye.metamath;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.igye.common.Utils;
+import org.igye.metamath.typesetting.TypesettingData;
+import org.igye.metamath.typesetting.TypesettingDefinition;
+import org.igye.metamath.typesetting.TypesettingKeyword;
 import org.igye.textparser.ParserUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.igye.metamath.MetamathParsers.strToInt;
 import static org.igye.metamath.MetamathTools.stringify;
@@ -59,6 +73,44 @@ public class MetamathParsersTest {
         //then
         System.out.println("database.getTypesetting().size() = " + database.getTypesetting().size());
         assertTrue(database.getTypesetting().size() > 10);
+    }
+
+    @Test
+    @Ignore
+    public void exploreTypesetting() throws IOException {
+        final File allAltHtmldefFile = new File("D:\\programs\\java\\text-parser\\target/typesetting-all-althtmldef.json");
+        if (false) {
+            final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
+            System.out.println("database.getTypesetting().size() = " + database.getTypesetting().size());
+            final List<TypesettingDefinitionDto> dtos = database.getTypesetting().stream()
+                    .filter(t -> t.getType().equals("althtmldef"))
+                    .map(this::toDto)
+                    .collect(Collectors.toList());
+            System.out.println("dtos.size() = " + dtos.size());
+            FileUtils.writeStringToFile(
+                    allAltHtmldefFile,
+                    Utils.toJson(dtos),
+                    StandardCharsets.UTF_8
+            );
+        } else {
+            final String allAltHtmldefStr = FileUtils.readFileToString(allAltHtmldefFile, StandardCharsets.UTF_8);
+            final List<TypesettingDefinitionDto> dtos = Utils.parse(
+                    allAltHtmldefStr,
+                    new TypeReference<List<TypesettingDefinitionDto>>() {}
+            );
+            System.out.println("dtos.size() = " + dtos.size());
+
+
+            final List<TypesettingDefinitionDto> unrecognized = dtos.stream()
+                    .filter(def -> !knownAltHtmlDef(def))
+                    .collect(Collectors.toList());
+            System.out.println("unrecognized.size() = " + unrecognized.size());
+            FileUtils.writeStringToFile(
+                    new File("D:\\programs\\java\\text-parser\\target/typesetting-unrecognized.json"),
+                    Utils.toJson(unrecognized),
+                    StandardCharsets.UTF_8
+            );
+        }
     }
 
     @Test
@@ -230,6 +282,45 @@ public class MetamathParsersTest {
 
         //then
         assertEquals(Arrays.asList("A", "B", "C", "Z", "UA", "C", "Z", "YYWA"), parts);
+    }
+
+    private TypesettingDefinitionDto toDto(TypesettingDefinition typesettingDefinition) {
+        return TypesettingDefinitionDto.builder()
+                .type(typesettingDefinition.getType())
+                .args(
+                        typesettingDefinition.getArgs().stream()
+                        .map(a -> {
+                            if (a instanceof TypesettingData) {
+                                return ((TypesettingData) a).getText();
+                            } else {
+                                return ((TypesettingKeyword) a).getText();
+                            }
+                        })
+                        .collect(Collectors.toList())
+                )
+                .build();
+    }
+
+    private boolean knownAltHtmlDef(TypesettingDefinitionDto dto) {
+        return dto.getArgs().size() == 3 && dto.getArgs().get(1).equals("as") &&
+                (
+                        dto.getArgs().get(2).matches("^[A-Za-z0-9]+$")
+                                || dto.getArgs().get(2).matches("^\\s*&[A-Za-z]+;[!*]?\\s*$")
+                                || dto.getArgs().get(2).matches("^\\s*&#x?[0-9A-Za-z]+;\\s*$")
+                                || dto.getArgs().get(2).matches("^\\s*[=\\[\\]()/{}]\\s*$")
+                                || dto.getArgs().get(2).matches("^<SPAN CLASS=((typecode)|(hidden)|(wff)|(setvar)|(class)) STYLE=\"color:((gray)|(blue)|(red)|((#[A-Za-z0-9]+)))\">(([A-Za-z0-9()]+)|(&#x?[0-9A-Fa-f]+;))\\s*</SPAN>$")
+                                || dto.getArgs().get(2).matches("^\\s*<SPAN CLASS=((symvar)|(hidden)) STYLE=\"border-bottom:1px dotted;color:((#[A-Za-z0-9]+))\">((&#?x?[A-Za-z0-9]+;?)|([+/0-9,]))</SPAN>\\s*$")
+                                || dto.getArgs().get(2).matches("^<[UB]>((&#x?[0-9A-Za-z]+;)|([\\]\\[]))</[UB]>$")
+                );
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class TypesettingDefinitionDto {
+        private String type;
+        private List<String> args;
     }
 
 }

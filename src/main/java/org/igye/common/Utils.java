@@ -1,6 +1,7 @@
 package org.igye.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 
@@ -24,6 +25,11 @@ public class Utils {
     @SneakyThrows
     public static void saveDtoToFile(Object dto, String filePath) {
         MAPPER.writeValue(new File(filePath), dto);
+    }
+
+    @SneakyThrows
+    public static <T> T parse(String str, TypeReference<T> typeRef) {
+        return MAPPER.readValue(str, typeRef);
     }
 
     @SneakyThrows
