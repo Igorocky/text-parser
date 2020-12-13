@@ -3,13 +3,11 @@ package org.igye.metamath;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.igye.textparser.ParseResult;
 import org.igye.textparser.Parser;
 import org.igye.textparser.ParserException;
+import org.igye.textparser.ParserUtils;
+import org.igye.textparser.ParserUtils.ParserConfig;
 import org.igye.textparser.PositionInText;
-import org.igye.textparser.SimpleTokenStreamImpl;
-import org.igye.textparser.StringsTokenGenerator;
-import org.igye.textparser.TextParsers;
 import org.igye.textparser.TokenStream;
 
 import java.io.FileInputStream;
@@ -27,7 +25,6 @@ import java.util.stream.Stream;
 import static org.igye.textparser.Parsers.and;
 import static org.igye.textparser.Parsers.or;
 import static org.igye.textparser.Parsers.rec;
-import static org.igye.textparser.Parsers.stream;
 import static org.igye.textparser.TextParsers.charSeq;
 import static org.igye.textparser.TextParsers.list;
 import static org.igye.textparser.TextParsers.literal;
@@ -60,56 +57,25 @@ public class MetamathParsers {
     }
 
     protected static Pair<Preprocessed,List<Statement>> parse(InputStream inputStream) {
-        final Preprocessed preprocessed = preprocess(inputStream);
-        final ArrayList<Statement> statements = new ArrayList<>();
-        stream(
-                statement(),
-                () -> new SimpleTokenStreamImpl(new StringsTokenGenerator(
-                        preprocessed.getCode().stream()
-                        .map(code -> Pair.of(code.getBegin(), code.getText()))
-                        .collect(Collectors.toList())
-                ))
-        ).forEach(partParseResult -> {
-            final ParseResult parseResult = (ParseResult) partParseResult;
-            if (parseResult.isSuccess()) {
-                statements.add((Statement) parseResult.get());
-            } else {
-                final PositionInText position = (PositionInText) parseResult.getRemainingTokens().head().position();
-                throw new ParserException("Parse error: " + parseResult.getFailureReason()
-                        + " at line=" + position.getLine() + ", col=" + position.getCol());
-            }
-        });
-        return Pair.of(preprocessed,statements);
+        Pair<ParserUtils.Preprocessed, List<Object>> parsed = ParserUtils.parse(inputStream, createParseConfig());
+
+        return Pair.of(
+                Preprocessed.builder()
+                        .code(parsed.getLeft().getCode().stream().map(o -> (NonComment)o).collect(Collectors.toList()))
+                        .comments(parsed.getLeft().getComments().stream().map(o -> (Comment)o).collect(Collectors.toList()))
+                        .build(),
+                parsed.getRight().stream().map(s -> (Statement)s).collect(Collectors.toList())
+        );
     }
 
-    @SneakyThrows
-    protected static Preprocessed preprocess(String filePath) {
-        return preprocess(new FileInputStream(filePath));
-    }
-
-    protected static Preprocessed preprocess(InputStream inputStream) {
-        final Preprocessed preprocessed = new Preprocessed();
-        final Object[] prevPart = {null};
-        stream(
-                or(comment(), nonComment()),
-                () -> TextParsers.inputStreamToTokenStream(inputStream)
-        ).forEach(partParseResult -> {
-            if (partParseResult.isFailure()) {
-                throw new ParserException("Preprocess error: " + partParseResult.getFailureReason());
-            }
-            Object part = partParseResult.get();
-            if (part instanceof NonComment) {
-                final NonComment nonComment = (NonComment) part;
-                if (prevPart[0] != null && prevPart[0] instanceof Comment) {
-                    nonComment.setPrecedingComment((Comment) prevPart[0]);
-                }
-                preprocessed.getCode().add(nonComment);
-            } else {
-                preprocessed.getComments().add((Comment) part);
-            }
-            prevPart[0] = part;
-        });
-        return preprocessed;
+    protected static ParserConfig createParseConfig() {
+        return ParserConfig.builder()
+                .preprocessParser(preprocessParser())
+                .isCode(o -> o instanceof NonComment)
+                .setPrecedingComment((code,comment) -> ((NonComment)code).setPrecedingComment((Comment) comment))
+                .statementParser(statement())
+                .codeToPositionAndText(code -> Pair.of(((NonComment)code).getBegin(), ((NonComment)code).getText()))
+                .build();
     }
 
     protected static Parser<TokenStream<Character, PositionInText>, Statement, PositionInText> statement() {
@@ -307,6 +273,10 @@ public class MetamathParsers {
                         .text(str)
                         .build()
         );
+    }
+
+    protected static Parser preprocessParser() {
+        return or(comment(), nonComment());
     }
 
     private static void defineFrames(List<Statement> statements) {

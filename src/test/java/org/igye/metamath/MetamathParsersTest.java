@@ -1,8 +1,12 @@
 package org.igye.metamath;
 
 import org.igye.common.Utils;
+import org.igye.textparser.ParserUtils;
 import org.junit.Test;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,10 +62,15 @@ public class MetamathParsersTest {
     }
 
     @Test
-    public void preprocess_shouldPreprocessMetamathFile() {
+    public void preprocess_shouldPreprocessMetamathFile() throws FileNotFoundException {
         //when
-        final Preprocessed preprocessed = MetamathParsers.preprocess(Utils.inputStreamFromClasspath("/peano.mm"));
-//        final Preprocessed preprocessed = MetamathParsers.preprocess("D:\\Install\\metamath\\metamath\\set.mm");
+        final InputStream inputStream = Utils.inputStreamFromClasspath("/peano.mm");
+//        final InputStream inputStream = new FileInputStream("D:\\Install\\metamath\\metamath\\set.mm");
+
+        final ParserUtils.Preprocessed preprocessed = ParserUtils.preprocess(
+                inputStream,
+                MetamathParsers.createParseConfig()
+        );
 
         //then
         assertTrue(preprocessed.getCode().size() > 0);
