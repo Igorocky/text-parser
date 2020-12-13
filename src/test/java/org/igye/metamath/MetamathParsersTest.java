@@ -303,13 +303,14 @@ public class MetamathParsersTest {
     private boolean knownAltHtmlDef(TypesettingDefinitionDto dto) {
         return dto.getArgs().size() == 3 && dto.getArgs().get(1).equals("as") &&
                 (
-                        dto.getArgs().get(2).matches("^[A-Za-z0-9]+$")
+                        dto.getArgs().get(2).matches("^\\s*[A-Za-z0-9]+\\s*$")
                                 || dto.getArgs().get(2).matches("^\\s*&[A-Za-z]+;[!*]?\\s*$")
                                 || dto.getArgs().get(2).matches("^\\s*&#x?[0-9A-Za-z]+;\\s*$")
-                                || dto.getArgs().get(2).matches("^\\s*[=\\[\\]()/{}]\\s*$")
+                                || dto.getArgs().get(2).matches("^\\s*[=\\[\\]()/{},]\\s*$")
                                 || dto.getArgs().get(2).matches("^<SPAN CLASS=((typecode)|(hidden)|(wff)|(setvar)|(class)) STYLE=\"color:((gray)|(blue)|(red)|((#[A-Za-z0-9]+)))\">(([A-Za-z0-9()]+)|(&#x?[0-9A-Fa-f]+;))\\s*</SPAN>$")
                                 || dto.getArgs().get(2).matches("^\\s*<SPAN CLASS=((symvar)|(hidden)) STYLE=\"border-bottom:1px dotted;color:((#[A-Za-z0-9]+))\">((&#?x?[A-Za-z0-9]+;?)|([+/0-9,]))</SPAN>\\s*$")
-                                || dto.getArgs().get(2).matches("^<[UB]>((&#x?[0-9A-Za-z]+;)|([\\]\\[]))</[UB]>$")
+                                || dto.getArgs().get(2).matches("^\\s*(<U>)?<FONT SIZE=\"\\+1\">&#?x?[A-Za-z0-9]+;?</FONT>(</U>)?\\s*$")
+                                || dto.getArgs().get(2).matches("^\\s*<[uUB]>((&#x?[0-9A-Za-z]+;)|([\\]\\[])|([A-Za-z0-9]+))</[uUB]>\\s*$")
                 );
     }
 
