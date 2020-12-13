@@ -241,13 +241,13 @@ public class MetamathParsers {
                         return -1;
                     }
                 },
-                (sb,len) -> sb.delete(len-1,sb.length()).toString(),
+                (sb,len) -> sb.substring(2,len-2),
                 "A Metamath comment was expected"
         ).map((str,pos) ->
                 Comment.builder()
                         .begin(pos.getStart())
                         .end(pos.getEnd())
-                        .text(str.substring(2,str.length()-2))
+                        .text(str)
                         .build()
         );
     }

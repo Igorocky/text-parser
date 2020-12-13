@@ -2,6 +2,7 @@ package org.igye.metamath.typesetting;
 
 import lombok.Data;
 import org.igye.metamath.Comment;
+import org.igye.metamath.NonComment;
 import org.igye.textparser.Parser;
 import org.igye.textparser.PositionInText;
 import org.igye.textparser.TokenStream;
@@ -20,6 +21,10 @@ import static org.igye.textparser.TextParsers.nonSpace;
 import static org.igye.textparser.TextParsers.spacePadded;
 
 public class TypesettingParsers {
+
+    public static List<TypesettingDefinition> parseTypesetting(String typesettingComment) {
+        return null;
+    }
 
     protected static Parser<TokenStream<Character, PositionInText>, TypesettingDefinition, PositionInText> typesettingDefinition() {
         return and(
@@ -77,6 +82,29 @@ public class TypesettingParsers {
         );
     }
 
+    private static Parser<TokenStream<Character, PositionInText>, NonComment,PositionInText> typesettingNonComment() {
+        return charSeq(
+                "Metamath typesetting non-comment",
+                () -> new StringBuilder(),
+                (sb,ch,isLast) -> {
+                    if (ch == '*' && sb.length() > 0 && sb.charAt(sb.length()-1) == '/') {
+                        return sb.length()-1;
+                    } else {
+                        sb.append(ch);
+                        return isLast ? sb.length() : -1;
+                    }
+                },
+                (sb,len) -> sb.delete(len,sb.length()).toString(),
+                "A Metamath comment was expected"
+        ).map((str,pos) ->
+                NonComment.builder()
+                        .begin(pos.getStart())
+                        .end(pos.getEnd())
+                        .text(str)
+                        .build()
+        );
+    }
+
     private static Parser<TokenStream<Character, PositionInText>, Comment,PositionInText> typesettingComment() {
         return charSeq(
                 "Metamath typesetting comment",
@@ -104,13 +132,13 @@ public class TypesettingParsers {
                         return -1;
                     }
                 },
-                (sb,len) -> sb.delete(len-1,sb.length()).toString(),
+                (sb,len) -> sb.substring(2,len-2),
                 "A Metamath typesetting comment was expected"
         ).map((str,pos) ->
                 Comment.builder()
                         .begin(pos.getStart())
                         .end(pos.getEnd())
-                        .text(str.substring(2,str.length()-2))
+                        .text(str)
                         .build()
         );
     }
