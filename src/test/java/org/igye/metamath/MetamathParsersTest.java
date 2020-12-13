@@ -71,7 +71,6 @@ public class MetamathParsersTest {
 //        final MetamathDatabase database = MetamathParsers.load("D:\\Install\\metamath\\metamath\\set.mm");
 
         //then
-        System.out.println("database.getTypesetting().size() = " + database.getTypesetting().size());
         assertTrue(database.getTypesetting().size() > 10);
     }
 
