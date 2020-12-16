@@ -162,13 +162,17 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
         }
     }
 
-    return RE.Container.col.top.left({},{style:{marginBottom:'20px'}},
-        RE.Container.row.center.center({},{style:{fontSize:'18px', fontWeight:'700', marginRight:'10px'}},
-            RE.span({},type),
+    return RE.Fragment({},
+        RE.div({style:{textAlign:'left', fontSize:'18px', fontWeight:'700', marginRight:'10px', marginBottom:'10px'}},
+            RE.span({style:{marginRight:'10px'}},type),
             RE.a({href:`http://us.metamath.org/mpeuni/${name}.html`, style:{color:'rgb(0, 102, 51)', textDecoration:'none'}},name),
+            RE.span({style:{float:'right',  fontWeight:'normal', fontSize:'12px'}},
+                RE.a({href:`http://us.metamath.org/mpeuni/${name}.html`, style:{marginRight:'10px'}},"Unicode version"),
+                RE.a({href:`../index.html`, style:{}},"Index")
+            ),
         ),
-        RE.div({}, description),
+        RE.div({style:{marginBottom:'10px'}}, description),
         RE.div({}, re(Assertion,{params,retVal,varColors})),
-        renderProof()
+        renderProof(),
     )
 }

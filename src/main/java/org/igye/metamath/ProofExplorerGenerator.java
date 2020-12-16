@@ -13,7 +13,7 @@ public class ProofExplorerGenerator {
     private static final String version = "v3";
 
     private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer";
-//    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer-full";
+//    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer-full2";
 
     public static void main(String[] args) {
         DebugTimer.run("Generate proof explorer", () -> {

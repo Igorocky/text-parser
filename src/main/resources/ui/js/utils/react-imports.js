@@ -21,8 +21,7 @@ const JUSTIFY = {flexStart: "flex-start", center: "center", flexEnd: "flex-end",
 const ALIGN_ITEMS = {flexStart: "flex-start", center: "center", flexEnd: "flex-end", stretch: "stretch", spaceAround: "baseline",}
 
 function gridFactory(direction, justify, alignItems) {
-    return (props, childProps, ...children) => re(MaterialUI.Grid, {container:true, direction:direction,
-            justify:justify, alignItems:alignItems, ...props},
+    return (props, childProps, ...children) => re(MaterialUI.Grid, {container:true, direction, justify, alignItems, ...props},
         React.Children.map(children, child => {
             return re(MaterialUI.Grid, {item:true, ...childProps}, child)
         })
