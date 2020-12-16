@@ -7,9 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.igye.common.Utils;
-import org.igye.metamath.typesetting.TypesettingData;
+import org.igye.metamath.typesetting.TypesettingArg;
 import org.igye.metamath.typesetting.TypesettingDefinition;
-import org.igye.metamath.typesetting.TypesettingKeyword;
 import org.igye.textparser.ParserUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -288,13 +287,7 @@ public class MetamathParsersTest {
                 .type(typesettingDefinition.getType())
                 .args(
                         typesettingDefinition.getArgs().stream()
-                        .map(a -> {
-                            if (a instanceof TypesettingData) {
-                                return ((TypesettingData) a).getText();
-                            } else {
-                                return ((TypesettingKeyword) a).getText();
-                            }
-                        })
+                        .map(TypesettingArg::getText)
                         .collect(Collectors.toList())
                 )
                 .build();

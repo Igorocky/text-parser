@@ -5,4 +5,5 @@ import org.igye.textparser.PositionInText;
 public interface TypesettingArg {
     PositionInText getBegin();
     PositionInText getEnd();
+    String getText();
 }
