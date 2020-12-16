@@ -163,7 +163,7 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
     }
 
     return RE.Fragment({},
-        RE.div({style:{textAlign:'left', fontSize:'18px', fontWeight:'700', marginRight:'10px', marginBottom:'10px'}},
+        RE.div({style:{textAlign:'left', fontSize:'18px', fontWeight:'700', marginRight:'10px', marginBottom:'20px'}},
             RE.span({style:{marginRight:'10px'}},type),
             RE.a({href:`http://us.metamath.org/mpeuni/${name}.html`, style:{color:'rgb(0, 102, 51)', textDecoration:'none'}},name),
             RE.span({style:{float:'right',  fontWeight:'normal', fontSize:'12px'}},
@@ -171,8 +171,8 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                 RE.a({href:`../index.html`, style:{}},"Index")
             ),
         ),
-        RE.div({style:{marginBottom:'10px'}}, description),
-        RE.div({}, re(Assertion,{params,retVal,varColors})),
+        RE.div({style:{marginBottom:'20px'}}, description),
+        RE.div({style:{marginBottom:'20px'}}, re(Assertion,{params,retVal,varColors})),
         renderProof(),
     )
 }
