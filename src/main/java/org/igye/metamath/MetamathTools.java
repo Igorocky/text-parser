@@ -74,7 +74,6 @@ public class MetamathTools {
         Queue<ListStatement> queue = new ConcurrentLinkedQueue<>(assertions);
 
         final ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
-        File dataDir = new File(versionDir, "data");
         AtomicInteger filesWrittenAtomic = new AtomicInteger();
         final Map<PositionInText,IndexElemDto> indexElems = new ConcurrentSkipListMap<>();
         AtomicReference<Exception> errorOccurred = new AtomicReference<>(null);
@@ -85,7 +84,9 @@ public class MetamathTools {
                     try {
                         ListStatement finalAssertion = assertion;
                         AssertionDto dto = DebugTimer.call("visualizeAssertion", () -> visualizeAssertion(finalAssertion));
-                        DebugTimer.run("createAssertionHtmlFile", () -> createAssertionHtmlFile(dto, dataDir, createRelPathToSaveTo(dto.getName())));
+                        DebugTimer.run("createAssertionHtmlFile", () -> createAssertionHtmlFile(
+                                version, dto, dirToSaveTo, createRelPathToSaveTo(dto.getName())
+                        ));
                         indexElems.put(assertion.getBegin(), createIndexElemDto(dto));
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
@@ -112,7 +113,7 @@ public class MetamathTools {
         System.out.println("Writing index...");
         createHtmlFile(
                 version,
-                "",
+                ".",
                 "MetamathIndexView",
                 compress(buildIndex(indexElems.values())),
                 new File(dirToSaveTo, "index.html")
@@ -476,7 +477,7 @@ public class MetamathTools {
     }
 
     private static void createHtmlFile(
-            String version, String relPathPrefix, String viewComponentName, Object viewProps, File file) {
+            String version, String relPathToRoot, String viewComponentName, Object viewProps, File file) {
         final String viewPropsStr = Utils.toJson(Utils.toJson(viewProps));
         final String decompressionFunctionName =
                 viewProps instanceof CompressedAssertionDto2 ? "decompressAssertionDto"
@@ -485,28 +486,29 @@ public class MetamathTools {
         if (decompressionFunctionName == null) {
             throw new MetamathException("decompressionFunctionName == null");
         }
-        final String versionPath = version == null ? "" : (version + "/");
+        String finalVersion = version == null ? "." : version;
         copyFromClasspath(
                 "/ui/index.html",
                 html -> html
-                        .replace("$version", versionPath)
-                        .replace("$pathPrefix", relPathPrefix)
+                        .replace("$version", finalVersion)
+                        .replace("$relPathToRoot", relPathToRoot)
                         .replace("$componentName", viewComponentName)
                         .replace("$decompressionFunction", decompressionFunctionName)
                         .replace("'$viewProps'", viewPropsStr)
-                        .replace("src=\"", "src=\"" + (versionPath + relPathPrefix)),
+                        .replace("src=\"", "src=\"" + (relPathToRoot + "/" + finalVersion + "/")),
                 file
         );
     }
 
-    private static void createAssertionHtmlFile(AssertionDto assertionDto, File dataDir, List<String> relPath) {
-        final String relPathPrefix = relPath.stream()
+    private static void createAssertionHtmlFile(
+            String version, AssertionDto assertionDto, File dataDir, List<String> relPath) {
+        final String relPathToRoot = relPath.stream()
+                .limit(relPath.size()-1)
                 .map(p -> "..")
-                .collect(Collectors.joining("/"))
-                + "/";
+                .collect(Collectors.joining("/"));
         createHtmlFile(
-                null,
-                relPathPrefix,
+                version,
+                relPathToRoot,
                 "MetamathAssertionView",
                 compress(assertionDto),
                 new File(dataDir, StringUtils.join(relPath, '/'))
@@ -558,6 +560,9 @@ public class MetamathTools {
     }
 
     protected static List<String> createRelPathToSaveTo(String label) {
+        if (true) {
+            return Arrays.asList("asrt", label + ".html");
+        }
         if (label.indexOf(DOT_REPLACEMENT) >= 0) {
             throw new MetamathException("label.indexOf(DOT_REPLACEMENT) >= 0");
         }

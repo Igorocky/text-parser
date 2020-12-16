@@ -1,31 +1,35 @@
 'use strict';
 
-function includeStyle({pathPrefix, path, onLoad}) {
+function includeStyle({path, onLoad}) {
     const link=document.createElement('link')
     link.onload=onLoad
-    link.href=`${pathPrefix}${path}`
+    link.href=path
     link.rel='stylesheet'
     document.getElementsByTagName('head')[0].appendChild(link)
 }
 
-function includeScript({pathPrefix, path, onLoad}) {
+function includeScript({path, onLoad}) {
     const script=document.createElement('script')
     script.onload= () => {
         onLoad?.()
     }
-    script.src=`${pathPrefix}${path}`
+    script.src=path
     document.getElementsByTagName('head')[0].appendChild(script)
 }
 
 function includeScripts({pathPrefix, scripts, onLoad}) {
-    scripts.reduceRight((acc,path) => () => includeScript({pathPrefix, path, onLoad:acc}), () => onLoad?.())()
+    scripts.reduceRight(
+        (acc,path) => () => includeScript({path:`${pathPrefix}/${path}`, onLoad:acc}),
+        () => onLoad?.()
+    )()
 }
 
+const dirWithScripts = `${relPathToRoot}/${version}`
+
 includeStyle({
-    pathPrefix: version + pathPrefix,
-    path: 'css/styles.css',
+    path: dirWithScripts + '/css/styles.css',
     onLoad: () => includeScripts({
-        pathPrefix: version + pathPrefix,
+        pathPrefix: dirWithScripts,
         scripts: [
             'js/lib/react.production-16.8.6.min.js',
             'js/lib/react-dom.production-16.8.6.min.js',

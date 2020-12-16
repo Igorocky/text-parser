@@ -18,7 +18,7 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
             return params?.[paramName]??prevState?.[paramName]??defaulValue
         }
 
-        proof.forEach((n,i) => n.idx=i)
+        proof?.forEach((n,i) => n.idx=i)
 
         const hideTypes = getParamValue(s.HIDE_TYPES, true)
 

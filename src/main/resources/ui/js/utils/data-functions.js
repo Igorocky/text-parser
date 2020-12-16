@@ -163,7 +163,8 @@ function getRelPath({label}) {
 }
 
 function createUrlOfAssertion(label) {
-    return version + pathPrefix + 'data/' + getRelPath({label}).map(replaceDots).join('/') + '/' + replaceDots(label) + '.html'
+    // return version + relPathToRoot + 'data/' + getRelPath({label}).map(replaceDots).join('/') + '/' + replaceDots(label) + '.html'
+    return relPathToRoot + `/asrt/${label}.html`
 }
 
 function decompressAssertionDto(cDto) {
