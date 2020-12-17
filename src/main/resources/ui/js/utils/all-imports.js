@@ -1,20 +1,20 @@
 'use strict';
 
+function createHeadChildElem({tagName,onLoad,attrs}) {
+    const elem = document.createElement(tagName)
+    elem.onload=onLoad
+    for (let attr in attrs) {
+        elem[attr]=attrs[attr]
+    }
+    document.getElementsByTagName('head')[0].appendChild(elem)
+}
+
 function includeStyle({path, onLoad}) {
-    const link=document.createElement('link')
-    link.onload=onLoad
-    link.href=path
-    link.rel='stylesheet'
-    document.getElementsByTagName('head')[0].appendChild(link)
+    createHeadChildElem({tagName:'link',onLoad,attrs:{href:path,rel:'stylesheet'}})
 }
 
 function includeScript({path, onLoad}) {
-    const script=document.createElement('script')
-    script.onload= () => {
-        onLoad?.()
-    }
-    script.src=path
-    document.getElementsByTagName('head')[0].appendChild(script)
+    createHeadChildElem({tagName:'script',onLoad,attrs:{src:path}})
 }
 
 function includeScripts({pathPrefix, scripts, onLoad}) {
@@ -25,6 +25,16 @@ function includeScripts({pathPrefix, scripts, onLoad}) {
 }
 
 const dirWithScripts = `${relPathToRoot}/${version}`
+
+createHeadChildElem({
+    tagName:'meta',
+    attrs:{name:'viewport',content:'minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no'}
+})
+
+createHeadChildElem({
+    tagName:'link',
+    attrs:{href:dirWithScripts+'/img/favicon.ico',rel:'shortcut icon',type:'image/x-icon'}
+})
 
 includeStyle({
     path: dirWithScripts + '/css/styles.css',

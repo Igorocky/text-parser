@@ -9,6 +9,9 @@ import org.igye.common.Utils;
 import org.igye.textparser.PositionInText;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -55,6 +58,7 @@ public class MetamathTools {
         final File versionDir = new File(dirToSaveTo, version);
         versionDir.mkdirs();
         copyUiFileToDir("/ui/css/styles.css", versionDir);
+        copyUiBinFileToDir("/ui/img/favicon.ico", versionDir);
         copyUiFileToDir("/ui/js/lib/react.production-16.8.6.min.js", versionDir);
         copyUiFileToDir("/ui/js/lib/react-dom.production-16.8.6.min.js", versionDir);
         copyUiFileToDir("/ui/js/lib/material-ui.production-4.11.0.min.js", versionDir);
@@ -456,6 +460,10 @@ public class MetamathTools {
         copyFromClasspathToDir(1, fileInClassPath, dir);
     }
 
+    private static void copyUiBinFileToDir(String fileInClassPath, File dir) {
+        copyBinFileFromClasspathToDir(1, fileInClassPath, dir);
+    }
+
     private static void copyFromClasspathToDir(int numOfDirsToSkip, String fileInClassPath, File dir) {
         copyFromClasspathToDir(numOfDirsToSkip, fileInClassPath, dir, Function.identity());
     }
@@ -468,6 +476,20 @@ public class MetamathTools {
                 StringUtils.join(tail(Arrays.asList(fileInClassPath.split("/|\\\\")), numOfDirsToSkip+1),'/')
         );
         FileUtils.writeStringToFile(destFile, modifier.apply(content), StandardCharsets.UTF_8);
+    }
+
+    @SneakyThrows
+    private static void copyBinFileFromClasspathToDir(int numOfDirsToSkip, String fileInClassPath, File dir) {
+        final File destFile = new File(
+                dir,
+                StringUtils.join(tail(Arrays.asList(fileInClassPath.split("/|\\\\")), numOfDirsToSkip+1),'/')
+        );
+        destFile.getParentFile().mkdirs();
+        try (InputStream is = Utils.inputStreamFromClasspath(fileInClassPath)) {
+            try (OutputStream os = new FileOutputStream(destFile)) {
+                IOUtils.copy(is, os);
+            }
+        }
     }
 
     @SneakyThrows

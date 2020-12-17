@@ -2,6 +2,10 @@
 
 function MetamathAssertionView({type, name, description, varTypes, params, retVal, proof}) {
 
+    useEffect(() => {
+        document.title = `${name} - Metamath Proof Explorer`
+    }, [])
+
     const s = {
         NODES_TO_SHOW: 'NODES_TO_SHOW',
         NODES_TO_SHOW_MAP: 'NODES_TO_SHOW_MAP',

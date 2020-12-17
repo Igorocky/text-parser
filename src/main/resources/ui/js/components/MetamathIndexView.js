@@ -2,6 +2,10 @@
 
 function MetamathIndexView({elems}) {
 
+    useEffect(() => {
+        document.title = `Index - Metamath Proof Explorer`
+    }, [])
+
     const s = {
         PAGE_NUMBER: 'PAGE_NUMBER',
         NUMBER_OF_PAGES: 'NUMBER_OF_PAGES',
