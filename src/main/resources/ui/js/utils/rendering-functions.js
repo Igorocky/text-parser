@@ -37,6 +37,29 @@ function applyColors({expr,varColors,highlightIndexes}) {
         .flatMap(e => [e, ' '])
 }
 
+function applyLinks({text}) {
+    const matches = text.matchAll(/(?<!~)(~\s(\S+))/g);
+    const resultContent = []
+    let lastIdx = 0
+    for (const match of matches) {
+        if (match.index > 0) {
+            resultContent.push(text.substring(lastIdx,match.index))
+        }
+
+        const matchedText = match[2].replaceAll('~~','~')
+        resultContent.push(
+            RE.a({href:matchedText.startsWith('http')?matchedText:createUrlOfAssertion(matchedText)},
+                matchedText
+            ),
+        )
+        lastIdx = match.index + match[0].length
+    }
+    if (lastIdx < text.length - 1) {
+        resultContent.push(text.substring(lastIdx))
+    }
+    return RE.Fragment({},resultContent)
+}
+
 function renderColoredExpr({key,ex,expr,colors}) {
     const svgElems = []
     let numOfChars = 0

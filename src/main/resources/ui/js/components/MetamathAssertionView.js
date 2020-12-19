@@ -177,7 +177,7 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                 RE.a({href:`../index.html`, style:{}},"Index")
             ),
         ),
-        RE.div({style:{marginBottom:'20px'}}, description),
+        RE.div({style:{marginBottom:'20px'}}, applyLinks({text:description})),
         RE.div({style:{marginBottom:'20px'}}, re(Assertion,{params,retVal,varColors})),
         renderProof(),
         RE.div({style:{marginTop:'20px', fontSize:'11px', face:"sans-serif"}},
