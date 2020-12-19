@@ -6,6 +6,8 @@ function MetamathIndexView({elems}) {
         document.title = `Index - Metamath Proof Explorer`
     }, [])
 
+    const {openLicenseDialog, renderLicenseDialog} = useLicenseDialog()
+
     const s = {
         PAGE_NUMBER: 'PAGE_NUMBER',
         NUMBER_OF_PAGES: 'NUMBER_OF_PAGES',
@@ -177,5 +179,10 @@ function MetamathIndexView({elems}) {
     return RE.Container.col.top.left({},{style: {marginBottom:'10px'}},
         renderControls(),
         renderTable(),
+        RE.div({style:{marginTop:'20px', fontSize:'11px', face:"sans-serif"}},
+            "Copyright terms: ",
+            RE.a({onClick:openLicenseDialog, href:'#'},"Public domain")
+        ),
+        renderLicenseDialog()
     )
 }

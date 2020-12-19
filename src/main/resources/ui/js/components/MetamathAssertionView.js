@@ -6,6 +6,8 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
         document.title = `${name} - Metamath Proof Explorer`
     }, [])
 
+    const {openLicenseDialog, renderLicenseDialog} = useLicenseDialog()
+
     const s = {
         NODES_TO_SHOW: 'NODES_TO_SHOW',
         NODES_TO_SHOW_MAP: 'NODES_TO_SHOW_MAP',
@@ -178,5 +180,10 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
         RE.div({style:{marginBottom:'20px'}}, description),
         RE.div({style:{marginBottom:'20px'}}, re(Assertion,{params,retVal,varColors})),
         renderProof(),
+        RE.div({style:{marginTop:'20px', fontSize:'11px', face:"sans-serif"}},
+            "Copyright terms: ",
+            RE.a({onClick:openLicenseDialog, href:'#'},"Public domain")
+        ),
+        renderLicenseDialog()
     )
 }

@@ -48,6 +48,7 @@ includeStyle({
             'js/utils/data-functions.js',
             'js/utils/svg-functions.js',
             'js/utils/rendering-functions.js',
+            'js/components/LicenseDialogView.js',
             'js/components/Pagination.js',
             'js/components/Assertion.js',
             'js/components/ConstProofNode.js',
