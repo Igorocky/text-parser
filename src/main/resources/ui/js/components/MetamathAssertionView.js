@@ -18,6 +18,33 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
 
     const [state, setState] = useState(() => createNewState({}))
 
+    const LOCAL_STORAGE_KEY = 'MetamathAssertionView'
+    const DEFAULT_COLUMN_WIDTHS = [5,10,15]
+    const [columnWidths, setColumnWidths] = useStateFromLocalStorage({
+        key:`${LOCAL_STORAGE_KEY}.columnWidths`,
+        validator: columnWidths => {
+            if (
+                !hasValue(columnWidths)
+                || !Array.isArray(columnWidths)
+                || columnWidths.length != DEFAULT_COLUMN_WIDTHS.length
+                || !columnWidths.every(hasValue)
+            ) {
+                return DEFAULT_COLUMN_WIDTHS
+            }
+            columnWidths = columnWidths.map(parseFloat)
+            if (!columnWidths.every(n => 0 <= n && n <= 100)) {
+                return DEFAULT_COLUMN_WIDTHS
+            }
+            for (let i = 0; i < columnWidths.length - 1; i++) {
+                if (!(columnWidths[i] < columnWidths[i+1])) {
+                    return DEFAULT_COLUMN_WIDTHS
+                }
+            }
+            return columnWidths
+        }
+    })
+    const [settingModeOn, setSettingModeOn] = useState(false)
+
     function createNewState({prevState, params}) {
 
         function getParamValue(paramName, defaulValue) {
@@ -69,6 +96,21 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
         )
     }
 
+    function renderSingleRowTable(key, ...columns) {
+        return RE.table({},
+            RE.tbody({},
+                RE.tr({},
+                    columns.map((colContent,idx) => RE.td({key:`${key}-${idx}`,style:{verticalAlign:'top'}}, colContent))
+                )
+            )
+        )
+    }
+
+    function getColWidth(colNum) {
+        let base = colNum < columnWidths.length ? columnWidths[colNum] : 100
+        return colNum === 0 ? base : (base - columnWidths[colNum-1])
+    }
+
     function renderNodeExpression({node, varColors, hideTypes}) {
         const expandButtonStyle = {
             color: 'lightgrey',
@@ -88,14 +130,9 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
             )
         } else {
             if (state[s.EXPANDED_NODES][node.idx]) {
-                return RE.Fragment({},
-                    RE.a(
-                        {
-                            style:{...expandButtonStyle, cursor:'pointer'},
-                            onClick: createExpandHandler(node)
-                            },
-                        '-'
-                    ),
+                return renderSingleRowTable(
+                    'expanded',
+                    RE.a({style:{...expandButtonStyle, cursor:'pointer'}, onClick: createExpandHandler(node)}, '-'),
                     re(RuleProofNode, {
                         node,
                         allNodes: state[s.NODES_TO_SHOW_MAP],
@@ -105,41 +142,55 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                     })
                 )
             } else {
-                return RE.Fragment({},
-                    RE.a(
-                        {
-                            style:{...expandButtonStyle, cursor:'pointer'},
-                            onClick: createExpandHandler(node)
-                            },
-                        '+'
-                    ),
+                return renderSingleRowTable(
+                    'collapsed',
+                    RE.a({style:{...expandButtonStyle, cursor:'pointer'}, onClick: createExpandHandler(node)}, '+'),
                     re(ConstProofNode, {node, varColors})
                 )
             }
         }
     }
 
+    function renderTablePreferencesButton() {
+        return RE.span(
+            {
+                style:{float:'right',cursor:'pointer',fontSize:'20px',fontWeight:settingModeOn?'bold':'normal', color:settingModeOn?'black':'lightgrey'},
+                onClick: () => setSettingModeOn(prev => !prev)
+            },
+            String.fromCodePoint(9776)
+        )
+    }
+
+    function renderColumnWidthSlider() {
+        return settingModeOn?RE.Slider({
+            value:columnWidths, min:0, max:100, step:0.1,
+            onChange:(e,newColumnWidths) => setColumnWidths(newColumnWidths)
+        }):null
+    }
+
     function renderProof() {
         if (proof) {
-            const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'5px'}
+            const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'5px',verticalAlign:'top'}
             const hideTypes = state[s.HIDE_TYPES]
             const stepNumbers = state[s.STEP_NUMBERS]
             return RE.Fragment({},
-                RE.Container.row.left.center({},{},
+                RE.div({style:{textAlign:'left', fontSize:'18px', fontWeight:'700', marginRight:'10px'}},
                     RE.Button(
                         {
                             onClick: () => setState(prevState => createNewState({prevState,params:{[s.HIDE_TYPES]:!prevState[s.HIDE_TYPES]}}))
                         },
                         state[s.HIDE_TYPES] ? "Show types" : "Hide types"
-                    )
+                    ),
+                    renderTablePreferencesButton()
                 ),
-                RE.table({style:{borderCollapse: 'collapse'/*, tableLayout: 'fixed', width:'100%'*/}},
+                renderColumnWidthSlider(),
+                RE.table({style:{borderCollapse: 'collapse', tableLayout: 'fixed', width:'100%'}},
                     RE.tbody({style:{borderCollapse: 'collapse'}},
                         RE.tr({style: {}},
-                            RE.th({key:'node-id', style:{...tableStyle,/*width:'2%'*/}}, 'Step'),
-                            RE.th({key:'explanation', style:{...tableStyle,/*width:'98%'*/}}, 'Hyp'),
-                            RE.th({key:'explanation', style:{...tableStyle,/*width:'98%'*/}}, 'Ref'),
-                            RE.th({key:'explanation', style:{...tableStyle,/*width:'98%'*/}}, 'Expression'),
+                            RE.th({style:{...tableStyle,width:`${getColWidth(0)}%`}}, 'Step'),
+                            RE.th({style:{...tableStyle,width:`${getColWidth(1)}%`}}, 'Hyp'),
+                            RE.th({style:{...tableStyle,width:`${getColWidth(2)}%`}}, 'Ref'),
+                            RE.th({style:{...tableStyle}}, 'Expression'),
                         ),
                         state[s.NODES_TO_SHOW].map(node => {
                             const hyp = hideTypes ? node.args?.filter((a,i) => node.numOfTypes <= i) : node.args
@@ -157,13 +208,14 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                                         ? RE.a({href:createUrlOfAssertion(node.label)},node.label)
                                         : ((node.type === 'E' ? 'E ' : '') + node.label)
                                 ),
-                                RE.td({style: {...tableStyle/*, overflow:'auto'*/}},
+                                RE.td({style: {...tableStyle, overflow:'auto'}},
                                     renderNodeExpression({node, varColors, hideTypes})
                                 ),
                             )
                         })
                     )
-                )
+                ),
+                renderColumnWidthSlider(),
             )
         }
     }

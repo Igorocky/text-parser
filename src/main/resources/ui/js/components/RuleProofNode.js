@@ -141,7 +141,7 @@ function RuleProofNode({node,allNodes,varColors,hideTypes,stepNumbers}) {
         let resultParamBoundaries = null
 
         const subsColors = Object.getOwnPropertyNames(node.substitution)
-            .map((name,idx) => ({name,color:subsAvailableColors[idx]}))
+            .map((name,idx) => ({name,color:idx<subsAvailableColors.length?subsAvailableColors[idx]:'black'}))
             .reduce((acc,elem) => ({...acc,[elem.name]:elem.color}), {})
 
         let lastEx = ex

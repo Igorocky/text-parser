@@ -132,17 +132,19 @@ function objectHolder(obj) {
 }
 
 function saveToLocalStorage(localStorageKey, value) {
-    window.localStorage.setItem(localStorageKey, JSON.stringify(value))
+    try {
+        window.localStorage.setItem(localStorageKey, JSON.stringify(value))
+    } catch (e) {
+        //do nothing
+    }
 }
 
 function readFromLocalStorage(localStorageKey, defaultValue) {
-    const item = window.localStorage.getItem(localStorageKey)
-    return hasValue(item) ? JSON.parse(item) : defaultValue
-}
-
-function disableScrollOnMouseDown(event) {
-    if(event.button==1){
-        event.preventDefault()
+    try {
+        const item = window.localStorage.getItem(localStorageKey)
+        return hasValue(item) ? JSON.parse(item) : defaultValue
+    } catch (e) {
+        return defaultValue
     }
 }
 
