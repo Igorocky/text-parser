@@ -34,6 +34,7 @@ const Expression = React.memo(({expr,varColors,highlightIndexes}) => {
             return RE.span(
                 {
                     style:{cursor: 'pointer'},
+                    className: 'symbol-search-span',
                     onClick: () => {
                         saveToLocalStorage(
                             METAMATH_INDEX_VIEW_LOC_STORAGE_SYMBOLS_FILTER_KEY,
