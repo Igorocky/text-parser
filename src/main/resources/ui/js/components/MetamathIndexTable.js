@@ -1,6 +1,6 @@
 "use strict";
 
-const MetamathIndexTable = React.memo(({idsToShowStr, idsToShow, allElems}) => {
+const MetamathIndexTable = React.memo(({idsToShow, allElems}) => {
 
     const tableStyle = {borderCollapse: 'collapse', border: '0px solid black', fontSize: '15px', padding: '10px'}
 
@@ -51,4 +51,4 @@ const MetamathIndexTable = React.memo(({idsToShowStr, idsToShow, allElems}) => {
             })
         )
     )
-}, (o, n) => o.idsToShowStr === n.idsToShowStr)
+}, (o, n) => o.idsToShow.join(',') === n.idsToShow.join(','))

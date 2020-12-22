@@ -1,6 +1,6 @@
 "use strict";
 
-function Expression({expr,varColors,highlightIndexes}) {
+const Expression = React.memo(({expr,varColors,highlightIndexes}) => {
 
     const {isParenthesis,onMouseEnter,onMouseLeave,getBackgroundColor,isPinned,pin,unpin} = useParenthesesHighlighting({expr})
 
@@ -110,4 +110,4 @@ function Expression({expr,varColors,highlightIndexes}) {
         renderExpresionText(),
         renderPopUp()
     )
-}
+}, (o, n) => o.expr.join(',') === n.expr.join(','))

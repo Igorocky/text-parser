@@ -129,7 +129,6 @@ function MetamathIndexView({elems}) {
         const idsToShow = state[s.IDS_TO_SHOW]
         return re(MetamathIndexTable, {
             idsToShow,
-            idsToShowStr:idsToShow.join(','),
             allElems:state[s.FILTERED_ELEMS]
         })
     }
