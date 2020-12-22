@@ -5,3 +5,7 @@
 .proof-row:hover {
     background-color: rgb(255,255,235);
 }
+
+.color-selector-elem:hover {
+    outline: 1px solid black;
+}

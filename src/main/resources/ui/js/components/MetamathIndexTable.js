@@ -34,14 +34,14 @@ const MetamathIndexTable = React.memo(({idsToShowStr, idsToShow, allElems}) => {
                         },
                         indexElem.hypotheses.length?RE.ul({},
                             indexElem.hypotheses.map((hyp,idx) => RE.li({key:idx},
-                                applyColors({
+                                re(Expression,{
                                     expr:hyp,
                                     varColors,
                                     highlightIndexes:indexElem.matchedIndexes?.[idx]
                                 })
                             ))
                         ):null,
-                        applyColors({
+                        re(Expression,{
                             expr:indexElem.expression,
                             varColors,
                             highlightIndexes:indexElem.matchedIndexes?.[indexElem.matchedIndexes?.length-1]

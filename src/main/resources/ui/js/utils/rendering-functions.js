@@ -16,27 +16,6 @@ function createVarColors({varTypes}) {
         .reduce((acc,[varName,color]) => ({...acc, [varName]:color}), {})
 }
 
-function applyColors({expr,varColors,highlightIndexes}) {
-    return expr
-        .map((str,idx) => {
-            if (varColors[str] || highlightIndexes?.includes(idx)) {
-                return RE.span(
-                    {
-                        style: {
-                            color: varColors[str]??'black',
-                            fontWeight: 'bold',
-                            backgroundColor: highlightIndexes?.includes(idx)?'yellow':null
-                        }
-                    },
-                    str
-                )
-            } else {
-                return str
-            }
-        })
-        .flatMap(e => [e, ' '])
-}
-
 function applyLinks({text}) {
     const matches = text.matchAll(/(?<!~)(~\s(\S+))/g);
     const resultContent = []

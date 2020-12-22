@@ -50,6 +50,7 @@ includeStyle({
             'js/utils/rendering-functions.js',
             'js/components/LicenseDialogView.js',
             'js/components/Pagination.js',
+            'js/components/Expression.js',
             'js/components/Assertion.js',
             'js/components/ConstProofNode.js',
             'js/components/RuleProofNode.js',

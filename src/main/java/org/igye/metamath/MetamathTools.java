@@ -69,6 +69,7 @@ public class MetamathTools {
         copyUiFileToDir("/ui/js/utils/all-imports.js", versionDir);
         copyUiFileToDir("/ui/js/components/LicenseDialogView.js", versionDir);
         copyUiFileToDir("/ui/js/components/Pagination.js", versionDir);
+        copyUiFileToDir("/ui/js/components/Expression.js", versionDir);
         copyUiFileToDir("/ui/js/components/Assertion.js", versionDir);
         copyUiFileToDir("/ui/js/components/ConstProofNode.js", versionDir);
         copyUiFileToDir("/ui/js/components/RuleProofNode.js", versionDir);

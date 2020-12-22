@@ -3,6 +3,6 @@
 function ConstProofNode ({node, varColors}) {
 
     return RE.span({style:{fontFamily:'courier', fontSize:'15px'}},
-        applyColors({expr:node.expr,varColors})
+        re(Expression,{key:`expr-${node.id}`,expr:node.expr,varColors})
     )
 }
