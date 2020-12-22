@@ -71,6 +71,7 @@ const POSSIBLE_PARENTHESES_PAIRS = [
     ['(',')'],
     ['[',']'],
     ['{','}'],
+    ['<.','>.'],
 ]
 
 function useParenthesesHighlighting({expr}) {
