@@ -65,3 +65,80 @@ function renderColoredExpr({key,ex,expr,colors}) {
     const bottomLine = ex.scale(numOfChars*charLength)
     return {svgElems, boundaries: SvgBoundaries.fromPoints(bottomLine.start, bottomLine.end.withY(y => y - charHeight))}
 }
+
+const POSSIBLE_PARENTHESES_PAIRS = [
+    ['(',')'],
+    ['[',']'],
+    ['{','}'],
+]
+
+function useParenthesesHighlighting({expr}) {
+    const matchingParenIndexes = useMemo(() => {
+        let result = {}
+        const parenStack = []
+        for (let i = 0; i < expr.length; i++) {
+            const sym = expr[i]
+            const opening = isOpeningParen(sym)
+            if (hasValue(opening)) {
+                parenStack.push({idx:i,paren:sym})
+            } else {
+                const closing = isClosingParen(sym)
+                if (hasValue(closing)) {
+                    if (parenStack.length == 0) {
+                        console.log('parenStack.length == 0')
+                    } else if (!isMatching(parenStack[parenStack.length-1].paren, closing)) {
+                        console.log('!isMatching(parenStack[parenStack.length-1].paren, closing)')
+                    } else {
+                        const opening = parenStack.pop()
+                        result = {...result, [opening.idx]:i, [i]:opening.idx}
+                    }
+                }
+            }
+        }
+        return result
+    })
+
+    const [pinnedIndexes, setPinnedIndexes] = useState({})
+    const [hoveredOverIndexes, setHoveredOverIndexes] = useState({})
+
+    function isOpeningParen(paren) {
+        return POSSIBLE_PARENTHESES_PAIRS.find(([o,c]) => o === paren)?.[0]
+    }
+
+    function isClosingParen(paren) {
+        return POSSIBLE_PARENTHESES_PAIRS.find(([o,c]) => c === paren)?.[1]
+    }
+
+    function isMatching(opening,closing) {
+        return POSSIBLE_PARENTHESES_PAIRS.find(([o,c]) => o === opening)?.[1] === closing
+    }
+
+    function isParenthesis(sym) {
+        return POSSIBLE_PARENTHESES_PAIRS.findIndex(([o,c]) => o === sym || c === sym) >= 0
+    }
+
+    return {
+        onMouseEnter: idx => {
+            const matchingParenIdx = matchingParenIndexes[idx]
+            if (hasValue(matchingParenIdx)) {
+                setHoveredOverIndexes({[idx]:'orange',[matchingParenIdx]:'orange'})
+            }
+        },
+        onMouseLeave: () => setHoveredOverIndexes({}),
+        getBackgroundColor: idx => hoveredOverIndexes[idx]??pinnedIndexes[idx],
+        isParenthesis,
+        isPinned: idx => hasValue(pinnedIndexes[idx]),
+        pin: ({idx,color}) => {
+            const matchingParenIdx = matchingParenIndexes[idx]
+            if (hasValue(matchingParenIdx)) {
+                setPinnedIndexes(prev => ({...prev, [idx]:color, [matchingParenIdx]:color}))
+            }
+        },
+        unpin: idx => {
+            const matchingParenIdx = matchingParenIndexes[idx]
+            if (hasValue(matchingParenIdx)) {
+                setPinnedIndexes(prev => ({...prev, [idx]:undefined, [matchingParenIdx]:undefined}))
+            }
+        }
+    }
+}
