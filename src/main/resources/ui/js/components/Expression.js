@@ -111,4 +111,4 @@ const Expression = React.memo(({expr,varColors,highlightIndexes}) => {
         renderExpresionText(),
         renderPopUp()
     )
-}, (o, n) => o.expr.join(',') === n.expr.join(','))
+}, (o, n) => true)

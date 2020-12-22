@@ -12,6 +12,7 @@ function MetamathIndexView({elems}) {
     const {openLicenseDialog, renderLicenseDialog} = useLicenseDialog()
 
     const s = {
+        STATE_NUMBER: 'STATE_NUMBER',
         PAGE_NUMBER: 'PAGE_NUMBER',
         NUMBER_OF_PAGES: 'NUMBER_OF_PAGES',
         POSSIBLE_TYPES: 'POSSIBLE_TYPES',
@@ -45,6 +46,8 @@ function MetamathIndexView({elems}) {
         function getParamValue(paramName, defaulValue) {
             return params?.[paramName]??prevState?.[paramName]??defaulValue
         }
+
+        const stateNumber = getParamValue(s.STATE_NUMBER,0)
 
         const typeFilter = getParamValue(s.TYPE_FILTER,'')
         const labelFilter = getParamValue(s.LABEL_FILTER,'').trim().toLowerCase()
@@ -80,6 +83,7 @@ function MetamathIndexView({elems}) {
         const idsToShow = filteredElems.filter((e,i) => minIdx <= i && i <= maxIdx).map(e => e.id)
 
         return createObj({
+            [s.STATE_NUMBER]: stateNumber+1,
             [s.PAGE_NUMBER]: pageNumber,
             [s.NUMBER_OF_PAGES]: numOfPages,
             [s.POSSIBLE_TYPES]: ['', ...new Set(elems.map(e => e.type))],
@@ -129,7 +133,8 @@ function MetamathIndexView({elems}) {
         const idsToShow = state[s.IDS_TO_SHOW]
         return re(MetamathIndexTable, {
             idsToShow,
-            allElems:state[s.FILTERED_ELEMS]
+            allElems:state[s.FILTERED_ELEMS],
+            stateNumber:state[s.STATE_NUMBER],
         })
     }
 

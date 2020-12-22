@@ -1,6 +1,6 @@
 "use strict";
 
-const MetamathIndexTable = React.memo(({idsToShow, allElems}) => {
+const MetamathIndexTable = React.memo(({idsToShow, allElems, stateNumber}) => {
 
     const tableStyle = {borderCollapse: 'collapse', border: '0px solid black', fontSize: '15px', padding: '10px'}
 
@@ -35,6 +35,7 @@ const MetamathIndexTable = React.memo(({idsToShow, allElems}) => {
                         indexElem.hypotheses.length?RE.ul({},
                             indexElem.hypotheses.map((hyp,idx) => RE.li({key:idx},
                                 re(Expression,{
+                                    key:`hypotheses-${indexElem.id}-${idx}-${stateNumber}`,
                                     expr:hyp,
                                     varColors,
                                     highlightIndexes:indexElem.matchedIndexes?.[idx]
@@ -42,6 +43,7 @@ const MetamathIndexTable = React.memo(({idsToShow, allElems}) => {
                             ))
                         ):null,
                         re(Expression,{
+                            key:`expression-${indexElem.id}-${stateNumber}`,
                             expr:indexElem.expression,
                             varColors,
                             highlightIndexes:indexElem.matchedIndexes?.[indexElem.matchedIndexes?.length-1]
@@ -51,4 +53,4 @@ const MetamathIndexTable = React.memo(({idsToShow, allElems}) => {
             })
         )
     )
-}, (o, n) => o.idsToShow.join(',') === n.idsToShow.join(','))
+}, (o, n) => o.stateNumber === n.stateNumber)
