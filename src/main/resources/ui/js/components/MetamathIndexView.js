@@ -22,8 +22,8 @@ function MetamathIndexView({elems}) {
     const itemsPerPage = 20
 
     const [state, setState] = useState(() => createNewState({}))
-    const [labelFilter, setLabelFilter] = useState('')
-    const [symbolFilter, setSymbolFilter] = useState('')
+    const labelFilterRef = useRef(null)
+    const symbolsFilterRef = useRef(null)
 
     function createNewState({prevState, params}) {
 
@@ -76,13 +76,13 @@ function MetamathIndexView({elems}) {
         })
     }
 
-    function applyFilters({newTypeFilter}) {
+    function applyFilters({typeFilter}) {
         setState(prevState => createNewState({
             prevState,
             params:{
-                [s.TYPE_FILTER]:newTypeFilter,
-                [s.LABEL_FILTER]:labelFilter,
-                [s.SYMBOL_FILTER]:symbolFilter,
+                [hasValue(typeFilter)?s.TYPE_FILTER:undefined]:typeFilter,
+                [s.LABEL_FILTER]:labelFilterRef.current.value,
+                [s.SYMBOL_FILTER]:symbolsFilterRef.current.value,
             }
         }))
     }
@@ -133,12 +133,11 @@ function MetamathIndexView({elems}) {
                 RE.InputLabel({}, 'Type'),
                 RE.Select(
                     {
-                        value: state[s.TYPE_FILTER],
                         label:'Type',
                         onChange: event => {
                             const newTypeFilter = event.target.value
                             if (state[s.TYPE_FILTER] !== newTypeFilter) {
-                                applyFilters({newTypeFilter})
+                                applyFilters({typeFilter:newTypeFilter})
                             }
                         },
                         style: {width: 150}
@@ -150,26 +149,24 @@ function MetamathIndexView({elems}) {
             ),
             RE.TextField(
                 {
+                    inputRef:labelFilterRef,
                     variant: 'outlined', label: 'Label',
                     style: {width: 300},
                     size: 'small',
                     onKeyDown: event => event.nativeEvent.keyCode == 13
                         ? applyFilters({})
                         : null,
-                    onChange: event => setLabelFilter(event.target.value),
-                    value: labelFilter
                 }
             ),
             RE.TextField(
                 {
+                    inputRef:symbolsFilterRef,
                     variant: 'outlined', label: 'Symbols',
                     style: {width: 300},
                     size: 'small',
                     onKeyDown: event => event.nativeEvent.keyCode == 13
                         ? applyFilters({})
                         : null,
-                    onChange: event => setSymbolFilter(event.target.value),
-                    value: symbolFilter
                 }
             ),
             renderPagination()
