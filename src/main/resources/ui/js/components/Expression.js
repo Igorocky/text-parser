@@ -60,6 +60,7 @@ function Expression({expr,varColors,highlightIndexes}) {
                                     unpin(idx)
                                     setAnchorEl(null)
                                     setAnchoredIdx(null)
+                                    onMouseLeave(idx)
                                 } else if (anchorEl) {
                                     setAnchorEl(null)
                                 } else {

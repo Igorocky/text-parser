@@ -124,7 +124,8 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
             fontSize:'10px'
         }
         if (hasNoValue(node.args)) {
-            return RE.Fragment({},
+            return renderSingleRowTable(
+                'constant',
                 RE.a({style:{...expandButtonStyle, opacity:0}},'+'),
                 re(ConstProofNode, {node, varColors})
             )
@@ -236,6 +237,7 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
             "Copyright terms: ",
             RE.a({onClick:openLicenseDialog, href:'#'},"Public domain")
         ),
-        renderLicenseDialog()
+        renderLicenseDialog(),
+        ints(1,40).map(i => RE.div({key:`bottom-padding-div-${i}`,style: {fontFamily: 'courier', fontSize: '15px'}},NBSP))
     )
 }

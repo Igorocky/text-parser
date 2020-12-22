@@ -9,6 +9,7 @@ const charLength = fontSize*0.6
 const charHeight = charLength*0.85
 const subsAvailableColors = ['green', 'orange', '#03a9f4', 'pink', 'brown', 'lawngreen', 'olive', 'blue', 'red', 'magenta']
 const typeColors = {wff:'blue',term:'black',setvar:'red',['class']:'magenta'}
+const NBSP = String.fromCodePoint(160)
 
 function createVarColors({varTypes}) {
     return Object.getOwnPropertyNames(varTypes)
@@ -44,7 +45,7 @@ function renderColoredExpr({key,ex,expr,colors}) {
     let numOfChars = 0
     let curEx = ex;
     for (let i = 0; i < expr.length; i++) {
-        const text = expr[i];
+        const text = expr[i]
         svgElems.push(SVG.text({
                 key:`${key}-${i}`,
                 x:curEx.start.x,
