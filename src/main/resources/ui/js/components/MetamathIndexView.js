@@ -1,8 +1,5 @@
 "use strict";
 
-const METAMATH_INDEX_VIEW_LOC_STORAGE_KEY = 'MetamathIndexView'
-const METAMATH_INDEX_VIEW_LOC_STORAGE_SYMBOLS_FILTER_KEY = METAMATH_INDEX_VIEW_LOC_STORAGE_KEY + '.' + 'symbolsFilter'
-
 function MetamathIndexView({elems}) {
 
     useEffect(() => {
@@ -28,18 +25,6 @@ function MetamathIndexView({elems}) {
     const [state, setState] = useState(() => createNewState({}))
     const labelFilterRef = useRef(null)
     const symbolsFilterRef = useRef(null)
-
-    useEffect(() => {
-        const symbolsToSearch = readFromLocalStorage(METAMATH_INDEX_VIEW_LOC_STORAGE_SYMBOLS_FILTER_KEY)
-        if (hasValue(symbolsToSearch)) {
-            symbolsFilterRef.current.value = symbolsToSearch
-            saveToLocalStorage(
-                METAMATH_INDEX_VIEW_LOC_STORAGE_SYMBOLS_FILTER_KEY,
-                undefined
-            )
-            applyFilters({})
-        }
-    }, [])
 
     function createNewState({prevState, params}) {
 

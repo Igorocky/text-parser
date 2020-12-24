@@ -30,27 +30,6 @@ const Expression = React.memo(({expr,varColors,highlightIndexes}) => {
                 },
                 '.'
             ))
-        } else {
-            return RE.span(
-                {
-                    style:{cursor: 'pointer'},
-                    className: 'symbol-search-span',
-                    onClick: () => {
-                        saveToLocalStorage(
-                            METAMATH_INDEX_VIEW_LOC_STORAGE_SYMBOLS_FILTER_KEY,
-                            expr[anchoredIdx]
-                        )
-                        setAnchorEl(null)
-                        setAnchoredIdx(null)
-                        window.open(relPathToRoot + '/index.html')
-                    }
-                },
-                `Search: `,
-                RE.span(
-                    {style: {fontFamily: 'courier', fontSize: '15px', fontWeight:'bold'}},
-                    expr[anchoredIdx]
-                )
-            )
         }
     }
 
@@ -71,7 +50,6 @@ const Expression = React.memo(({expr,varColors,highlightIndexes}) => {
         return expr
             .map((str,idx) => {
                 const color = varColors[str]??'black'
-                const isConstant = !hasValue(varColors[str])
                 let backgroundColor = getBackgroundColor(idx)??(highlightIndexes?.includes(idx)?'yellow':null)
                 return RE.span(
                     {
@@ -95,9 +73,6 @@ const Expression = React.memo(({expr,varColors,highlightIndexes}) => {
                                     setAnchorEl(event.nativeEvent.target)
                                     setAnchoredIdx(idx)
                                 }
-                            } else if (isConstant) {
-                                setAnchorEl(event.nativeEvent.target)
-                                setAnchoredIdx(idx)
                             }
                         }
                     },
