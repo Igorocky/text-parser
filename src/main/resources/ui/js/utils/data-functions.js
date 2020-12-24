@@ -284,11 +284,30 @@ function decompressMapOfInts(str) {
     }
 }
 
+const HASH_CHAR_CODE = 35
+const P_CHAR_CODE = 80
 function decompressListOfInts(str) {
     if (str === '') {
         return null
     } else {
-        return str.split(/(?<=[#-P])/).map(strToInt)
+        //the line below doesn't work in Safari
+        // return str.split(/(?<=[#-P])/).map(strToInt)
+
+        const result = []
+        let begin = 0
+        let end = 0
+        while (end < str.length) {
+            const charCode = str.charCodeAt(end);
+            if (HASH_CHAR_CODE <= charCode && charCode <= P_CHAR_CODE) {
+                result.push(strToInt(str.substring(begin,end+1)))
+                begin=end+1
+            }
+            end++
+        }
+        if (begin < end) {
+            result.push(strToInt(str.substring(begin,end+1)))
+        }
+        return result
     }
 }
 

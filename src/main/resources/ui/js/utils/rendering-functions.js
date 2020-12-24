@@ -18,7 +18,12 @@ function createVarColors({varTypes}) {
 }
 
 function applyLinks({text}) {
-    const matches = text.matchAll(/(?<!~)(~\s(\S+))/g);
+    //the line below doesn't work in Safari
+    // const matches = text.matchAll(/(?<!~)(~\s(\S+))/g)
+
+    text = ' ' + text
+    const matches = text.matchAll(/([^~])(~\s(\S+))/g)
+
     const resultContent = []
     let lastIdx = 0
     for (const match of matches) {
@@ -26,7 +31,8 @@ function applyLinks({text}) {
             resultContent.push(text.substring(lastIdx,match.index))
         }
 
-        const matchedText = match[2].replaceAll('~~','~')
+        const matchedText = match[3].replaceAll('~~','~')
+        resultContent.push(match[1])
         resultContent.push(
             RE.a({href:matchedText.startsWith('http')?matchedText:createUrlOfAssertion(matchedText)},
                 matchedText
@@ -36,6 +42,9 @@ function applyLinks({text}) {
     }
     if (lastIdx < text.length - 1) {
         resultContent.push(text.substring(lastIdx))
+    }
+    if (resultContent.length) {
+        resultContent[0] = resultContent[0].substring(1)
     }
     return RE.Fragment({},resultContent)
 }
