@@ -209,8 +209,10 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                                         ? RE.a({href:createUrlOfAssertion(node.label)},node.label)
                                         : ((node.type === 'E' ? 'E ' : '') + node.label)
                                 ),
-                                RE.td({style: {...tableStyle,width:`${getColWidth(3)}%`, overflow:'auto'}},
-                                    renderNodeExpression({node, varColors, hideTypes})
+                                RE.td({style: {...tableStyle,width:`${getColWidth(3)}%`}},
+                                    RE.div({style: {width:`100%`, overflow:'auto'}},
+                                        renderNodeExpression({node, varColors, hideTypes})
+                                    )
                                 ),
                             )
                         })
