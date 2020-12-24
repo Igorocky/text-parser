@@ -191,25 +191,25 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                             RE.th({style:{...tableStyle,width:`${getColWidth(0)}%`}}, 'Step'),
                             RE.th({style:{...tableStyle,width:`${getColWidth(1)}%`}}, 'Hyp'),
                             RE.th({style:{...tableStyle,width:`${getColWidth(2)}%`}}, 'Ref'),
-                            RE.th({style:{...tableStyle}}, 'Expression'),
+                            RE.th({style:{...tableStyle,width:`${getColWidth(3)}%`}}, 'Expression'),
                         ),
                         state[s.NODES_TO_SHOW].map(node => {
                             const hyp = hideTypes ? node.args?.filter((a,i) => node.numOfTypes <= i) : node.args
                             const maxHypIdx = hyp?.length - 1
                             return RE.tr({key: `node-${node.id}`, id: node.id, style: {}, className: 'proof-row'},
-                                RE.td({style: {...tableStyle}}, stepNumbers[node.id]),
-                                RE.td({style: {...tableStyle}},
+                                RE.td({style: {...tableStyle,width:`${getColWidth(0)}%`}}, stepNumbers[node.id]),
+                                RE.td({style: {...tableStyle,width:`${getColWidth(1)}%`}},
                                     hyp?.map((h,i) => RE.Fragment({},
                                         RE.a({href:`#${h}`},stepNumbers[h]),
                                         i < maxHypIdx ? ', ' : ''
                                     ))
                                 ),
-                                RE.td({style: {...tableStyle}},
+                                RE.td({style: {...tableStyle,width:`${getColWidth(2)}%`}},
                                     (node.type === 'P' || node.type === 'A')
                                         ? RE.a({href:createUrlOfAssertion(node.label)},node.label)
                                         : ((node.type === 'E' ? 'E ' : '') + node.label)
                                 ),
-                                RE.td({style: {...tableStyle, overflow:'auto'}},
+                                RE.td({style: {...tableStyle,width:`${getColWidth(3)}%`, overflow:'auto'}},
                                     renderNodeExpression({node, varColors, hideTypes})
                                 ),
                             )
