@@ -83,7 +83,7 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
             Math.max(30, calcColumnWidth({cellClassName:'step-cell'})??30),
             Math.max(30, Math.min(100, calcColumnWidth({cellClassName:'hyp-cell'})??100)),
             calcColumnWidth({cellClassName:'ref-cell'})??150,
-        ].map(w => w + PROOF_TABLE_CELL_PADDING_PX*2)
+        ].map(w => w + PROOF_TABLE_CELL_PADDING_PX*2 + 5)
     }
 
     const varColors = createVarColors({varTypes})
