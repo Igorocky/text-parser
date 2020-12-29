@@ -8,42 +8,26 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
 
     const {openLicenseDialog, renderLicenseDialog} = useLicenseDialog()
 
+    const PROOF_TABLE_CELL_PADDING_PX = 5
     const s = {
         NODES_TO_SHOW: 'NODES_TO_SHOW',
         NODES_TO_SHOW_MAP: 'NODES_TO_SHOW_MAP',
         HIDE_TYPES: 'HIDE_TYPES',
         EXPANDED_NODES: 'EXPANDED_NODES',
         STEP_NUMBERS: 'STEP_NUMBERS',
+        COLUMN_WIDTHS: 'COLUMN_WIDTHS',
     }
 
     const [state, setState] = useState(() => createNewState({}))
 
-    const LOCAL_STORAGE_KEY = 'MetamathAssertionView'
-    const DEFAULT_COLUMN_WIDTHS = [5,10,15]
-    const [columnWidths, setColumnWidths] = useStateFromLocalStorage({
-        key:`${LOCAL_STORAGE_KEY}.columnWidths`,
-        validator: columnWidths => {
-            if (
-                !hasValue(columnWidths)
-                || !Array.isArray(columnWidths)
-                || columnWidths.length != DEFAULT_COLUMN_WIDTHS.length
-                || !columnWidths.every(hasValue)
-            ) {
-                return DEFAULT_COLUMN_WIDTHS
+    useEffect(() => {
+        setState(prevState => createNewState({
+            prevState,
+            params:{
+                [s.COLUMN_WIDTHS]:calculateColumnWidths()
             }
-            columnWidths = columnWidths.map(parseFloat)
-            if (!columnWidths.every(n => 0 <= n && n <= 100)) {
-                return DEFAULT_COLUMN_WIDTHS
-            }
-            for (let i = 0; i < columnWidths.length - 1; i++) {
-                if (!(columnWidths[i] < columnWidths[i+1])) {
-                    return DEFAULT_COLUMN_WIDTHS
-                }
-            }
-            return columnWidths
-        }
-    })
-    const [settingModeOn, setSettingModeOn] = useState(false)
+        }))
+    }, [state[s.NODES_TO_SHOW].length])
 
     function createNewState({prevState, params}) {
 
@@ -82,7 +66,24 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
             [s.HIDE_TYPES]: hideTypes,
             [s.EXPANDED_NODES]: hasValue(expandedNodes)?expandedNodes:proof?.map(() => false),
             [s.STEP_NUMBERS]: stepNumbers,
+            [s.COLUMN_WIDTHS]: getParamValue(s.COLUMN_WIDTHS)??calculateColumnWidths(),
         })
+    }
+
+    function calcColumnWidth({cellClassName}) {
+        const cells = document.getElementsByClassName(cellClassName)
+        if (cells.length) {
+            const font = window.getComputedStyle(cells[0]).getPropertyValue('font')
+            return Array.from(cells).map(c => getTextWidth(c.innerText,font)).max()
+        }
+    }
+
+    function calculateColumnWidths() {
+        return [
+            Math.max(30, calcColumnWidth({cellClassName:'step-cell'})??30),
+            Math.max(30, Math.min(100, calcColumnWidth({cellClassName:'hyp-cell'})??100)),
+            calcColumnWidth({cellClassName:'ref-cell'})??150,
+        ].map(w => w + PROOF_TABLE_CELL_PADDING_PX*2)
     }
 
     const varColors = createVarColors({varTypes})
@@ -104,11 +105,6 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                 )
             )
         )
-    }
-
-    function getColWidth(colNum) {
-        let base = colNum < columnWidths.length ? columnWidths[colNum] : 100
-        return colNum === 0 ? base : (base - columnWidths[colNum-1])
     }
 
     function renderNodeExpression({node, varColors, hideTypes}) {
@@ -152,26 +148,9 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
         }
     }
 
-    function renderTablePreferencesButton() {
-        return RE.span(
-            {
-                style:{float:'right',cursor:'pointer',fontSize:'20px',fontWeight:settingModeOn?'bold':'normal', color:settingModeOn?'black':'lightgrey'},
-                onClick: () => setSettingModeOn(prev => !prev)
-            },
-            String.fromCodePoint(9776)
-        )
-    }
-
-    function renderColumnWidthSlider() {
-        return settingModeOn?RE.Slider({
-            value:columnWidths, min:0, max:100, step:0.1,
-            onChange:(e,newColumnWidths) => setColumnWidths(newColumnWidths)
-        }):null
-    }
-
     function renderProof() {
         if (proof) {
-            const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:'5px',verticalAlign:'top'}
+            const tableStyle = {borderCollapse: 'collapse', border: '1px solid black', fontSize: '15px', padding:`${PROOF_TABLE_CELL_PADDING_PX}px`,verticalAlign:'top'}
             const hideTypes = state[s.HIDE_TYPES]
             const stepNumbers = state[s.STEP_NUMBERS]
             return RE.Fragment({},
@@ -182,34 +161,32 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                         },
                         state[s.HIDE_TYPES] ? "Show types" : "Hide types"
                     ),
-                    renderTablePreferencesButton()
                 ),
-                renderColumnWidthSlider(),
                 RE.table({style:{borderCollapse: 'collapse', tableLayout: 'fixed', width:'100%'}},
                     RE.tbody({style:{borderCollapse: 'collapse'}},
                         RE.tr({style: {}},
-                            RE.th({style:{...tableStyle,width:`${getColWidth(0)}%`}}, 'Step'),
-                            RE.th({style:{...tableStyle,width:`${getColWidth(1)}%`}}, 'Hyp'),
-                            RE.th({style:{...tableStyle,width:`${getColWidth(2)}%`}}, 'Ref'),
-                            RE.th({style:{...tableStyle,width:`${getColWidth(3)}%`}}, 'Expression'),
+                            RE.th({style:{...tableStyle,width:`${state[s.COLUMN_WIDTHS][0]}px`}}, 'Step'),
+                            RE.th({style:{...tableStyle,width:`${state[s.COLUMN_WIDTHS][1]}px`}}, 'Hyp'),
+                            RE.th({style:{...tableStyle,width:`${state[s.COLUMN_WIDTHS][2]}px`}}, 'Ref'),
+                            RE.th({style:{...tableStyle}}, 'Expression'),
                         ),
                         state[s.NODES_TO_SHOW].map(node => {
                             const hyp = hideTypes ? node.args?.filter((a,i) => node.numOfTypes <= i) : node.args
                             const maxHypIdx = hyp?.length - 1
                             return RE.tr({key: `node-${node.id}`, id: node.id, style: {}, className: 'proof-row'},
-                                RE.td({style: {...tableStyle,width:`${getColWidth(0)}%`}}, stepNumbers[node.id]),
-                                RE.td({style: {...tableStyle,width:`${getColWidth(1)}%`}},
+                                RE.td({style: {...tableStyle,width:`${state[s.COLUMN_WIDTHS][0]}px`},className: 'step-cell'}, stepNumbers[node.id]),
+                                RE.td({style: {...tableStyle,width:`${state[s.COLUMN_WIDTHS][1]}px`},className: 'hyp-cell'},
                                     hyp?.map((h,i) => RE.Fragment({},
                                         RE.a({href:`#${h}`},stepNumbers[h]),
                                         i < maxHypIdx ? ', ' : ''
                                     ))
                                 ),
-                                RE.td({style: {...tableStyle,width:`${getColWidth(2)}%`}},
+                                RE.td({style: {...tableStyle,width:`${state[s.COLUMN_WIDTHS][2]}px`},className: 'ref-cell'},
                                     (node.type === 'P' || node.type === 'A')
                                         ? RE.a({href:createUrlOfAssertion(node.label)},node.label)
                                         : ((node.type === 'E' ? 'E ' : '') + node.label)
                                 ),
-                                RE.td({style: {...tableStyle,width:`${getColWidth(3)}%`}},
+                                RE.td({style: {...tableStyle}},
                                     RE.div({style: {width:`100%`, overflow:'auto'}},
                                         renderNodeExpression({node, varColors, hideTypes})
                                     )
@@ -218,7 +195,6 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                         })
                     )
                 ),
-                renderColumnWidthSlider(),
             )
         }
     }
