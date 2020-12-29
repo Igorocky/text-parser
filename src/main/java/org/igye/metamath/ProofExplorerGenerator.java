@@ -10,7 +10,7 @@ public class ProofExplorerGenerator {
 
     private static final int numOfThreads = 4;
 
-    private static final String version = "v6";
+    private static final String version = "v7";
 
     private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer";
 //    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer-full";

@@ -27,7 +27,7 @@ function MetamathAssertionView({type, name, description, varTypes, params, retVa
                 [s.COLUMN_WIDTHS]:calculateColumnWidths()
             }
         }))
-    }, [state[s.NODES_TO_SHOW].length])
+    }, [state[s.NODES_TO_SHOW]?.length])
 
     function createNewState({prevState, params}) {
 
