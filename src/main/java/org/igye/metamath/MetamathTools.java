@@ -584,19 +584,7 @@ public class MetamathTools {
     }
 
     protected static List<String> createRelPathToSaveTo(String label) {
-        if (true) {
-            return Arrays.asList("asrt", label + ".html");
-        }
-        if (label.indexOf(DOT_REPLACEMENT) >= 0) {
-            throw new MetamathException("label.indexOf(DOT_REPLACEMENT) >= 0");
-        }
-        final ArrayList<String> result = new ArrayList<>(
-                getRelPath(label).stream()
-                        .map(MetamathTools::replaceDots)
-                        .collect(Collectors.toList())
-        );
-        result.add(replaceDots(label) + ".html");
-        return result;
+        return Arrays.asList("asrt", label + ".html");
     }
 
     private static String replaceDots(String str) {
