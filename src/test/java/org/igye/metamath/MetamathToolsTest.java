@@ -165,6 +165,6 @@ public class MetamathToolsTest {
         final List<String> relPath = MetamathTools.createRelPathToSaveTo("pm2.27");
 
         //then
-        assertEquals(Arrays.asList("pm", "2-dot-", "27", "pm2-dot-27.html"), relPath);
+        assertEquals(Arrays.asList("asrt", "pm2.27.html"), relPath);
     }
 }
