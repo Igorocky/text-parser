@@ -1,4 +1,4 @@
-package org.igye.metamath;
+package org.igye.metamath.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

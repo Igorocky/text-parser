@@ -1,4 +1,4 @@
-package org.igye.metamath;
+package org.igye.metamath.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,11 +12,12 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class IndexElemDto {
-    private int id;
+public class AssertionDto {
     private String type;
-    private String label;
-    private List<List<String>> hypotheses;
-    private List<String> expression;
+    private String name;
+    private String description;
     private Map<String,String> varTypes;
+    private List<List<String>> params;
+    private List<String> retVal;
+    private List<StackNodeDto> proof;
 }

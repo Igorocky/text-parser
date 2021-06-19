@@ -6,6 +6,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.igye.common.DebugTimer;
 import org.igye.common.Utils;
+import org.igye.metamath.dto.AssertionDto;
+import org.igye.metamath.dto.CompressedAssertionDto2;
+import org.igye.metamath.dto.CompressedIndexDto2;
+import org.igye.metamath.dto.IndexDto;
+import org.igye.metamath.dto.IndexElemDto;
+import org.igye.metamath.dto.StackNodeDto;
 import org.igye.textparser.PositionInText;
 
 import java.io.File;
@@ -49,7 +55,6 @@ public class MetamathTools {
     @SneakyThrows
     public static void generateProofExplorer(
             List<ListStatement> assertions, String version, int numOfThreads, String pathToDirToSaveTo) {
-        final Instant start = Instant.now();
         System.out.println("Writing common files...");
         File dirToSaveTo = new File(pathToDirToSaveTo);
         if (dirToSaveTo.exists()) {
@@ -81,7 +86,7 @@ public class MetamathTools {
 
         final ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
         AtomicInteger filesWrittenAtomic = new AtomicInteger();
-        final Map<PositionInText,IndexElemDto> indexElems = new ConcurrentSkipListMap<>();
+        final Map<PositionInText, IndexElemDto> indexElems = new ConcurrentSkipListMap<>();
         AtomicReference<Exception> errorOccurred = new AtomicReference<>(null);
         for (int i = 0; i < numOfThreads; i++) {
             executorService.submit(() -> {

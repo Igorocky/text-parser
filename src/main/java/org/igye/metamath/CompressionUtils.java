@@ -2,6 +2,16 @@ package org.igye.metamath;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.igye.metamath.dto.AssertionDto;
+import org.igye.metamath.dto.CompressedAssertionDto;
+import org.igye.metamath.dto.CompressedAssertionDto2;
+import org.igye.metamath.dto.CompressedIndexDto;
+import org.igye.metamath.dto.CompressedIndexDto2;
+import org.igye.metamath.dto.CompressedIndexElemDto;
+import org.igye.metamath.dto.CompressedStackNodeDto;
+import org.igye.metamath.dto.IndexDto;
+import org.igye.metamath.dto.IndexElemDto;
+import org.igye.metamath.dto.StackNodeDto;
 
 import java.util.ArrayList;
 import java.util.Comparator;

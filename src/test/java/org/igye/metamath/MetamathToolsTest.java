@@ -1,6 +1,8 @@
 package org.igye.metamath;
 
 import org.igye.common.Utils;
+import org.igye.metamath.dto.AssertionDto;
+import org.igye.metamath.dto.StackNodeDto;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;

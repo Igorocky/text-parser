@@ -1,4 +1,4 @@
-package org.igye.metamath;
+package org.igye.metamath.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CompressedIndexDto {
-    private List<String> strings;
-    private List<CompressedIndexElemDto> elems;
+public class IndexDto {
+    private List<IndexElemDto> elems;
 }

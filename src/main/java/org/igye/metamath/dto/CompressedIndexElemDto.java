@@ -1,4 +1,4 @@
-package org.igye.metamath;
+package org.igye.metamath.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,14 +12,11 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CompressedStackNodeDto {
+public class CompressedIndexElemDto {
     private Integer i;
-    private List<Integer> a;
     private Integer t;
-    private Integer l;
-    private List<List<Integer>> p;
-    private Integer n;
-    private List<Integer> r;
-    private Map<Integer,List<Integer>> s;
+    private String l;
+    private List<List<Integer>> h;
     private List<Integer> e;
+    private Map<Integer,Integer> v;
 }
