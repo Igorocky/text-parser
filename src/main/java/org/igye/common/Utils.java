@@ -3,6 +3,7 @@ package org.igye.common;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.SneakyThrows;
 
 import java.io.File;
@@ -16,6 +17,7 @@ public class Utils {
     static {
         MAPPER = new ObjectMapper();
         MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        MAPPER.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
     }
 
     public static InputStream inputStreamFromClasspath(String path) {

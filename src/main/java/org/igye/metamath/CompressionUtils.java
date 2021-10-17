@@ -206,7 +206,10 @@ public class CompressionUtils {
 
     private static String compressMapOfIntsToStr(Map<Integer,Integer> map) {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+        List<Map.Entry<Integer, Integer>> sortedEntries = map.entrySet().stream()
+                .sorted(Comparator.comparing(Map.Entry::getKey))
+                .collect(Collectors.toList());
+        for (Map.Entry<Integer, Integer> entry : sortedEntries) {
             sb.append(intToStr(entry.getKey()));
             sb.append(intToStr(entry.getValue()));
         }
@@ -215,7 +218,10 @@ public class CompressionUtils {
 
     private static String compressMapOfIntListToStr(Map<Integer,List<Integer>> map) {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<Integer,List<Integer>> entry : map.entrySet()) {
+        List<Map.Entry<Integer, List<Integer>>> sortedEntries = map.entrySet().stream()
+                .sorted(Comparator.comparing(Map.Entry::getKey))
+                .collect(Collectors.toList());
+        for (Map.Entry<Integer,List<Integer>> entry : sortedEntries) {
             sb.append(intToStr(entry.getKey()));
             sb.append(" ");
             sb.append(compressListOfIntsToStr(entry.getValue()));
@@ -286,7 +292,7 @@ public class CompressionUtils {
 
     private static Pair<List<String>, Map<String, Integer>> buildStrMap(Map<String, Integer> counts) {
         final List<String> strings = counts.entrySet().stream()
-                .sorted(COMPARATOR.reversed())
+                .sorted(COMPARATOR.thenComparing(Map.Entry::getKey).reversed())
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
         Map<String, Integer> strMap = new HashMap<>();

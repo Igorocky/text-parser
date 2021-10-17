@@ -5,14 +5,15 @@ import org.igye.common.DebugTimer;
 import java.util.stream.Collectors;
 
 public class ProofExplorerGenerator {
-    private static final String pathToMmDatabase = "D:/programs/java/text-parser/src/test/resources/set-reduced.mm";
-//    private static final String pathToMmDatabase = "D:/Install/metamath/metamath/set.mm";
+    private static final String pathToMmDatabase = "C:\\igye\\books\\metamath\\set.mm";
+//    private static final String pathToMmDatabase = "C:\\igye\\projects\\kotlin\\metamath-parser\\src\\test\\resources\\set-reduced.mm";
 
-    private static final int numOfThreads = 4;
+    private static final int numOfThreads = 8;
 
-    private static final String version = "v7";
+    private static final String version = "v8";
 
-    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer";
+    private static final String pathToProofExplorerDirectory = "C:\\igye\\temp\\metamath\\old";
+//    private static final String pathToProofExplorerDirectory = "C:\\igye\\temp\\metamath-reduced\\old";
 //    private static final String pathToProofExplorerDirectory = "D:/programs/java/text-parser/target/proof-explorer-full";
 
     public static void main(String[] args) {

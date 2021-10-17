@@ -224,7 +224,7 @@ public class MetamathTools {
 
             varTypes.putAll(DebugTimer.call("extractVarTypes-2", () -> extractVarTypes(
                     assertion.getFrame().getContext(),
-                    nodes.stream()
+                    uniqueSteps.stream()
                             .flatMap(node -> Stream.concat(
                                     Stream.concat(
                                             node.getParams()==null?Stream.empty():node.getParams().stream().flatMap(List::stream),
