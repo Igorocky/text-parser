@@ -1,3 +1,5 @@
+A newer version of the Metamath proof visualizer is available here - https://github.com/Igorocky/metamath-parser
+--------------------------------------------------
 How to generate html pages of the proof explorer:
 1) In org.igye.metamath.ProofExplorerGenerator modify few constants:
     pathToMmDatabase - path to set.mm or any other metamath *.mm file.
